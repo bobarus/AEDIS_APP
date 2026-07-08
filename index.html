@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="PARTE">
+<meta name="apple-mobile-web-app-title" content="AEDIS">
 <meta name="theme-color" content="#f2f2f7">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
-<title>Parte de Trabajo</title>
+<title>AEDIS</title>
 
 <script>
 // ЗАМЕНИТЕ на актуальный URL вашего развёрнутого Apps Script веб-приложения
@@ -286,6 +286,19 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 .bottom-tab.active i{color:#007AFF}
 .bottom-tab.active span{color:#007AFF;font-weight:600}
 .bottom-tab:active{opacity:.6}
+.tab-icon{position:relative}
+.tab-badge{
+  position:absolute;top:-3px;right:-6px;
+  min-width:16px;height:16px;padding:0 4px;
+  background:#ff3b30;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;
+  border:1.5px solid #fff;
+  line-height:1;
+}
+.tab-badge.dot{
+  min-width:9px;width:9px;height:9px;padding:0;top:-1px;right:-2px;
+}
 
 /* SPLASH SCREEN */
 /* SPLASH SCREEN */
@@ -326,7 +339,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
     <div onclick="changeUser()" style="width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#636366;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
   </div>
   <div class="nav-center">
-    <div class="nav-title" id="navTitle">Parte de Trabajo</div>
+    <div class="nav-title" id="navTitle">AEDIS</div>
   </div>
   <div class="nav-side" style="justify-content:flex-end;position:relative">
     <div class="globe-btn" id="globeWrap" onclick="toggleLangDrop()">
@@ -753,7 +766,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
     <span>Nuevo</span>
   </div>
   <div class="bottom-tab" id="tabOpMine" onclick="switchOpTab('mine')">
-    <div class="tab-icon"><i class="ti ti-file-text"></i></div>
+    <div class="tab-icon"><i class="ti ti-file-text"></i><span class="tab-badge" id="badgeOpMine" style="display:none"></span></div>
     <span>Mis informes</span>
   </div>
 </div>
@@ -761,7 +774,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 <!-- BOTTOM TAB BAR: MANAGER -->
 <div class="bottom-tabbar" id="tabbarManager" style="display:none">
   <div class="bottom-tab active" id="tabMgPending" onclick="switchMgTab('pending')">
-    <div class="tab-icon"><i class="ti ti-clock"></i></div>
+    <div class="tab-icon"><i class="ti ti-clock"></i><span class="tab-badge" id="badgeMgPending" style="display:none"></span></div>
     <span>Pendientes</span>
   </div>
   <div class="bottom-tab" id="tabMgHistory" onclick="switchMgTab('history')">
@@ -773,7 +786,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 <!-- BOTTOM TAB BAR: ADMIN -->
 <div class="bottom-tabbar" id="tabbarAdmin" style="display:none">
   <div class="bottom-tab active" id="tabAdJournal" onclick="switchAdTab('journal')">
-    <div class="tab-icon"><i class="ti ti-list"></i></div>
+    <div class="tab-icon"><i class="ti ti-list"></i><span class="tab-badge" id="badgeAdJournal" style="display:none"></span></div>
     <span>Журнал</span>
   </div>
   <div class="bottom-tab" id="tabAdAnalisis" onclick="switchAdTab('analisis')">
@@ -1130,6 +1143,8 @@ function changeUser() {
   try { localStorage.removeItem('parte_user_pin'); } catch(e) {}
   stopListSync();
   stopManagerSync();
+  stopNotifyPoll();
+  updateAppIconBadge(0);
   // Сбрасываем флаги кешей
   myReportsLoaded = false;
   mgHistorialLoaded = false;
@@ -1146,7 +1161,7 @@ function changeUser() {
   document.getElementById('tabbarAdmin').style.display = 'none';
 
   document.getElementById('navExit').style.visibility = 'hidden';
-  document.getElementById('navTitle').textContent = 'Parte de Trabajo';
+  document.getElementById('navTitle').textContent = 'AEDIS';
   document.getElementById('mainNav').style.display = 'none';
   document.body.classList.add('pin-mode');
   renderPinDots();
@@ -1215,7 +1230,7 @@ function routeToRoleScreen() {
   document.getElementById('navExit').style.visibility = 'visible';
 
   var titles = { operario: 'PARTE DE TRABAJO', manager: 'Aprobaciones', admin: 'Panel admin' };
-  document.getElementById('navTitle').textContent = titles[currentUser.rol] || 'Parte de Trabajo';
+  document.getElementById('navTitle').textContent = titles[currentUser.rol] || 'AEDIS';
 
   if (currentUser.rol === 'operario') {
     document.getElementById('screenOperario').style.display = 'block';
@@ -1230,6 +1245,8 @@ function routeToRoleScreen() {
     document.getElementById('tabbarAdmin').style.display = 'flex';
     initAdminScreen();
   }
+  startNotifyPoll();
+  ensureNotifyPermission();
 }
 
 /* ════════ OPERARIO: LISTAS (servicio) ════════ */
@@ -1972,6 +1989,7 @@ function openManagerDetail(id) {
   if (!r) return;
   mgDetailId = id;
   markAsSeen(id);
+  setBadge('badgeMgPending', mgReportsCache.filter(function(x){ return getSeenIds().indexOf(x.ID) === -1; }).length);
 
   // После открытия убираем подсветку "новое" с карточки в ленте
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
@@ -2208,6 +2226,7 @@ function switchMgTab(tab) {
   document.getElementById('mgPanelHistory').style.display = tab === 'history' ? 'block' : 'none';
   if (tab === 'pending') {
     if (mgPendingLoaded) refreshPendingBackground(); // тихое обновление в фоне
+    setBadge('badgeMgPending', mgReportsCache.filter(function(r){ return getSeenIds().indexOf(r.ID) === -1; }).length);
   } else if (tab === 'history') {
     if (!mgHistorialLoaded) {
       loadHistorial(); // первый раз — полная загрузка со спиннером
@@ -2525,6 +2544,7 @@ function openAdminDetail(id) {
   if (!r) return;
   adDetailCurrentId = id;
   markAsSeen(id); // помечаем как просмотренное текущим пользователем
+  setBadge('badgeAdJournal', adAllRecords.filter(function(x){ return x.STATUS === 'pending' && getSeenIds().indexOf(x.ID) === -1; }).length);
   // Убираем метку NUEVO с карточки без перерисовки всего списка
   var card = document.querySelector('.ad-card[onclick*="\''+id+'\'"]');
   if (card) {
@@ -2784,6 +2804,231 @@ function re_renderAnalisisOb() { renderAnalisis(); }
 
 function initAdminScreen() {
   loadAdminData();
+}
+
+/* ════════ NOTIFICACIONES INTERNAS ════════ */
+var notifyInterval = null;
+
+function setBadge(elId, count) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  if (count > 0) {
+    el.textContent = count > 9 ? '9+' : String(count);
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+/* ════════ SISTEMA DE ALERTAS: sonido + vibración + badge del icono + notificación OS ════════ */
+
+// Cuenta total de eventos sin ver, sumando todos los roles conocidos en este dispositivo
+var appBadgeCount = 0;
+
+function updateAppIconBadge(count) {
+  appBadgeCount = count;
+  // Badging API — icono de la app en pantalla de inicio (iOS 16.4+, Android Chrome)
+  if ('setAppBadge' in navigator) {
+    if (count > 0) navigator.setAppBadge(count).catch(function(){});
+    else navigator.clearAppBadge().catch(function(){});
+  }
+}
+
+// Beep corto tipo iOS — generado con Web Audio, sin archivos externos
+function playNotifySound() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var t0 = ctx.currentTime;
+    [0, 0.12].forEach(function(offset) {
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, t0 + offset);
+      gain.gain.setValueAtTime(0.0001, t0 + offset);
+      gain.gain.exponentialRampToValueAtTime(0.25, t0 + offset + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + offset + 0.11);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0 + offset);
+      osc.stop(t0 + offset + 0.12);
+    });
+  } catch(e) {}
+}
+
+// Vibración — funciona en Android Chrome; iOS Safari no soporta la Vibration API (limitación del sistema, no de la app)
+function vibrateDevice() {
+  if ('vibrate' in navigator) {
+    try { navigator.vibrate([120, 60, 120]); } catch(e) {}
+  }
+}
+
+var notifyPermissionAsked = false;
+
+function ensureNotifyPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default' && !notifyPermissionAsked) {
+    notifyPermissionAsked = true;
+    showPermissionBanner();
+  }
+}
+
+function showPermissionBanner() {
+  if (document.getElementById('notifyPermBanner')) return;
+  var b = document.createElement('div');
+  b.id = 'notifyPermBanner';
+  b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:6000;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;align-items:center;gap:12px;border:.5px solid #e5e5ea';
+  b.innerHTML =
+    '<i class="ti ti-bell-ringing" style="font-size:22px;color:#007AFF;flex-shrink:0"></i>' +
+    '<div style="flex:1;font-size:13px;color:#000;line-height:1.35">Activa las notificaciones para no perderte novedades</div>' +
+    '<button id="notifyPermBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;font-family:inherit;flex-shrink:0">Activar</button>' +
+    '<button id="notifyPermClose" style="background:none;border:none;color:#8e8e93;font-size:18px;padding:2px;flex-shrink:0">×</button>';
+  document.body.appendChild(b);
+  document.getElementById('notifyPermBtn').onclick = function() {
+    Notification.requestPermission().finally(function(){ b.remove(); });
+  };
+  document.getElementById('notifyPermClose').onclick = function() { b.remove(); };
+}
+
+// Dispara la alerta completa: sonido + vibración + notificación de sistema (si backgrounded) + toast (si visible)
+function fireNotification(title, body) {
+  playNotifySound();
+  vibrateDevice();
+
+  if (document.visibilityState === 'visible') {
+    showToast(body);
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.showNotification(title, {
+            body: body,
+            icon: 'icon-192.png',
+            badge: 'icon-192.png',
+            vibrate: [120, 60, 120],
+            tag: 'parte-notify'
+          });
+        });
+      } else {
+        new Notification(title, { body: body, icon: 'icon-192.png' });
+      }
+    } catch(e) {}
+  }
+}
+
+function startNotifyPoll() {
+  if (notifyInterval) return;
+  checkNotifications(); // primera comprobación inmediata (silenciosa, sin toast)
+  notifyInterval = setInterval(checkNotifications, 60 * 1000);
+}
+function stopNotifyPoll() {
+  if (notifyInterval) { clearInterval(notifyInterval); notifyInterval = null; }
+}
+
+function checkNotifications() {
+  if (!currentUser) return;
+  if (currentUser.rol === 'operario') checkWorkerNotifications();
+  else if (currentUser.rol === 'manager') checkManagerNotifications();
+  else if (currentUser.rol === 'admin') checkAdminNotifications();
+}
+
+/* --- RABOCHIY: cambios de estado (aprobado/rechazado) --- */
+function getLastStatuses() {
+  try { return JSON.parse(localStorage.getItem('parte_last_statuses_' + currentPin) || '{}'); } catch(e) { return {}; }
+}
+function saveLastStatuses(obj) {
+  try { localStorage.setItem('parte_last_statuses_' + currentPin, JSON.stringify(obj)); } catch(e) {}
+}
+
+function checkWorkerNotifications() {
+  fetch(WEBAPP_URL + '?action=getMyReports&operario=' + encodeURIComponent(currentUser.nombre) + '&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      if (!result || result.status !== 'ok') return;
+      var reports = result.data || [];
+      var last = getLastStatuses();
+      var changed = [];
+      var unseenCount = 0;
+
+      reports.forEach(function(r){
+        var prev = last[r.ID];
+        if (prev && prev !== r.STATUS && (r.STATUS === 'approved' || r.STATUS === 'rejected')) {
+          changed.push(r);
+        }
+        if (r.STATUS === 'rejected') unseenCount++;
+        last[r.ID] = r.STATUS;
+      });
+      saveLastStatuses(last);
+
+      if (changed.length === 1) {
+        var r = changed[0];
+        if (r.STATUS === 'approved') fireNotification('AEDIS', r.ID + ' ' + t('status_approved').toLowerCase());
+        else fireNotification('AEDIS', r.ID + ' ' + t('status_rejected').toLowerCase());
+      } else if (changed.length > 1) {
+        fireNotification('AEDIS', changed.length + ' informes actualizados');
+      }
+
+      // Badge en "Mis informes": nº de rechazados (requieren acción)
+      setBadge('badgeOpMine', unseenCount);
+      updateAppIconBadge(unseenCount);
+
+      // Si la lista ya está cargada y visible, refrescamos silenciosamente
+      if (myReportsLoaded) renderMyReports(reports);
+      myReportsCache = reports;
+    })
+    .catch(function(){});
+}
+
+/* --- MANAGER: nuevos informes pendientes --- */
+function checkManagerNotifications() {
+  fetch(WEBAPP_URL + '?action=getPending&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      if (!result || result.status !== 'ok') return;
+      var reports = result.data || [];
+      var seen = getSeenIds();
+      var unseenReports = reports.filter(function(r){ return seen.indexOf(r.ID) === -1; });
+
+      // Detectar informes realmente nuevos desde el último poll
+      var knownIds = mgReportsCache.map(function(r){ return r.ID; });
+      var brandNew = reports.filter(function(r){ return knownIds.indexOf(r.ID) === -1; });
+
+      if (mgPendingLoaded && brandNew.length === 1) {
+        fireNotification('Nuevo informe', brandNew[0].ID + ' · ' + brandNew[0].OPERARIO);
+      } else if (mgPendingLoaded && brandNew.length > 1) {
+        fireNotification('Nuevos informes', brandNew.length + ' informes nuevos');
+      }
+
+      setBadge('badgeMgPending', unseenReports.length);
+      updateAppIconBadge(unseenReports.length);
+
+      if (mgPendingLoaded) renderManagerQueue(reports);
+      else mgReportsCache = reports;
+    })
+    .catch(function(){});
+}
+
+/* --- ADMIN: nuevos informes en el sistema --- */
+function checkAdminNotifications() {
+  fetch(WEBAPP_URL + '?action=getAdminStats&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(result){
+      if (!result || result.status !== 'ok') return;
+      var reports = result.data || [];
+      var seen = getSeenIds();
+      var pendingUnseen = reports.filter(function(r){ return r.STATUS === 'pending' && seen.indexOf(r.ID) === -1; });
+
+      var knownIds = adAllRecords.map(function(r){ return r.ID; });
+      var brandNew = reports.filter(function(r){ return knownIds.indexOf(r.ID) === -1; });
+
+      if (adAllRecords.length && brandNew.length === 1) {
+        fireNotification('Nuevo informe', brandNew[0].ID);
+      } else if (adAllRecords.length && brandNew.length > 1) {
+        fireNotification('Nuevos informes', brandNew.length + ' informes nuevos');
+      }
+
+      setBadge('badgeAdJournal', pendingUnseen.length);
+      updateAppIconBadge(pendingUnseen.length);
+    })
+    .catch(function(){});
 }
 
 (function initApp(){

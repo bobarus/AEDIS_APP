@@ -1,13 +1,13 @@
 {
-  "name": "Parte de Trabajo",
-  "short_name": "PARTE",
+  "name": "AEDIS",
+  "short_name": "AEDIS",
   "description": "Gestión de partes de trabajo",
   "start_url": "/NEXA/index.html",
   "scope": "/NEXA/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#4a82e8",
-  "theme_color": "#4a82e8",
+  "background_color": "#f2f2f7",
+  "theme_color": "#f2f2f7",
   "icons": [
     {
       "src": "icon-192.png",
