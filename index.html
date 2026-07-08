@@ -19,7 +19,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwiBvSurSTwZi1Cb7RCU
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#f2f2f7;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 100px)}
+body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 130px)}
 
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(242,242,247,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #d1d1d6}
@@ -97,9 +97,9 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
 .photo-row:last-child{border-bottom:none}
 .photo-row-head{display:flex;align-items:center;margin-bottom:8px}
 .photo-hint{font-size:12px;color:#8e8e93;margin-bottom:10px}
-.photo-input-btn{display:inline-flex;align-items:center;gap:6px;background:#007AFF;border:none;border-radius:20px;padding:7px 14px 7px 10px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;touch-action:manipulation;margin-left:auto;transition:opacity .12s}
+.photo-input-btn{display:inline-flex;align-items:center;gap:8px;background:#007AFF;border:none;border-radius:22px;padding:11px 22px 11px 16px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;touch-action:manipulation;margin-left:auto;transition:opacity .12s}
 .photo-input-btn:active{opacity:.8}
-.photo-input-btn svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.photo-input-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
 .photo-input-btn.hidden{display:none}
 .photo-thumbs{display:flex;flex-wrap:wrap;gap:8px}
 .photo-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:.5px solid #e5e5ea}
@@ -114,7 +114,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
 .btn-save{display:block;width:calc(100% - 32px);margin:16px 16px 6px;background:#8e8e93;border:none;color:#fff;border-radius:14px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:not-allowed;transition:background .2s;touch-action:manipulation}
 .btn-save.ready{background:#34c759;cursor:pointer}
 .btn-save.ready:active{opacity:.88}
-.btn-clear{display:block;width:calc(100% - 32px);margin:0 16px 16px;text-align:center;font-size:14px;font-weight:400;color:#8e8e93;background:none;border:none;cursor:pointer;padding:8px;font-family:inherit;touch-action:manipulation}
+.btn-clear{display:block;width:calc(100% - 32px);margin:0 16px 24px;text-align:center;font-size:14px;font-weight:400;color:#8e8e93;background:none;border:none;cursor:pointer;padding:8px;font-family:inherit;touch-action:manipulation}
 .spinner-inline{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.12);border-top-color:#007AFF;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -142,7 +142,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
 .btn-new{width:100%;background:#34c759;color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation}
 
 /* PIN */
-.pin-screen{display:flex;flex-direction:column;align-items:center;padding:28px 20px;text-align:center;width:100%}
+.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:20px 20px;text-align:center;width:100%}
 /* Когда PIN экран активен — body без отступа сверху */
 body.pin-mode{padding-top:0 !important}
 .pin-logo{display:none}
@@ -270,13 +270,13 @@ body.pin-mode{padding-top:0 !important}
 .rd-photo-link svg,.rd-photo-link i{width:15px;height:15px;font-size:15px;stroke:#007AFF;fill:none;stroke-width:2;stroke-linecap:round;color:#007AFF}
 
 /* TABBAR */
-.bottom-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:200;display:flex;padding-top:8px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);background:rgba(242,242,247,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #d1d1d6}
-.bottom-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;touch-action:manipulation;color:#8e8e93;background:none;border:none;font-family:inherit;padding:2px 0}
-.bottom-tab i.ti{font-size:24px;color:#8e8e93;line-height:1;display:block;font-style:normal}
-.bottom-tab span{font-size:10px;font-weight:500;color:#8e8e93;display:block}
+.bottom-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:200;display:flex;padding-top:10px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px);background:rgba(242,242,247,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #d1d1d6}
+.bottom-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;touch-action:manipulation;color:#8e8e93;background:none;border:none;font-family:inherit;padding:2px 0}
+.bottom-tab i.ti{font-size:28px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .15s}
+.bottom-tab span{font-size:11px;font-weight:500;color:#8e8e93;display:block;transition:color .15s}
 .bottom-tab.active i.ti{color:#007AFF}
-.bottom-tab.active span{color:#007AFF}
-.bottom-tab:active{opacity:.7}
+.bottom-tab.active span{color:#007AFF;font-weight:600}
+.bottom-tab:active{opacity:.6}
 
 /* PLACEHOLDER */
 .placeholder{padding:60px 24px;text-align:center;color:#8e8e93;font-size:15px}
@@ -359,7 +359,7 @@ body.pin-mode{padding-top:0 !important}
     <div class="card">
       <div class="row" id="rCliente">
         <div class="rbadge b-blue"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
-        <span class="rlabel">Cliente <span class="req-dot"></span></span>
+        <span class="rlabel"><span id="lbl-cliente">Cliente</span> <span class="req-dot"></span></span>
         <div class="sel-wrap">
           <select class="rselect" id="cliente" onchange="onSel(this,'rCliente')"></select>
           <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
@@ -367,7 +367,7 @@ body.pin-mode{padding-top:0 !important}
       </div>
       <div class="row" id="rObra">
         <div class="rbadge b-blue"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
-        <span class="rlabel">Obra <span class="req-dot"></span></span>
+        <span class="rlabel"><span id="lbl-obra">Obra</span> <span class="req-dot"></span></span>
         <div class="sel-wrap">
           <select class="rselect" id="obra" onchange="onSel(this,'rObra')"></select>
           <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
@@ -375,7 +375,7 @@ body.pin-mode{padding-top:0 !important}
       </div>
       <div class="row" id="rFecha">
         <div class="rbadge b-blue"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-        <span class="rlabel">Fecha <span class="req-dot"></span></span>
+        <span class="rlabel"><span id="lbl-fecha">Fecha</span> <span class="req-dot"></span></span>
         <input type="date" id="fecha" onchange="clearErr('rFecha');updateBtn()" style="margin-left:auto;border:none;outline:none;background:transparent;font-family:inherit;font-size:16px;color:#1a2a4a;-webkit-appearance:none;cursor:pointer">
       </div>
     </div>
@@ -384,12 +384,12 @@ body.pin-mode{padding-top:0 !important}
     <div class="card">
       <div class="row">
         <div class="rbadge b-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.168 18.849A4 4 0 0 1 10 16h4a4 4 0 0 1 3.834 2.855"/></svg></div>
-        <span class="rlabel">Operario</span>
+        <span class="rlabel" id="lbl-operario">Operario</span>
         <span class="rinput" id="operarioDisplay" style="font-weight:600">—</span>
       </div>
       <div class="row">
         <div class="rbadge b-green"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 11h6m-3-3v6"/></svg></div>
-        <span class="rlabel">Ayudante</span>
+        <span class="rlabel" id="lbl-ayudante">Ayudante</span>
         <div class="sel-wrap">
           <select class="rselect" id="ayudante" onchange="this.classList.toggle('has-val',!!this.value)"></select>
           <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
@@ -397,8 +397,8 @@ body.pin-mode{padding-top:0 !important}
       </div>
       <div class="row">
         <div class="rbadge b-green"><svg viewBox="0 0 24 24"><path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0M17 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0-4 0"/><path d="M5 17H3v-6l2-5h12l2 5v6h-2M5 17h10M3 11h18"/></svg></div>
-        <span class="rlabel">Vehículo</span>
-        <input class="rinput" id="vehiculo" placeholder="Matrícula / modelo">
+        <span class="rlabel" id="lbl-vehiculo">Vehículo</span>
+        <input class="rinput" id="vehiculo" id="input-vehiculo" placeholder="Matrícula / modelo">
       </div>
     </div>
 
@@ -406,7 +406,7 @@ body.pin-mode{padding-top:0 !important}
     <div class="card">
       <div class="mode-header" id="rTipo">
         <div class="rbadge b-orange"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-        <span class="rlabel">Tipo <span class="req-dot"></span></span>
+        <span class="rlabel"><span id="lbl-tipo">Tipo</span> <span class="req-dot"></span></span>
         <div class="mode-toggle">
           <button class="ct on" id="ctTL" onclick="setTipoMode('list')">Lista</button>
           <button class="ct" id="ctTN" onclick="setTipoMode('new')">Otro</button>
@@ -418,11 +418,11 @@ body.pin-mode{padding-top:0 !important}
         <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
       </div>
       <div class="mode-text-row" id="tipoTextRow">
-        <input class="mode-text-input" id="tipoNew" placeholder="Describir tipo..." oninput="clearErr('rTipo');updateBtn()">
+        <input class="mode-text-input" id="tipoNew" id="input-tipo-new" placeholder="Describir tipo..." oninput="clearErr('rTipo');updateBtn()">
       </div>
       <div class="row" id="rHoras">
         <div class="rbadge b-orange"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-        <span class="rlabel">Horas <span class="req-dot"></span></span>
+        <span class="rlabel"><span id="lbl-horas">Horas</span> <span class="req-dot"></span></span>
         <div class="horas-wrap">
           <button class="step-btn" onclick="changeHoras(-1)">−</button>
           <div class="horas-display">
@@ -436,15 +436,15 @@ body.pin-mode{padding-top:0 !important}
         </div>
       </div>
       <div class="row tarow">
-        <span class="sub-label">Trabajos realizados</span>
-        <textarea class="rta" id="trabajos" placeholder="Describir los trabajos..."></textarea>
+        <span class="sub-label" id="sub-trabajos">Trabajos realizados</span>
+        <textarea class="rta" id="trabajos" id="input-trabajos" placeholder="Describir los trabajos..."></textarea>
       </div>
       <div class="photo-row">
         <div class="photo-row-head">
-          <span class="rlabel" style="font-size:13px">Fotos de obra</span>
+          <span class="rlabel" id="lbl-foto-obra" style="font-size:13px">Fotos de obra</span>
         </div>
         <div class="photo-hint" id="hint-obra">Añade fotos del estado de la obra</div>
-        <label class="photo-input-btn" id="addBtnObra" style="display:flex;margin:8px auto 4px;width:fit-content">
+        <label class="photo-input-btn" id="addBtnObra" style="display:flex;margin:10px auto 16px;width:fit-content">
           <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
           Añadir
           <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosObra" onchange="handlePhotoSelect(this,'obra')">
@@ -457,7 +457,7 @@ body.pin-mode{padding-top:0 !important}
     <div class="card">
       <div class="mode-header">
         <div class="rbadge b-teal"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M3 9a4 4 0 0 0 8 0 4 4 0 0 0 8 0"/><path d="M5 21V9m14 12V9M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></div>
-        <span class="rlabel">Compañía</span>
+        <span class="rlabel" id="lbl-compania">Compañía</span>
         <div class="mode-toggle">
           <button class="ct on" id="ctCL" onclick="setCompMode('list')">Lista</button>
           <button class="ct" id="ctCN" onclick="setCompMode('new')">Nueva</button>
@@ -469,14 +469,14 @@ body.pin-mode{padding-top:0 !important}
         <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
       </div>
       <div class="mode-text-row" id="compTextRow">
-        <input class="mode-text-input" id="companiaNew" placeholder="Nombre de la compañía...">
+        <input class="mode-text-input" id="companiaNew" id="input-compania-new" placeholder="Nombre de la compañía...">
       </div>
       <div class="row tarow">
-        <span class="sub-label">Materiales utilizados</span>
-        <textarea class="rta" id="materiales" placeholder="Listar materiales..."></textarea>
+        <span class="sub-label" id="sub-materiales">Materiales utilizados</span>
+        <textarea class="rta" id="materiales" id="input-materiales" placeholder="Listar materiales..."></textarea>
       </div>
       <div class="row" style="min-height:60px">
-        <span class="rlabel" style="font-weight:700">Precio</span>
+        <span class="rlabel" id="lbl-precio" style="font-weight:700">Precio</span>
         <div style="display:flex;align-items:baseline;gap:3px;margin-left:auto">
           <input type="number" id="precio" min="0" step="0.01" inputmode="decimal" placeholder="0.00"
             style="border:none;outline:none;background:transparent;font-family:inherit;font-size:20px;font-weight:700;color:#000;text-align:right;width:100px">
@@ -485,10 +485,10 @@ body.pin-mode{padding-top:0 !important}
       </div>
       <div class="photo-row">
         <div class="photo-row-head">
-          <span class="rlabel" style="font-size:13px">Materiales / recibo</span>
+          <span class="rlabel" id="lbl-foto-mat" style="font-size:13px">Materiales / recibo</span>
         </div>
         <div class="photo-hint" id="hint-mat">Añade fotos del recibo o albarán de materiales</div>
-        <label class="photo-input-btn" id="addBtnMat" style="display:flex;margin:8px auto 4px;width:fit-content">
+        <label class="photo-input-btn" id="addBtnMat" style="display:flex;margin:10px auto 16px;width:fit-content">
           <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
           Añadir
           <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosMat" onchange="handlePhotoSelect(this,'materiales')">
@@ -540,12 +540,12 @@ body.pin-mode{padding-top:0 !important}
 <!-- MODAL: RECHAZAR INFORME -->
 <div class="mg-modal-overlay" id="mgRejectModal">
   <div class="mg-modal">
-    <div class="mg-modal-title">Rechazar informe</div>
-    <div class="mg-modal-sub">Explica al operario qué hay que corregir</div>
-    <textarea class="mg-modal-textarea" id="mgRejectComment" placeholder="Ej: Falta indicar el número de horas extra..." oninput="onRejectCommentInput()"></textarea>
+    <div class="mg-modal-title" id="reject-modal-title">Rechazar informe</div>
+    <div class="mg-modal-sub" id="reject-modal-sub">Explica al operario qué hay que corregir</div>
+    <textarea class="mg-modal-textarea" id="mgRejectComment" id="reject-comment-input" placeholder="Ej: Falta indicar el número de horas extra..." oninput="onRejectCommentInput()"></textarea>
     <div class="mg-reject-hint" id="mgRejectHint">El comentario es obligatorio para rechazar un informe</div>
     <div class="mg-modal-actions">
-      <button class="mg-modal-cancel" onclick="closeRejectModal()">Cancelar</button>
+      <button class="mg-modal-cancel" id="btn-cancelar" onclick="closeRejectModal()">Cancelar</button>
       <span style="flex:1" onclick="onRejectConfirmClick()">
         <button class="mg-modal-confirm" id="mgRejectConfirm" disabled style="width:100%;pointer-events:none">Rechazar</button>
       </span>
@@ -623,7 +623,7 @@ body.pin-mode{padding-top:0 !important}
       <!-- Клиент -->
       <div style="margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(40,60,120,0.5);margin-bottom:5px">Cliente</div>
-        <input type="text" id="adFCliente" list="adFClienteList" placeholder="Todos los clientes" oninput="applyAdminFilters()"
+        <input type="text" id="adFCliente" list="adFClienteList" id="adFClientePlaceholder" placeholder="Todos los clientes" oninput="applyAdminFilters()"
           style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;color:#1a2a4a;outline:none">
         <datalist id="adFClienteList"></datalist>
       </div>
@@ -631,7 +631,7 @@ body.pin-mode{padding-top:0 !important}
       <!-- Obra -->
       <div style="margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(40,60,120,0.5);margin-bottom:5px">Obra</div>
-        <input type="text" id="adFObra" list="adFObraList" placeholder="Todas las obras" oninput="applyAdminFilters()"
+        <input type="text" id="adFObra" list="adFObraList" id="adFObraPlaceholder" placeholder="Todas las obras" oninput="applyAdminFilters()"
           style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;color:#1a2a4a;outline:none">
         <datalist id="adFObraList"></datalist>
       </div>
@@ -639,7 +639,7 @@ body.pin-mode{padding-top:0 !important}
       <!-- Rабочий -->
       <div style="margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(40,60,120,0.5);margin-bottom:5px">Operario</div>
-        <input type="text" id="adFOperario" list="adFOperarioList" placeholder="Todos los operarios" oninput="applyAdminFilters()"
+        <input type="text" id="adFOperario" list="adFOperarioList" id="adFOperarioPlaceholder" placeholder="Todos los operarios" oninput="applyAdminFilters()"
           style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;color:#1a2a4a;outline:none">
         <datalist id="adFOperarioList"></datalist>
       </div>
@@ -647,7 +647,7 @@ body.pin-mode{padding-top:0 !important}
       <!-- Тип работы -->
       <div style="margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(40,60,120,0.5);margin-bottom:5px">Tipo de trabajo</div>
-        <input type="text" id="adFTipo" list="adFTipoList" placeholder="Todos los tipos" oninput="applyAdminFilters()"
+        <input type="text" id="adFTipo" list="adFTipoList" id="adFTipoPlaceholder" placeholder="Todos los tipos" oninput="applyAdminFilters()"
           style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;color:#1a2a4a;outline:none">
         <datalist id="adFTipoList"></datalist>
       </div>
@@ -655,7 +655,7 @@ body.pin-mode{padding-top:0 !important}
       <!-- Компания -->
       <div style="margin-bottom:10px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(40,60,120,0.5);margin-bottom:5px">Compañía</div>
-        <input type="text" id="adFCompania" list="adFCompaniaList" placeholder="Todas las compañías" oninput="applyAdminFilters()"
+        <input type="text" id="adFCompania" list="adFCompaniaList" id="adFCompaniaPlaceholder" placeholder="Todas las compañías" oninput="applyAdminFilters()"
           style="width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;color:#1a2a4a;outline:none">
         <datalist id="adFCompaniaList"></datalist>
       </div>
@@ -761,61 +761,79 @@ function toggleLangDrop() {
 }
 var LANGS = {
   es: {
-    pin_title: 'Introduce tu código', pin_sub: 'PIN de 4 dígitos', pin_ok: 'OK',
-    pin_error: 'Código incorrecto',
-    nav_new: 'PARTE DE TRABAJO', nav_manager: 'Aprobaciones', nav_admin: 'Panel admin',
-    tab_nuevo: 'Nuevo', tab_mis: 'Mis informes', tab_pending: 'Pendientes', tab_hist: 'Historial',
-    tab_journal: 'Журнал', tab_analisis: 'Análisis',
-    grp_ident: 'Identificación', grp_personal: 'Personal', grp_trabajo: 'Trabajo', grp_materiales: 'Materiales',
-    lbl_cliente: 'Cliente', lbl_obra: 'Obra', lbl_fecha: 'Fecha', lbl_operario: 'Operario',
-    lbl_ayudante: 'Ayudante', lbl_vehiculo: 'Vehículo', lbl_tipo: 'Tipo de trabajo',
-    lbl_horas: 'Horas', lbl_trabajos: 'Trabajos realizados', lbl_compania: 'Compañía',
-    lbl_materiales: 'Materiales', lbl_precio: 'Precio', lbl_foto_obra: 'Fotos de obra',
-    lbl_foto_mat: 'Materiales / recibo', btn_guardar: 'Guardar registro', btn_clear: 'Borrar formulario',
-    btn_aprobar: 'Aprobar', btn_rechazar: 'Rechazar', btn_compartir: 'Compartir',
-    btn_anadir: 'Añadir', hint_obra: 'Añade fotos del estado de la obra',
-    hint_mat: 'Añade fotos del recibo o albarán de materiales',
-    status_pending: 'Pendiente', status_approved: 'Aprobado', status_rejected: 'Rechazado',
-    search_placeholder: 'Buscar...', no_pending: 'No hay informes pendientes',
-    no_mine: 'No tienes informes pendientes', loading: 'Cargando...',
+    pin_title:'Introduce tu código', pin_sub:'PIN de 4 dígitos', pin_ok:'OK', pin_error:'Código incorrecto',
+    nav_new:'PARTE DE TRABAJO', nav_manager:'Aprobaciones', nav_admin:'Panel admin',
+    tab_nuevo:'Nuevo', tab_mis:'Mis informes', tab_pending:'Pendientes', tab_hist:'Historial',
+    tab_journal:'Журнал', tab_analisis:'Análisis',
+    grp_ident:'Identificación', grp_personal:'Personal', grp_trabajo:'Trabajo', grp_materiales:'Materiales',
+    lbl_cliente:'Cliente', lbl_obra:'Obra', lbl_fecha:'Fecha', lbl_operario:'Operario',
+    lbl_ayudante:'Ayudante', lbl_vehiculo:'Vehículo', lbl_tipo:'Tipo', lbl_horas:'Horas',
+    sub_trabajos:'Trabajos realizados', lbl_compania:'Compañía', sub_materiales:'Materiales utilizados',
+    lbl_precio:'Precio', lbl_foto_obra:'Fotos de obra', lbl_foto_mat:'Materiales / recibo',
+    ph_vehiculo:'Matrícula / modelo', ph_tipo_new:'Describir tipo...', ph_trabajos:'Describir los trabajos...',
+    ph_compania_new:'Nombre de la compañía...', ph_materiales:'Listar materiales...',
+    hint_obra:'Añade fotos del estado de la obra', hint_mat:'Añade fotos del recibo o albarán de materiales',
+    btn_anadir:'Añadir', btn_guardar:'Guardar registro', btn_clear:'Borrar todo',
+    btn_aprobar:'Aprobar', btn_rechazar:'Rechazar', btn_compartir:'Compartir', btn_cancelar:'Cancelar',
+    reject_title:'Rechazar informe', reject_sub:'Explica al operario qué hay que corregir',
+    reject_ph:'Ej: Falta indicar el número de horas extra...', reject_hint:'El comentario es obligatorio',
+    search_ph:'Buscar...',
+    flt_clientes:'Todos los clientes', flt_obras:'Todas las obras', flt_operarios:'Todos los operarios',
+    flt_tipos:'Todos los tipos', flt_companias:'Todas las compañías',
+    flt_label_estado:'Estado', flt_todos:'Todos', flt_resetear:'Resetear filtros',
+    no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
+    status_pending:'Pendiente', status_approved:'Aprobado', status_rejected:'Rechazado',
+    greet_worker:'Operario', greet_manager:'Manager', greet_admin:'Administrador',
   },
   ru: {
-    pin_title: 'Введите код', pin_sub: 'PIN из 4 цифр', pin_ok: 'OK',
-    pin_error: 'Неверный код',
-    nav_new: 'ЧАСТЬ РАБОТЫ', nav_manager: 'Согласования', nav_admin: 'Панель админа',
-    tab_nuevo: 'Новый', tab_mis: 'Мои отчёты', tab_pending: 'На согласовании', tab_hist: 'История',
-    tab_journal: 'Журнал', tab_analisis: 'Аналитика',
-    grp_ident: 'Идентификация', grp_personal: 'Персонал', grp_trabajo: 'Работа', grp_materiales: 'Материалы',
-    lbl_cliente: 'Клиент', lbl_obra: 'Объект', lbl_fecha: 'Дата', lbl_operario: 'Рабочий',
-    lbl_ayudante: 'Помощник', lbl_vehiculo: 'Транспорт', lbl_tipo: 'Тип работы',
-    lbl_horas: 'Часы', lbl_trabajos: 'Выполненные работы', lbl_compania: 'Компания',
-    lbl_materiales: 'Материалы', lbl_precio: 'Цена', lbl_foto_obra: 'Фото работ',
-    lbl_foto_mat: 'Материалы / чек', btn_guardar: 'Сохранить запись', btn_clear: 'Очистить форму',
-    btn_aprobar: 'Одобрить', btn_rechazar: 'Отклонить', btn_compartir: 'Поделиться',
-    btn_anadir: 'Добавить', hint_obra: 'Добавьте фото хода работ',
-    hint_mat: 'Добавьте фото чека или накладной материалов',
-    status_pending: 'Ожидает', status_approved: 'Одобрено', status_rejected: 'Отклонено',
-    search_placeholder: 'Поиск...', no_pending: 'Нет ожидающих отчётов',
-    no_mine: 'У вас нет ожидающих отчётов', loading: 'Загрузка...',
+    pin_title:'Введите код', pin_sub:'PIN из 4 цифр', pin_ok:'OK', pin_error:'Неверный код',
+    nav_new:'ЧАСТЬ РАБОТЫ', nav_manager:'Согласования', nav_admin:'Панель админа',
+    tab_nuevo:'Новый', tab_mis:'Мои отчёты', tab_pending:'На согласовании', tab_hist:'История',
+    tab_journal:'Журнал', tab_analisis:'Аналитика',
+    grp_ident:'Идентификация', grp_personal:'Персонал', grp_trabajo:'Работа', grp_materiales:'Материалы',
+    lbl_cliente:'Клиент', lbl_obra:'Объект', lbl_fecha:'Дата', lbl_operario:'Рабочий',
+    lbl_ayudante:'Помощник', lbl_vehiculo:'Транспорт', lbl_tipo:'Тип', lbl_horas:'Часы',
+    sub_trabajos:'Выполненные работы', lbl_compania:'Компания', sub_materiales:'Использованные материалы',
+    lbl_precio:'Цена', lbl_foto_obra:'Фото работ', lbl_foto_mat:'Материалы / чек',
+    ph_vehiculo:'Номер / модель', ph_tipo_new:'Описать тип...', ph_trabajos:'Описать выполненные работы...',
+    ph_compania_new:'Название компании...', ph_materiales:'Список материалов...',
+    hint_obra:'Добавьте фото хода работ', hint_mat:'Добавьте фото чека или накладной',
+    btn_anadir:'Добавить', btn_guardar:'Сохранить запись', btn_clear:'Очистить всё',
+    btn_aprobar:'Одобрить', btn_rechazar:'Отклонить', btn_compartir:'Поделиться', btn_cancelar:'Отмена',
+    reject_title:'Отклонить отчёт', reject_sub:'Объясните рабочему что нужно исправить',
+    reject_ph:'Например: не указаны сверхурочные часы...', reject_hint:'Комментарий обязателен',
+    search_ph:'Поиск...',
+    flt_clientes:'Все клиенты', flt_obras:'Все объекты', flt_operarios:'Все рабочие',
+    flt_tipos:'Все типы', flt_companias:'Все компании',
+    flt_label_estado:'Статус', flt_todos:'Все', flt_resetear:'Сбросить фильтры',
+    no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
+    status_pending:'Ожидает', status_approved:'Одобрено', status_rejected:'Отклонено',
+    greet_worker:'Рабочий', greet_manager:'Менеджер', greet_admin:'Администратор',
   },
   en: {
-    pin_title: 'Enter your code', pin_sub: '4-digit PIN', pin_ok: 'OK',
-    pin_error: 'Incorrect code',
-    nav_new: 'WORK REPORT', nav_manager: 'Approvals', nav_admin: 'Admin panel',
-    tab_nuevo: 'New', tab_mis: 'My reports', tab_pending: 'Pending', tab_hist: 'History',
-    tab_journal: 'Journal', tab_analisis: 'Analytics',
-    grp_ident: 'Identification', grp_personal: 'Personnel', grp_trabajo: 'Work', grp_materiales: 'Materials',
-    lbl_cliente: 'Client', lbl_obra: 'Site', lbl_fecha: 'Date', lbl_operario: 'Worker',
-    lbl_ayudante: 'Assistant', lbl_vehiculo: 'Vehicle', lbl_tipo: 'Work type',
-    lbl_horas: 'Hours', lbl_trabajos: 'Work done', lbl_compania: 'Company',
-    lbl_materiales: 'Materials', lbl_precio: 'Price', lbl_foto_obra: 'Site photos',
-    lbl_foto_mat: 'Materials / receipt', btn_guardar: 'Save record', btn_clear: 'Clear form',
-    btn_aprobar: 'Approve', btn_rechazar: 'Reject', btn_compartir: 'Share',
-    btn_anadir: 'Add', hint_obra: 'Add photos of the work progress',
-    hint_mat: 'Add photos of the receipt or delivery note',
-    status_pending: 'Pending', status_approved: 'Approved', status_rejected: 'Rejected',
-    search_placeholder: 'Search...', no_pending: 'No pending reports',
-    no_mine: 'You have no pending reports', loading: 'Loading...',
+    pin_title:'Enter your code', pin_sub:'4-digit PIN', pin_ok:'OK', pin_error:'Incorrect code',
+    nav_new:'WORK REPORT', nav_manager:'Approvals', nav_admin:'Admin panel',
+    tab_nuevo:'New', tab_mis:'My reports', tab_pending:'Pending', tab_hist:'History',
+    tab_journal:'Journal', tab_analisis:'Analytics',
+    grp_ident:'Identification', grp_personal:'Personnel', grp_trabajo:'Work', grp_materiales:'Materials',
+    lbl_cliente:'Client', lbl_obra:'Site', lbl_fecha:'Date', lbl_operario:'Worker',
+    lbl_ayudante:'Assistant', lbl_vehiculo:'Vehicle', lbl_tipo:'Type', lbl_horas:'Hours',
+    sub_trabajos:'Work done', lbl_compania:'Company', sub_materiales:'Materials used',
+    lbl_precio:'Price', lbl_foto_obra:'Site photos', lbl_foto_mat:'Materials / receipt',
+    ph_vehiculo:'Plate / model', ph_tipo_new:'Describe type...', ph_trabajos:'Describe work done...',
+    ph_compania_new:'Company name...', ph_materiales:'List materials...',
+    hint_obra:'Add photos of the work progress', hint_mat:'Add photos of the receipt or delivery note',
+    btn_anadir:'Add', btn_guardar:'Save record', btn_clear:'Clear all',
+    btn_aprobar:'Approve', btn_rechazar:'Reject', btn_compartir:'Share', btn_cancelar:'Cancel',
+    reject_title:'Reject report', reject_sub:'Explain to the worker what needs to be corrected',
+    reject_ph:'E.g.: Missing overtime hours...', reject_hint:'Comment is required',
+    search_ph:'Search...',
+    flt_clientes:'All clients', flt_obras:'All sites', flt_operarios:'All workers',
+    flt_tipos:'All types', flt_companias:'All companies',
+    flt_label_estado:'Status', flt_todos:'All', flt_resetear:'Reset filters',
+    no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
+    status_pending:'Pending', status_approved:'Approved', status_rejected:'Rejected',
+    greet_worker:'Worker', greet_manager:'Manager', greet_admin:'Administrator',
   }
 };
 
@@ -824,79 +842,120 @@ function t(key) {
   return lang[key] || LANGS.es[key] || key;
 }
 
-function applyLang() {
-  // PIN screen
-  var pinTitle = document.querySelector('.pin-title');
-  var pinSub = document.querySelector('.pin-sub');
-  var pinOk = document.getElementById('pinOkBtn');
-  if (pinTitle) pinTitle.textContent = t('pin_title');
-  if (pinSub) pinSub.textContent = t('pin_sub');
-  if (pinOk) pinOk.textContent = t('pin_ok');
+function setEl(id, text) { var el = document.getElementById(id); if (el) el.textContent = text; }
+function setPh(id, text) { var el = document.getElementById(id); if (el) el.placeholder = text; }
 
-  // Nav title
+function applyLang() {
+  // PIN
+  var pinTitle = document.querySelector('.pin-title');
+  var pinSub   = document.querySelector('.pin-sub');
+  if (pinTitle) pinTitle.textContent = t('pin_title');
+  if (pinSub)   pinSub.textContent   = t('pin_sub');
+  setEl('pinOkBtn', t('pin_ok'));
+
+  // Nav
   if (currentUser) {
     var roleKey = {operario:'nav_new', manager:'nav_manager', admin:'nav_admin'};
-    var titleEl = document.getElementById('navTitle');
-    if (titleEl && roleKey[currentUser.rol]) titleEl.textContent = t(roleKey[currentUser.rol]);
+    setEl('navTitle', t(roleKey[currentUser.rol] || 'nav_new'));
   }
 
-  // Tabbar labels
-  var tabLabels = {
-    tabOpNew: 'tab_nuevo', tabOpMine: 'tab_mis',
-    tabMgPending: 'tab_pending', tabMgHistory: 'tab_hist',
-    tabAdJournal: 'tab_journal', tabAdAnalisis: 'tab_analisis'
-  };
-  Object.keys(tabLabels).forEach(function(id) {
+  // Tabbar
+  var tabs = {tabOpNew:'tab_nuevo',tabOpMine:'tab_mis',tabMgPending:'tab_pending',tabMgHistory:'tab_hist',tabAdJournal:'tab_journal',tabAdAnalisis:'tab_analisis'};
+  Object.keys(tabs).forEach(function(id){
     var el = document.getElementById(id);
-    if (el) { var span = el.querySelector('span'); if (span) span.textContent = t(tabLabels[id]); }
+    if (el) { var s = el.querySelector('span'); if (s) s.textContent = t(tabs[id]); }
   });
 
-  // Form labels
-  var labels = {
-    'lbl-cliente': 'lbl_cliente', 'lbl-obra': 'lbl_obra', 'lbl-fecha': 'lbl_fecha',
-    'lbl-operario': 'lbl_operario', 'lbl-ayudante': 'lbl_ayudante', 'lbl-vehiculo': 'lbl_vehiculo',
-    'lbl-tipo': 'lbl_tipo', 'lbl-horas': 'lbl_horas', 'lbl-compania': 'lbl_compania',
-    'lbl-precio': 'lbl_precio'
-  };
-  Object.keys(labels).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = t(labels[id]);
+  // Section labels
+  setEl('sl-ident',      t('grp_ident'));
+  setEl('sl-personal',   t('grp_personal'));
+  setEl('sl-trabajo',    t('grp_trabajo'));
+  setEl('sl-materiales', t('grp_materiales'));
+
+  // Form labels — rlabel spans
+  setEl('lbl-cliente',   t('lbl_cliente'));
+  setEl('lbl-obra',      t('lbl_obra'));
+  setEl('lbl-fecha',     t('lbl_fecha'));
+  setEl('lbl-operario',  t('lbl_operario'));
+  setEl('lbl-ayudante',  t('lbl_ayudante'));
+  setEl('lbl-vehiculo',  t('lbl_vehiculo'));
+  setEl('lbl-tipo',      t('lbl_tipo'));
+  setEl('lbl-horas',     t('lbl_horas'));
+  setEl('lbl-compania',  t('lbl_compania'));
+  setEl('lbl-precio',    t('lbl_precio'));
+  setEl('lbl-foto-obra', t('lbl_foto_obra'));
+  setEl('lbl-foto-mat',  t('lbl_foto_mat'));
+
+  // Sub-labels
+  setEl('sub-trabajos',    t('sub_trabajos'));
+  setEl('sub-materiales',  t('sub_materiales'));
+
+  // Placeholders
+  setPh('vehiculo',        t('ph_vehiculo'));
+  setPh('input-vehiculo',  t('ph_vehiculo'));
+  setPh('tipoNew',         t('ph_tipo_new'));
+  setPh('input-tipo-new',  t('ph_tipo_new'));
+  setPh('trabajos',        t('ph_trabajos'));
+  setPh('input-trabajos',  t('ph_trabajos'));
+  setPh('companiaNew',     t('ph_compania_new'));
+  setPh('input-compania-new', t('ph_compania_new'));
+  setPh('materiales',      t('ph_materiales'));
+  setPh('input-materiales',t('ph_materiales'));
+
+  // Photo hints
+  setEl('hint-obra', t('hint_obra'));
+  setEl('hint-mat',  t('hint_mat'));
+
+  // Photo buttons text node
+  document.querySelectorAll('.photo-input-btn').forEach(function(btn) {
+    btn.childNodes.forEach(function(n){ if (n.nodeType === 3 && n.textContent.trim()) n.textContent = ' ' + t('btn_anadir'); });
   });
 
-  // slabels
-  var slabels = {'sl-ident':'grp_ident','sl-personal':'grp_personal','sl-trabajo':'grp_trabajo','sl-materiales':'grp_materiales'};
-  Object.keys(slabels).forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.textContent = t(slabels[id]);
-  });
-
-  // Buttons
-  var btnSave = document.getElementById('btnSave');
-  if (btnSave) btnSave.textContent = t('btn_guardar');
-  var btnClear = document.getElementById('btnClear');
+  // Main buttons
+  setEl('btnSave',  t('btn_guardar'));
+  var btnClear = document.querySelector('.btn-clear');
   if (btnClear) btnClear.textContent = t('btn_clear');
 
-  // Hints
-  var hintObra = document.getElementById('hint-obra');
-  var hintMat = document.getElementById('hint-mat');
-  if (hintObra) hintObra.textContent = t('hint_obra');
-  if (hintMat) hintMat.textContent = t('hint_mat');
+  // Reject modal
+  setEl('reject-modal-title', t('reject_title'));
+  setEl('reject-modal-sub',   t('reject_sub'));
+  setPh('mgRejectComment',    t('reject_ph'));
+  setPh('reject-comment-input', t('reject_ph'));
+  setEl('mgRejectHint',       t('reject_hint'));
+  setEl('btn-cancelar',       t('btn_cancelar'));
 
-  // Photo buttons
-  document.querySelectorAll('.photo-input-btn').forEach(function(btn) {
-    var input = btn.querySelector('input');
-    btn.childNodes.forEach(function(n){ if(n.nodeType===3) n.textContent = ' '+t('btn_anadir'); });
+  // Detail modal buttons
+  document.querySelectorAll('.mg-btn-approve').forEach(function(b){ b.textContent = t('btn_aprobar'); });
+  document.querySelectorAll('.mg-btn-reject').forEach(function(b){ b.textContent = t('btn_rechazar'); });
+
+  // Compartir buttons (все)
+  document.querySelectorAll('[onclick*="share"], [onclick*="Share"], [onclick*="Compartir"]').forEach(function(b){
+    if (b.textContent.trim().toLowerCase().includes('compartir') || b.textContent.trim().toLowerCase().includes('share') || b.textContent.trim().toLowerCase().includes('поделиться')) {
+      b.innerHTML = b.innerHTML.replace(/>Compartir|>Share|>Поделиться/g, '>' + t('btn_compartir'));
+    }
+  });
+  // Compartir явно по тексту
+  document.querySelectorAll('button, a').forEach(function(b){
+    if (b.textContent.trim() === 'Compartir' || b.textContent.trim() === 'Share' || b.textContent.trim() === 'Поделиться') {
+      b.textContent = t('btn_compartir');
+    }
   });
 
-  // Search
-  var search = document.getElementById('adSearch');
-  if (search) search.placeholder = t('search_placeholder');
+  // Admin search & filters
+  setPh('adSearch',       t('search_ph'));
+  setPh('adFCliente',     t('flt_clientes'));
+  setPh('adFObra',        t('flt_obras'));
+  setPh('adFOperario',    t('flt_operarios'));
+  setPh('adFTipo',        t('flt_tipos'));
+  setPh('adFCompania',    t('flt_companias'));
 
-  // Manager buttons in modal
-  var btnAp = document.querySelector('.mg-btn-approve');
-  var btnRe = document.querySelector('.mg-btn-reject');
-  if (btnAp) btnAp.textContent = t('btn_aprobar');
-  if (btnRe) btnRe.textContent = t('btn_rechazar');
+  // Filter reset button
+  var resetBtn = document.querySelector('[onclick="resetAdminFilters()"]');
+  if (resetBtn) resetBtn.textContent = t('flt_resetear');
+
+  // Filter status pills
+  var pills = document.querySelectorAll('.ad-flt-btn[data-val=""]');
+  pills.forEach(function(p){ p.textContent = t('flt_todos'); });
 }
 
 function setLang(lang) {
