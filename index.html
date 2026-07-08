@@ -564,7 +564,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
     <div class="mg-modal-sub" id="rdSub">—</div>
     <div id="rdBody" style="margin:14px 0"></div>
     <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
-      <i class="ti ti-share" style="font-size:16px"></i> Compartir
+      <i class="ti ti-send" style="font-size:16px"></i> Compartir
     </button>
   </div>
 </div>
@@ -578,12 +578,13 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
       <div class="mg-modal-title" id="mgdTitle">—</div>
       <div class="mg-modal-sub" id="mgdSub">—</div>
       <div id="mgdBody" style="margin:14px 0"></div>
-    </div>
-    <!-- Фиксированный footer -->
-    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#f2f2f7;flex-shrink:0">
-      <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px" onclick="shareManagerDetail()">
-        <i class="ti ti-share" style="font-size:16px"></i> Compartir
+      <!-- Compartir — после Total, в контенте -->
+      <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="shareManagerDetail()">
+        <i class="ti ti-send" style="font-size:16px"></i> Compartir
       </button>
+    </div>
+    <!-- Фиксированный footer — только кнопки решения -->
+    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#f2f2f7;flex-shrink:0">
       <div class="mg-actions">
         <button class="mg-btn mg-btn-reject" onclick="rejectFromDetail()">Rechazar</button>
         <button class="mg-btn mg-btn-approve" onclick="approveFromDetail()">Aprobar</button>
