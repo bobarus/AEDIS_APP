@@ -33,9 +33,10 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(242,242,247,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #d1d1d6}
 .nav-center{flex:1;text-align:center}
 .nav-title{font-size:17px;font-weight:600;color:#000;letter-spacing:-.2px}
-.nav-side{width:34px;display:flex;justify-content:center;align-items:center}
-.globe-btn{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
-.globe-btn svg,.globe-btn i{color:#636366;font-size:16px;stroke:#636366;width:16px;height:16px;fill:none;stroke-width:1.8;stroke-linecap:round}
+.nav-side{width:44px;display:flex;justify-content:center;align-items:center}
+.globe-btn{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;touch-action:manipulation}
+.globe-btn:active{background:rgba(0,0,0,.12)}
+.globe-btn svg,.globe-btn i{color:#636366;font-size:18px;stroke:#636366;width:18px;height:18px;fill:none;stroke-width:1.8;stroke-linecap:round}
 .lang-dropdown{display:none;position:absolute;top:42px;right:0;background:#fff;border-radius:14px;overflow:hidden;min-width:160px;border:.5px solid #d1d1d6;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,.12)}
 .lang-dropdown.open{display:block}
 
@@ -50,24 +51,16 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
   display:none;
 }
 .notif-bell.has-unread .notif-dot{display:block;background:#fff}
-.notif-dropdown{
-  min-width:280px;max-width:320px;max-height:60vh;overflow-y:auto;
-  left:auto;right:0;
+
+/* Карточки уведомлений в полноэкранном модале */
+.notif-card{
+  background:#fff;border:.5px solid #e5e5ea;border-radius:12px;
+  margin:0 16px 8px;padding:12px 14px;
 }
-.notif-header{
-  padding:12px 16px 8px;font-size:13px;font-weight:700;color:#000;
-  border-bottom:.5px solid #f2f2f7;
-}
-.notif-item{
-  display:flex;flex-direction:column;gap:2px;
-  padding:11px 16px;border-bottom:.5px solid #f2f2f7;
-  text-align:left;
-}
-.notif-item:last-child{border-bottom:none}
-.notif-item .ni-title{font-size:13px;font-weight:600;color:#000}
-.notif-item .ni-body{font-size:12px;color:#636366;line-height:1.4}
-.notif-item .ni-time{font-size:10px;color:#c7c7cc;margin-top:1px}
-.notif-empty{padding:24px 16px;text-align:center;font-size:13px;color:#8e8e93}
+.notif-card .ni-title{font-size:13px;font-weight:600;color:#000;margin-bottom:2px}
+.notif-card .ni-body{font-size:13px;color:#000;line-height:1.4;margin-bottom:4px}
+.notif-card .ni-time{font-size:11px;color:#8e8e93}
+.notif-empty{padding:60px 24px;text-align:center;font-size:15px;color:#8e8e93}
 .lang-opt{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:15px;color:#000;cursor:pointer;font-weight:400;width:100%;text-align:left;background:none;border:none;border-bottom:.5px solid #f2f2f7;font-family:inherit}
 .lang-opt:last-child{border-bottom:none}
 .lang-opt.active{font-weight:600;color:#007AFF}
@@ -119,7 +112,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 52px);pad
 
 /* HORAS */
 .horas-wrap{display:flex;align-items:center;gap:12px;margin-left:auto}
-.step-btn{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:300;background:#f2f2f7;color:#000;touch-action:manipulation}
+.step-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:300;background:#f2f2f7;color:#000;touch-action:manipulation}
 .step-btn:active{background:#e5e5ea}
 .horas-display{position:relative;width:40px;height:34px;display:flex;align-items:center;justify-content:center}
 .horas-num{font-size:20px;font-weight:600;color:#000;pointer-events:none;position:relative;z-index:1}
@@ -366,18 +359,14 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 
 <nav class="nav" id="mainNav">
   <div class="nav-side" id="navExit" style="visibility:hidden">
-    <div onclick="changeUser()" style="width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#636366;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+    <div onclick="changeUser()" style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:#636366;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
   </div>
   <div class="nav-center">
     <div class="nav-title" id="navTitle">AEDIS</div>
   </div>
   <div class="nav-side" style="justify-content:flex-end;position:relative;gap:8px;display:flex;align-items:center">
-    <div class="globe-btn notif-bell" id="notifBellWrap" onclick="toggleNotifDrop()">
-      <i class="ti ti-bell" style="font-size:16px"></i>
-      <div class="lang-dropdown notif-dropdown" id="notifDrop">
-        <div class="notif-header">Notificaciones</div>
-        <div id="notifList"></div>
-      </div>
+    <div class="globe-btn notif-bell" id="notifBellWrap" onclick="openNotifModal()">
+      <i class="ti ti-bell" style="font-size:18px"></i>
     </div>
     <div class="globe-btn" id="globeWrap" onclick="toggleLangDrop()">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -389,6 +378,18 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
     </div>
   </div>
 </nav>
+
+<!-- ═══ MODAL: NOTIFICACIONES (pantalla completa) ═══ -->
+<div id="notifFullModal" style="display:none;position:fixed;inset:0;z-index:8000;background:#f2f2f7;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;background:rgba(242,242,247,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #d1d1d6;flex-shrink:0">
+    <div style="width:40px"></div>
+    <div style="font-size:17px;font-weight:600;color:#000">Notificaciones</div>
+    <div onclick="closeNotifModal()" style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+      <i class="ti ti-x" style="font-size:18px;color:#636366"></i>
+    </div>
+  </div>
+  <div id="notifFullList" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 0 24px"></div>
+</div>
 
 <!-- ═══ PANTALLA: PIN ENTRY ═══ -->
 <div id="screenPin" class="pin-screen">
@@ -2974,7 +2975,7 @@ function updateBellUI() {
 
 function renderNotifList() {
   var log = getNotifLog().slice().reverse(); // más recientes primero
-  var listEl = document.getElementById('notifList');
+  var listEl = document.getElementById('notifFullList');
   if (!log.length) {
     listEl.innerHTML = '<div class="notif-empty">Sin notificaciones</div>';
     return;
@@ -2982,27 +2983,21 @@ function renderNotifList() {
   listEl.innerHTML = log.map(function(n){
     var d = new Date(n.ts);
     var timeStr = ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · '+('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2);
-    return '<div class="notif-item">' +
-      '<span class="ni-title">'+n.title+'</span>' +
-      '<span class="ni-body">'+n.body+'</span>' +
-      '<span class="ni-time">'+timeStr+'</span>' +
+    return '<div class="notif-card">' +
+      '<div class="ni-title">'+n.title+'</div>' +
+      '<div class="ni-body">'+n.body+'</div>' +
+      '<div class="ni-time">'+timeStr+'</div>' +
     '</div>';
   }).join('');
 }
 
-function toggleNotifDrop() {
-  var drop = document.getElementById('notifDrop');
-  var wasOpen = drop.classList.contains('open');
-  // Cerramos el dropdown de idioma si estaba abierto
+function openNotifModal() {
   var langDrop = document.getElementById('langDrop');
   if (langDrop) langDrop.classList.remove('open');
 
-  if (wasOpen) {
-    drop.classList.remove('open');
-    return;
-  }
   renderNotifList();
-  drop.classList.add('open');
+  var modal = document.getElementById('notifFullModal');
+  modal.style.display = 'flex';
 
   // Al abrir, marcamos TODAS como leídas — el punto rojo desaparece y no reaparece
   var log = getNotifLog();
@@ -3011,12 +3006,9 @@ function toggleNotifDrop() {
   if (changed) { saveNotifLog(log); updateBellUI(); }
 }
 
-document.addEventListener('click', function(e) {
-  if (!e.target.closest('#notifBellWrap')) {
-    var d = document.getElementById('notifDrop');
-    if (d) d.classList.remove('open');
-  }
-});
+function closeNotifModal() {
+  document.getElementById('notifFullModal').style.display = 'none';
+}
 
 function fireNotification(notifId, title, body) {
   var isNew = addNotification(notifId, title, body);
@@ -3164,6 +3156,29 @@ function checkAdminNotifications() {
     })
     .catch(function(){});
 }
+
+/* ════════ FIX: iOS Safari bfcache ════════
+   Cuando la app se pone en segundo plano en medio de una comprobación
+   asíncrona (fetch de PIN), iOS puede "congelar" la página tal como
+   estaba en ese instante (a veces mostrando el teclado del PIN) y
+   restaurarla así al reabrir, sin volver a ejecutar el JS. Forzamos
+   una recarga limpia cuando detectamos que la página viene del bfcache. */
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+    location.reload();
+  }
+});
+
+// Страховка: если приложение вернулось из фона, а на экране PIN-клавиатура,
+// хотя пользователь уже залогинен (currentUser заполнен) — исправляем расхождение.
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && currentUser) {
+    var pinScreen = document.getElementById('screenPin');
+    if (pinScreen && pinScreen.style.display === 'flex') {
+      routeToRoleScreen();
+    }
+  }
+});
 
 (function initApp(){
   document.getElementById('mainNav').style.display = 'none';
