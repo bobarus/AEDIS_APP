@@ -220,7 +220,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 /* MODALS */
 .mg-modal-overlay{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.35);align-items:flex-end;justify-content:center}
 .mg-modal-overlay.show{display:flex}
-.mg-modal{width:100%;max-width:480px;background:#f2f2f7;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.mg-modal{width:100%;max-width:480px;background:#f2f2f7;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateY(0);transition:transform .3s cubic-bezier(.32,1,.2,1);will-change:transform;touch-action:pan-y}
 .mg-modal-title{font-size:17px;font-weight:600;color:#000;margin-bottom:3px}
 .mg-modal-sub{font-size:13px;color:#8e8e93;margin-bottom:14px}
 .mg-modal-textarea{width:100%;min-height:80px;border-radius:12px;border:.5px solid #d1d1d6;background:#fff;padding:12px 14px;font-size:15px;font-family:inherit;color:#000;resize:none;margin-bottom:8px;transition:border-color .15s;outline:none}
@@ -357,7 +357,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
   <!-- ── SUBPANTALLA: NUEVO INFORME ── -->
   <div id="opPanelNew">
 
-    <div class="slabel"><span id="sl-ident">Identificación</span><span class="req-badge">• obligatorio</span></div>
+    <div class="slabel"><span id="sl-ident">Identificación</span><span class="req-badge" id="req-badge-obligatorio">• obligatorio</span></div>
     <div class="card">
       <div class="row" id="rCliente">
         <div class="rbadge b-blue"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="1"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
@@ -571,17 +571,23 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 
 <!-- MODAL: DETALLE Y DECISIÓN (Manager) -->
 <div class="mg-modal-overlay" id="mgDetailModal" onclick="if(event.target===this)closeManagerDetail()">
-  <div class="mg-modal" style="max-height:85vh;overflow-y:auto">
-    <div class="modal-handle" style="width:36px;height:4px;background:#c7c7cc;border-radius:2px;margin:0 auto 16px"></div>
-    <div class="mg-modal-title" id="mgdTitle">—</div>
-    <div class="mg-modal-sub" id="mgdSub">—</div>
-    <div id="mgdBody" style="margin:14px 0"></div>
-    <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px" onclick="shareManagerDetail()">
-      <i class="ti ti-share" style="font-size:16px"></i> Compartir
-    </button>
-    <div class="mg-actions">
-      <button class="mg-btn mg-btn-reject" onclick="rejectFromDetail()">Rechazar</button>
-      <button class="mg-btn mg-btn-approve" onclick="approveFromDetail()">Aprobar</button>
+  <div class="mg-modal" style="max-height:88vh;overflow:hidden;display:flex;flex-direction:column;padding:0">
+    <!-- Скроллируемый контент -->
+    <div style="overflow-y:auto;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch">
+      <div class="modal-handle" style="width:36px;height:4px;background:#c7c7cc;border-radius:2px;margin:0 auto 16px"></div>
+      <div class="mg-modal-title" id="mgdTitle">—</div>
+      <div class="mg-modal-sub" id="mgdSub">—</div>
+      <div id="mgdBody" style="margin:14px 0"></div>
+    </div>
+    <!-- Фиксированный footer -->
+    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#f2f2f7;flex-shrink:0">
+      <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px" onclick="shareManagerDetail()">
+        <i class="ti ti-share" style="font-size:16px"></i> Compartir
+      </button>
+      <div class="mg-actions">
+        <button class="mg-btn mg-btn-reject" onclick="rejectFromDetail()">Rechazar</button>
+        <button class="mg-btn mg-btn-approve" onclick="approveFromDetail()">Aprobar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -778,7 +784,7 @@ var LANGS = {
     hint_obra:'Añade fotos del estado de la obra', hint_mat:'Añade fotos del recibo o albarán de materiales',
     btn_anadir:'Añadir', btn_guardar:'Guardar registro', btn_clear:'Borrar todo',
     btn_aprobar:'Aprobar', btn_rechazar:'Rechazar', btn_compartir:'Compartir', btn_cancelar:'Cancelar',
-    reject_title:'Rechazar informe', reject_sub:'Explica al operario qué hay que corregir',
+    lbl_obligatorio:'• obligatorio', reject_title:'Rechazar informe', reject_sub:'Explica al operario qué hay que corregir',
     reject_ph:'Ej: Falta indicar el número de horas extra...', reject_hint:'El comentario es obligatorio',
     search_ph:'Buscar...',
     flt_clientes:'Todos los clientes', flt_obras:'Todas las obras', flt_operarios:'Todos los operarios',
@@ -805,7 +811,7 @@ var LANGS = {
     hint_obra:'Добавьте фото хода работ', hint_mat:'Добавьте фото чека или накладной',
     btn_anadir:'Добавить', btn_guardar:'Сохранить запись', btn_clear:'Очистить всё',
     btn_aprobar:'Одобрить', btn_rechazar:'Отклонить', btn_compartir:'Поделиться', btn_cancelar:'Отмена',
-    reject_title:'Отклонить отчёт', reject_sub:'Объясните рабочему что нужно исправить',
+    lbl_obligatorio:'• обязательно', reject_title:'Отклонить отчёт', reject_sub:'Объясните рабочему что нужно исправить',
     reject_ph:'Например: не указаны сверхурочные часы...', reject_hint:'Комментарий обязателен',
     search_ph:'Поиск...',
     flt_clientes:'Все клиенты', flt_obras:'Все объекты', flt_operarios:'Все рабочие',
@@ -832,7 +838,7 @@ var LANGS = {
     hint_obra:'Add photos of the work progress', hint_mat:'Add photos of the receipt or delivery note',
     btn_anadir:'Add', btn_guardar:'Save record', btn_clear:'Clear all',
     btn_aprobar:'Approve', btn_rechazar:'Reject', btn_compartir:'Share', btn_cancelar:'Cancel',
-    reject_title:'Reject report', reject_sub:'Explain to the worker what needs to be corrected',
+    lbl_obligatorio:'• required', reject_title:'Reject report', reject_sub:'Explain to the worker what needs to be corrected',
     reject_ph:'E.g.: Missing overtime hours...', reject_hint:'Comment is required',
     search_ph:'Search...',
     flt_clientes:'All clients', flt_obras:'All sites', flt_operarios:'All workers',
@@ -986,6 +992,9 @@ function applyLang() {
   setEl('flt-st-pending',  t('status_pending'));
   setEl('flt-st-approved', t('status_approved'));
   setEl('flt-st-rejected', t('status_rejected'));
+
+  // Обязательные поля
+  setEl('req-badge-obligatorio', t('lbl_obligatorio'));
 
   // Перестраиваем select'ы с новым placeholder
   if (typeof LISTS !== 'undefined' && LISTS.clientes) {
@@ -1447,6 +1456,15 @@ function saveRecord() {
     precio:     precio
   };
 
+  // Показываем успех немедленно (оптимистично)
+  var tempId = 'PT-' + Date.now();
+  payload.id = tempId;
+  payload.total = (horas * 28 + precio).toFixed(2);
+  btn.innerHTML = 'Guardar registro';
+  btn.style.pointerEvents = '';
+  showSuccess(payload);
+
+  // Отправляем на сервер в фоне
   fetch(WEBAPP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1454,40 +1472,25 @@ function saveRecord() {
   })
   .then(function(r){ return r.json(); })
   .then(function(result){
-    if (!result || result.status !== 'ok') {
-      throw new Error(result && result.message ? result.message : 'Error al guardar');
-    }
-    var reportId = result.id;
-    payload.id = reportId;
-    payload.total = (horas * 28 + precio).toFixed(2);
-
-    // Si hay fotos seleccionadas, las subimos en el mismo flujo (segunda llamada)
+    if (!result || result.status !== 'ok') return;
+    var realId = result.id;
+    // Если есть фото — загружаем в фоне с реальным ID
     if (photosObraSelected.length || photosMatSelected.length) {
-      btn.innerHTML = '<span class="spinner-inline"></span>Subiendo fotos...';
-      return fetch(WEBAPP_URL, {
+      fetch(WEBAPP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'uploadReportPhotos',
-          id: reportId,
+          id: realId,
           fecha: payload.fecha,
           operario: payload.operario,
           photosObra: photosObraSelected,
           photosMateriales: photosMatSelected
         })
-      }).then(function(r){ return r.json(); }).then(function(){ return payload; });
+      }).catch(function(){});
     }
-    return payload;
-  })
-  .then(function(finalPayload){
-    btn.innerHTML = 'Guardar registro';
-    btn.style.pointerEvents = '';
-    showSuccess(finalPayload);
   })
   .catch(function(err){
-    btn.innerHTML = 'Guardar registro';
-    btn.classList.add('ready');
-    btn.style.pointerEvents = '';
     showToast(err.message || 'Error de conexión', true);
   });
 }
@@ -1845,7 +1848,7 @@ function buildDetailHtml(r, showTotal) {
   var hasTrabajo = trabajoFields.length || trabajos || fotosObra || horas > 0;
   if (hasTrabajo) {
     html += '<div class="det-group">';
-    html += '<div class="det-group-title">Trabajo</div>';
+    html += '<div class="det-group-title">' + t('grp_trabajo') + '</div>';
     if (trabajoFields.length) {
       html += '<div class="det-group-grid">';
       trabajoFields.forEach(function(f){
@@ -1874,7 +1877,7 @@ function buildDetailHtml(r, showTotal) {
   var hasMateriales = compania || materiales || precio > 0 || fotosMat;
   if (hasMateriales) {
     html += '<div class="det-group">';
-    html += '<div class="det-group-title">Materiales</div>';
+    html += '<div class="det-group-title">' + t('grp_materiales') + '</div>';
     if (compania) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:2px">Compañía</b><span style="font-size:14px;font-weight:500;color:#000">'+compania+'</span></div>';
     if (materiales) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">Descripción</b><span style="font-size:13px;color:#000;line-height:1.5">'+materiales+'</span></div>';
     if (precio > 0) {
@@ -1889,9 +1892,9 @@ function buildDetailHtml(r, showTotal) {
 
   // ── TOTAL ── (только для менеджера/админа)
   if (showTotal && r.TOTAL && parseFloat(r.TOTAL) > 0) {
-    html += '<div style="text-align:center;margin:12px 0 4px;background:#f9f9f9;border-radius:12px;padding:16px 12px;border:.5px solid #e5e5ea">'
-      + '<div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8e8e93;margin-bottom:6px">Total</div>'
-      + '<div style="font-size:32px;font-weight:700;color:#000;letter-spacing:-.5px">'+parseFloat(r.TOTAL).toFixed(2)+' €</div>'
+    html += '<div style="text-align:center;margin:14px 0 4px;background:linear-gradient(135deg,#1a7f37,#34c759);border-radius:14px;padding:18px 12px">'
+      + '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.75);margin-bottom:6px">TOTAL</div>'
+      + '<div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:-.5px">'+parseFloat(r.TOTAL).toFixed(2)+' €</div>'
       + '</div>';
   }
 
@@ -2714,28 +2717,73 @@ function initAdminScreen() {
       return;
     }
 
-    // Кеша нет — показываем спиннер и ждём сервер
-    document.getElementById('screenPin').style.display = 'none';
-    document.getElementById('pinLoading').classList.add('show');
-    fetch(WEBAPP_URL + '?action=checkUser&codigo=' + encodeURIComponent(saved) + '&t=' + Date.now())
-      .then(function(r){ return r.json(); })
-      .then(function(result){
-        if (result && result.status === 'ok' && result.valid) {
-          currentUser = result;
-          saveUserCache(result);
-          routeToRoleScreen();
-        } else {
-          try { localStorage.removeItem('parte_user_pin'); } catch(e) {}
-          currentPin = '';
-          document.getElementById('screenPin').style.display = 'flex';
-          document.getElementById('pinLoading').classList.remove('show');
-        }
-      })
-      .catch(function(){
-        document.getElementById('screenPin').style.display = 'flex';
-        document.getElementById('pinLoading').classList.remove('show');
-      });
+    // Кеша нет — показываем PIN с уже заполненными точками и автоматически входим
+    currentPin = saved;
+    renderPinDots();
+    document.getElementById('screenPin').style.display = 'flex';
+    // Автоматически отправляем PIN
+    setTimeout(function() { submitPin(); }, 300);
   }
+})();
+
+/* ════════ SWIPE TO CLOSE — для всех модалов ════════ */
+(function() {
+  // Функции закрытия каждого модала
+  var modalClosers = {
+    'mgRejectModal':    function() { closeRejectModal(); },
+    'reportDetailModal':function() { closeReportDetail(); },
+    'mgDetailModal':    function() { closeManagerDetail(); }
+  };
+
+  Object.keys(modalClosers).forEach(function(overlayId) {
+    var overlay = document.getElementById(overlayId);
+    if (!overlay) return;
+    var modal = overlay.querySelector('.mg-modal');
+    if (!modal) return;
+
+    var startY = 0;
+    var isDragging = false;
+    var closeFn = modalClosers[overlayId];
+    // Внутренний скроллируемый контейнер (если модал разделён на scroll+footer)
+    var scrollEl = modal.querySelector('[style*="overflow-y:auto"]') || modal;
+
+    modal.addEventListener('touchstart', function(e) {
+      startY = e.touches[0].clientY;
+      isDragging = false;
+      modal.style.transition = 'none';
+    }, { passive: true });
+
+    modal.addEventListener('touchmove', function(e) {
+      var dy = e.touches[0].clientY - startY;
+      // Свайп вниз только если скролл в начале
+      if (dy > 0 && scrollEl.scrollTop <= 0) {
+        isDragging = true;
+        modal.style.transform = 'translateY(' + Math.max(0, dy) + 'px)';
+        var progress = Math.min(dy / 300, 1);
+        overlay.style.background = 'rgba(0,0,0,' + (0.35 * (1 - progress * 0.6)) + ')';
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    modal.addEventListener('touchend', function(e) {
+      var dy = e.changedTouches[0].clientY - startY;
+      modal.style.transition = 'transform .3s cubic-bezier(.32,1,.2,1)';
+      overlay.style.background = '';
+
+      if (isDragging && dy > 80) {
+        // Свайп достаточно большой — закрываем
+        modal.style.transform = 'translateY(100%)';
+        setTimeout(function() {
+          modal.style.transform = '';
+          closeFn();
+        }, 280);
+      } else {
+        // Возвращаем на место
+        modal.style.transform = 'translateY(0)';
+      }
+      isDragging = false;
+    }, { passive: true });
+  });
 })();
 </script>
 
