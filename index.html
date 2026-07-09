@@ -3641,17 +3641,26 @@ document.addEventListener('visibilitychange', function() {
 
 <script>
 if ('serviceWorker' in navigator) {
-  // Сначала удаляем все старые SW
+  // Limpiamos registros antiguos/obsoletos de versiones previas de la app
   navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(reg) { reg.unregister(); });
-  });
-  // Регистрируем новый
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js?v=5').then(function(reg) {
-      reg.update();
-    }).catch(function(e) {
-      console.log('SW error:', e);
+    regs.forEach(function(reg) {
+      // No tocamos el registro que OneSignal está gestionando (mismo sw.js) —
+      // solo eliminamos registros huérfanos con otro scriptURL.
+      if (reg.active && reg.active.scriptURL.indexOf('sw.js') === -1) {
+        reg.unregister();
+      }
     });
+  });
+  // El registro del Service Worker (sw.js) lo gestiona ÚNICAMENTE el SDK de
+  // OneSignal (ver serviceWorkerPath en la config de arriba) — registrar el
+  // mismo archivo también manualmente aquí provocaba un conflicto de doble
+  // registro que impedía crear la suscripción push real en iOS Safari.
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      navigator.serviceWorker.getRegistration().then(function(reg) {
+        if (reg) reg.update();
+      }).catch(function(){});
+    }, 3000);
   });
 }
 </script>
