@@ -1,20 +1,5 @@
-// v5 — kill all caches, always network first + integración OneSignal push
+// sw.js — gestionado exclusivamente por el SDK de OneSignal.
+// No añadimos aquí ninguna lógica propia (caché, fetch, install/activate)
+// para evitar cualquier conflicto con el ciclo de vida del Service Worker
+// que OneSignal necesita para crear la suscripción push real en el dispositivo.
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js");
-
-const CACHE_NAME = 'parte-v5';
-
-self.addEventListener('install', function(e) {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', function(e) {
-  e.waitUntil(
-    caches.keys().then(function(keys) {
-      return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-    }).then(function() { return self.clients.claim(); })
-  );
-});
-
-self.addEventListener('fetch', function(e) {
-  e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); }));
-});
