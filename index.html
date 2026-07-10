@@ -179,16 +179,17 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);pad
 .err-field .req-dot{animation:pulse 1.2s ease infinite}
 
 /* PHOTO */
-.photo-row{padding:16px 14px 20px;border-bottom:none}
+.photo-row{padding:14px;border-bottom:none;background:#f9f9fb;border-radius:14px;margin:8px 14px 14px}
 .photo-row:last-child{border-bottom:none}
-.photo-row-head{display:flex;align-items:center;margin-bottom:3px}
-.photo-hint{font-size:12px;color:#8e8e93;margin-bottom:14px}
-.photo-input-btn{display:inline-flex;align-items:center;gap:8px;background:#007AFF;border:none;border-radius:22px;padding:11px 22px 11px 16px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;touch-action:manipulation;margin-left:auto;transition:opacity .12s;box-shadow:0 3px 10px rgba(0,122,255,.3)}
+.photo-row-head{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.photo-row-head .rlabel{font-size:15px;font-weight:600}
+.photo-hint{font-size:12.5px;color:#8e8e93;margin-bottom:14px;line-height:1.4}
+.photo-input-btn{display:inline-flex;align-items:center;gap:7px;background:#007AFF;border:none;border-radius:20px;padding:9px 18px 9px 14px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;touch-action:manipulation;margin-left:auto;flex-shrink:0;transition:opacity .12s;box-shadow:0 3px 10px rgba(0,122,255,.3)}
 .photo-input-btn:active{opacity:.8}
-.photo-input-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
+.photo-input-btn svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round}
 .photo-input-btn.hidden{display:none}
 .photo-thumbs{display:flex;flex-wrap:wrap;gap:8px}
-.photo-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:.5px solid #e5e5ea}
+.photo-thumb{position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;border:.5px solid #e5e5ea;box-shadow:0 2px 6px rgba(0,0,0,.08)}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;cursor:pointer}
 .photo-thumb .rm svg{width:10px;height:10px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
@@ -260,10 +261,15 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 
 /* MIS INFORMES */
 .op-tabs{display:none}
-.mi-card{background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 8px;padding:14px;border-left:3px solid #c7c7cc;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+/* ═══ TARJETAS DE INFORME — estilo unificado en las 3 pantallas ═══
+   Base: tarjeta blanca con sombra neutra, sin bordes de color. El estado
+   se señaliza SOLO con el color/intensidad de la sombra: azul = nuevo/no
+   visto, rojo = rechazado (más limpio y consistente en toda la app). */
+.card-shadow-new{box-shadow:0 4px 18px rgba(0,122,255,.30) !important}
+.card-shadow-rejected{box-shadow:0 4px 18px rgba(255,59,48,.30) !important}
+
+.mi-card{background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 8px;padding:14px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
 .mi-card:active{background:#f9f9f9}
-.mi-card.st-pending{border-left-color:#007AFF}
-.mi-card.st-rejected{border-left-color:#ff3b30}
 .mi-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
 .mi-id{font-size:11px;font-weight:600;color:#8e8e93}
 .mi-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
@@ -277,9 +283,8 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 .mi-empty{padding:48px 24px;text-align:center;color:#8e8e93;font-size:14px}
 
 /* MANAGER CARDS */
-.mg-card{position:relative;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 10px;padding:14px;border-left:3px solid #007AFF;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.mg-card{position:relative;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 10px;padding:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 10px rgba(0,0,0,.07)}
 .mg-card:active{background:#f9f9f9}
-.mg-card-new{background:#fff;box-shadow:0 4px 16px rgba(0,122,255,.28);border-color:transparent}
 .mg-new-label{font-size:9px;font-weight:800;color:#ff9500;letter-spacing:.4px;text-transform:uppercase;flex-shrink:0}
 .mg-operario{font-size:11px;color:#8e8e93;margin-bottom:10px;margin-top:2px;font-weight:500}
 .mg-cliente{font-size:12px;color:#8e8e93;margin-bottom:0}
@@ -320,11 +325,8 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 .mg-modal-confirm:disabled{opacity:.35;cursor:not-allowed}
 
 /* ADMIN CARDS */
-.ad-card{position:relative;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 8px;padding:14px 14px;cursor:pointer;touch-action:manipulation;border-left:3px solid #c7c7cc;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.ad-card{position:relative;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 8px;padding:14px 14px;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 10px rgba(0,0,0,.07)}
 .ad-card:active{background:#f9f9f9}
-.ad-card.st-pending{border-left-color:#007AFF}
-.ad-card.st-approved{border-left-color:#34c759}
-.ad-card.st-rejected{border-left-color:#ff3b30}
 .ad-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-bottom:6px}
 .ad-status-badge.st-pending{background:#e5f0ff;color:#007AFF}
 .ad-status-badge.st-approved{background:#e5f9ec;color:#1c7c35}
@@ -700,7 +702,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
       </div>
       <div class="photo-row">
         <div class="photo-row-head">
-          <span class="rlabel" id="lbl-foto-obra" style="font-size:13px">Fotos de obra</span>
+          <span class="rlabel" id="lbl-foto-obra">Fotos de obra</span>
           <label class="photo-input-btn" id="addBtnObra">
             <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
             Añadir
@@ -744,7 +746,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
       </div>
       <div class="photo-row">
         <div class="photo-row-head">
-          <span class="rlabel" id="lbl-foto-mat" style="font-size:13px">Materiales / recibo</span>
+          <span class="rlabel" id="lbl-foto-mat">Materiales / recibo</span>
           <label class="photo-input-btn" id="addBtnMat">
             <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
             Añadir
@@ -817,8 +819,15 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 <div class="mg-modal-overlay" id="reportDetailModal" onclick="if(event.target===this)closeReportDetail()">
   <div class="mg-modal" style="max-height:88vh;overflow-y:auto">
     <div class="modal-handle" style="width:36px;height:4px;background:#c7c7cc;border-radius:2px;margin:0 auto 16px"></div>
-    <div class="mg-modal-title" id="rdTitle">—</div>
-    <div class="mg-modal-sub" id="rdSub">—</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div style="min-width:0">
+        <div class="mg-modal-title" id="rdTitle">—</div>
+        <div class="mg-modal-sub" id="rdSub">—</div>
+      </div>
+      <button type="button" onclick="closeReportDetail()" aria-label="Cerrar" style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+        <i class="ti ti-x" style="font-size:16px;color:#000"></i>
+      </button>
+    </div>
     <div id="rdBody" style="margin:14px 0"></div>
     <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
       <i class="ti ti-send" style="font-size:16px"></i> Compartir
@@ -832,8 +841,15 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
     <!-- Скроллируемый контент -->
     <div style="overflow-y:auto;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch">
       <div class="modal-handle" style="width:36px;height:4px;background:#c7c7cc;border-radius:2px;margin:0 auto 16px"></div>
-      <div class="mg-modal-title" id="mgdTitle">—</div>
-      <div class="mg-modal-sub" id="mgdSub">—</div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="min-width:0">
+          <div class="mg-modal-title" id="mgdTitle">—</div>
+          <div class="mg-modal-sub" id="mgdSub">—</div>
+        </div>
+        <button type="button" onclick="closeManagerDetail()" aria-label="Cerrar" style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+          <i class="ti ti-x" style="font-size:16px;color:#000"></i>
+        </button>
+      </div>
       <div id="mgdBody" style="margin:14px 0"></div>
       <!-- Compartir — после Total, в контенте -->
       <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="shareManagerDetail()">
@@ -1948,10 +1964,16 @@ function renderMyReports(reports) {
     return;
   }
 
+  // Lo más reciente arriba según la última acción (misma lógica que
+  // manager/admin — ver comentario en renderManagerQueue).
+  visible.sort(function(a, b) {
+    return new Date(b.TIMESTAMP||0) - new Date(a.TIMESTAMP||0);
+  });
+
   listEl.innerHTML = visible.map(function(r){
     var statusLabel = r.STATUS === 'pending' ? t('status_pending') : t('status_rejected');
     var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
-    var html = '<div class="mi-card st-'+r.STATUS+'" onclick="openReportDetail(\''+r.ID+'\')">';
+    var html = '<div class="mi-card st-'+r.STATUS+(r.STATUS==='rejected'?' card-shadow-rejected':'')+'" onclick="openReportDetail(\''+r.ID+'\')">';
     // Единый стиль карточки: дата + статус
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
     html += '<span style="font-size:11px;color:#8e8e93">'+fecha+'</span>';
@@ -2097,7 +2119,37 @@ function submitEditReport() {
     if (result && result.status === 'ok') {
       showToast('Informe reenviado para aprobación');
       closeEditReportModal();
-      myReportsLoaded = false; // fuerza recarga fresca de la lista
+
+      // Actualización optimista INMEDIATA: parcheamos localmente el
+      // informe en caché con el nuevo estado (pending, sin comentario,
+      // timestamp fresco) y repintamos ya — así la tarjeta nunca se queda
+      // "colgada" en modo edición ni un instante, sin esperar a la red.
+      var nowIso = new Date().toISOString();
+      var patched = {
+        ID: erCurrentReport.ID, STATUS: 'pending',
+        FECHA: document.getElementById('erFecha').value,
+        CLIENTE: document.getElementById('erCliente').value,
+        OBRA: document.getElementById('erObra').value,
+        OPERARIO: erCurrentReport.OPERARIO,
+        AYUDANTE: document.getElementById('erAyudante').value,
+        VEHICULO: document.getElementById('erVehiculo').value,
+        'TRABAJOS REALIZADOS': document.getElementById('erTrabajos').value,
+        'TIPO DE TRABAJO': document.getElementById('erTipo').value,
+        HORAS: horas,
+        COMPAÑÍA: document.getElementById('erCompania').value,
+        'MATERIALES UTILIZADOS': document.getElementById('erMateriales').value,
+        PRECIO: precio,
+        'FOTOS DE OBRA': erCurrentReport['FOTOS DE OBRA'],
+        'FOTO MATERIALES / RECIBO': erCurrentReport['FOTO MATERIALES / RECIBO'],
+        TIMESTAMP: nowIso,
+        COMENTARIO_MANAGER: '', FECHA_DECISION: '', MANAGER_NOMBRE: ''
+      };
+      var idx = myReportsCache.findIndex(function(r){ return r.ID === erCurrentReport.ID; });
+      if (idx !== -1) myReportsCache[idx] = patched; else myReportsCache.unshift(patched);
+      renderMyReports(myReportsCache);
+      dataCacheSet('myReports', myReportsCache);
+
+      myReportsLoaded = false; // igualmente forzamos una recarga fresca en segundo plano
       loadMyReports();
     } else {
       showToast(result && result.message ? result.message : 'Error al reenviar', true);
@@ -2290,19 +2342,19 @@ function renderManagerQueue(reports) {
   });
   addNotificationsBatch(pendingBellItems);
 
-  // Новые сверху: сначала непросмотренные, потом просмотренные
+  // Lo más reciente arriba, según la última acción real (TIMESTAMP: se
+  // actualiza tanto al crear como al reenviar tras un rechazo) — NO según
+  // FECHA (que es la fecha del trabajo realizado, un campo editable por
+  // el trabajador y no relacionado con cuándo se subió/reenvió). Misma
+  // lógica que admin, para que el orden sea consistente en toda la app.
   reports.sort(function(a, b) {
-    var aNew = seen.indexOf(seenKey(a)) === -1 ? 0 : 1;
-    var bNew = seen.indexOf(seenKey(b)) === -1 ? 0 : 1;
-    if (aNew !== bNew) return aNew - bNew;
-    // внутри группы — новые по дате сверху
-    return new Date(b.FECHA||0) - new Date(a.FECHA||0);
+    return new Date(b.TIMESTAMP||0) - new Date(a.TIMESTAMP||0);
   });
 
   listEl.innerHTML = reports.map(function(r){
     var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
     var isNew = seen.indexOf(seenKey(r)) === -1;
-    var html = '<div class="mg-card'+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
+    var html = '<div class="mg-card'+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
     // Строка 1: дата слева, NUEVO справа
     html += '<div class="mg-head">';
     html += '<span class="mg-id">'+fecha+'</span>';
@@ -2403,7 +2455,7 @@ function openManagerDetail(id) {
   // После открытия убираем подсветку "новое" с карточки в ленте
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
   if (card) {
-    card.classList.remove('mg-card-new');
+    card.classList.remove('card-shadow-new');
     var label = card.querySelector('.mg-new-label');
     if (label) label.remove();
   }
@@ -2895,7 +2947,8 @@ function renderAdminJournal() {
       var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       var st = r.STATUS || 'pending';
       var isNew = seen.indexOf(seenKey(r)) === -1;
-      html += '<div class="ad-card st-'+st+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
+      var shadowCls = st === 'rejected' ? ' card-shadow-rejected' : (isNew ? ' card-shadow-new' : '');
+      html += '<div class="ad-card st-'+st+shadowCls+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
       html += '<span style="font-size:12px;color:rgba(40,60,120,0.55);font-weight:600">'+fecha+'</span>';
       var rightEl = isNew
@@ -2976,7 +3029,7 @@ function openAdminDetail(id) {
   // Убираем метку NUEVO с карточки без перерисовки всего списка
   var card = document.querySelector('.ad-card[onclick*="\''+id+'\'"]');
   if (card) {
-    card.classList.remove('mg-card-new');
+    card.classList.remove('card-shadow-new');
     var newLabel = card.querySelector('span[style*="e0433a"]');
     if (newLabel && newLabel.textContent.includes('NUEVO')) {
       // Заменяем NUEVO на статус-бейдж
@@ -3598,9 +3651,9 @@ function openNotifModal() {
   if (changed) { saveNotifLog(log); updateBellUI(); }
   // Quitamos también el resaltado azul de las tarjetas correspondientes
   reportIdsToMark.forEach(function(rid){ markAsSeen(rid); });
-  document.querySelectorAll('.mg-card-new, .ad-card.mg-card-new').forEach(function(card){
+  document.querySelectorAll('.card-shadow-new').forEach(function(card){
     var cardId = card.getAttribute('data-id');
-    if (cardId && reportIdsToMark.indexOf(cardId) !== -1) card.classList.remove('mg-card-new');
+    if (cardId && reportIdsToMark.indexOf(cardId) !== -1) card.classList.remove('card-shadow-new');
   });
 }
 
@@ -3702,6 +3755,10 @@ function renderPhotoGallery(photos) {
   document.getElementById('pgThumbStrip').style.opacity = '1';
   document.getElementById('pgTopBar').style.pointerEvents = 'auto';
   document.getElementById('pgBottomBar').style.pointerEvents = 'auto';
+  // Salvaguarda contra la "franja blanca": si el viewport dinámico de Safari
+  // deja un hueco de un frame por el cambio de barra de herramientas, que
+  // se vea negro (como la galería) y no el blanco de la página de fondo.
+  document.documentElement.style.background = '#000';
 
   bindPgGestures();
 }
@@ -3738,6 +3795,7 @@ function updatePgCounter() {
 
 function closePhotoGallery() {
   document.getElementById('photoGalleryModal').style.display = 'none';
+  document.documentElement.style.background = '';
   var track = document.getElementById('pgTrack');
   track.innerHTML = '';
   track.style.transform = '';
@@ -4157,87 +4215,53 @@ document.addEventListener('visibilitychange', function() {
     });
 })();
 
-/* ═══ CIERRE DE MODAL — patrón simple y estándar (como cualquier app
-   moderna): el modal abre siempre al mismo tamaño, se cierra arrastrando
-   hacia abajo desde la ZONA SUPERIOR (la franja de la manija) o tocando
-   fuera. El scroll del contenido es completamente independiente — nunca
-   se intercepta, así que nunca "engancha" ni compite con el gesto de
-   cierre. Sin redimensionado en vivo, sin pantalla completa por gesto:
-   esa complejidad era la causa de los tirones/glitches reportados. */
+/* ═══ MODALES — patrón estándar de apps modernas ═══
+   Sin gestos de arrastre propios (causaban tirones y "robaban" el scroll
+   al fondo). Cierre SOLO por: botón X explícito, botón Cancelar, o tocar
+   fuera del modal. El contenido desplaza con el scroll nativo del propio
+   navegador, sin ningún listener interceptando el touch — por eso nunca
+   se "engancha" ni compite con nada.
+   Mientras un modal está abierto, se bloquea el scroll del fondo (con la
+   técnica position:fixed en body) para que la página de detrás nunca se
+   mueva ni dispare su propio hide-on-scroll del navbar superior. */
 (function() {
-  var modalClosers = {
-    'mgRejectModal':     function() { closeRejectModal(); },
-    'reportDetailModal': function() { closeReportDetail(); },
-    'mgDetailModal':     function() { closeManagerDetail(); },
-    'editReportModal':   function() { closeEditReportModal(); }
-  };
+  var overlayIds = ['mgRejectModal', 'reportDetailModal', 'mgDetailModal', 'editReportModal'];
+  var savedScrollY = 0;
+  var openCount = 0;
 
-  var CLOSE_DISTANCE = 70;   // px de arrastre para considerar "cerrar"
-  var CLOSE_VELOCITY = 0.5;  // px/ms — swipe rápido también cierra aunque no llegue a CLOSE_DISTANCE
+  function lockBodyScroll() {
+    if (openCount === 0) {
+      savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + savedScrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+    }
+    openCount++;
+  }
+  function unlockBodyScroll() {
+    openCount = Math.max(0, openCount - 1);
+    if (openCount === 0) {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      window.scrollTo(0, savedScrollY);
+    }
+  }
 
-  Object.keys(modalClosers).forEach(function(overlayId) {
+  overlayIds.forEach(function(overlayId) {
     var overlay = document.getElementById(overlayId);
     if (!overlay) return;
-    var modal = overlay.querySelector('.mg-modal');
-    if (!modal) return;
-    var handle = modal.querySelector('.modal-handle');
-    var closeFn = modalClosers[overlayId];
-
-    // El área de arrastre es SOLO la manija (y una pequeña franja alrededor
-    // suya, no el modal completo) — así el contenido nunca ve estos eventos
-    // y su scroll nativo funciona exactamente igual que en cualquier lista normal.
-    var dragHandle = handle || modal;
-    var startY = 0, startTime = 0, dragging = false;
-
-    dragHandle.addEventListener('touchstart', function(e) {
-      // Si no hay manija dedicada, solo iniciamos el gesto si el toque
-      // empieza en los primeros ~24px del modal (la franja visual de la
-      // manija), para no robarle el scroll al resto del contenido.
-      if (!handle) {
-        var rect = modal.getBoundingClientRect();
-        if (e.touches[0].clientY - rect.top > 24) return;
-      }
-      startY = e.touches[0].clientY;
-      startTime = Date.now();
-      dragging = true;
-      modal.style.transition = 'none';
-    }, { passive: true });
-
-    dragHandle.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      var dy = e.touches[0].clientY - startY;
-      if (dy > 0) {
-        modal.style.transform = 'translateY(' + dy + 'px)';
-      }
-    }, { passive: true });
-
-    dragHandle.addEventListener('touchend', function(e) {
-      if (!dragging) return;
-      dragging = false;
-      var dy = e.changedTouches[0].clientY - startY;
-      var dt = Math.max(Date.now() - startTime, 1);
-      var velocity = dy / dt;
-      modal.style.transition = 'transform .25s cubic-bezier(.32,1,.2,1)';
-
-      if (dy > CLOSE_DISTANCE || velocity > CLOSE_VELOCITY) {
-        modal.style.transform = 'translateY(100%)';
-        setTimeout(function() { modal.style.transform = ''; closeFn(); }, 220);
-      } else {
-        modal.style.transform = '';
-      }
-    }, { passive: true });
-
-    // Reinicia cualquier resto de transform al reabrir (nunca hereda
-    // posición de un cierre anterior).
     new MutationObserver(function(muts) {
       muts.forEach(function(m) {
-        if (m.attributeName === 'class' && overlay.classList.contains('show')) {
-          modal.style.transition = 'none';
-          modal.style.transform = '';
-          requestAnimationFrame(function() { modal.style.transition = ''; });
-        }
+        if (m.attributeName !== 'class') return;
+        var isOpen = overlay.classList.contains('show');
+        var wasOpen = m.oldValue ? m.oldValue.indexOf('show') !== -1 : false;
+        if (isOpen && !wasOpen) lockBodyScroll();
+        else if (!isOpen && wasOpen) unlockBodyScroll();
       });
-    }).observe(overlay, { attributes: true });
+    }).observe(overlay, { attributes: true, attributeOldValue: true, attributeFilter: ['class'] });
   });
 })();
 </script>
