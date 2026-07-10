@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AEDIS">
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
@@ -2092,11 +2092,7 @@ function submitEditReport() {
 
   var horas  = parseInt(document.getElementById('erHorasVal').textContent) || 0;
   var precio = parseFloat(document.getElementById('erPrecio').value) || 0;
-
-  fetch(WEBAPP_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
+  var payload = {
       action: 'resubmit',
       id: erCurrentReport.ID,
       fecha: document.getElementById('erFecha').value,
@@ -2110,9 +2106,30 @@ function submitEditReport() {
       compania: document.getElementById('erCompania').value,
       materiales: document.getElementById('erMateriales').value,
       precio: precio
+  };
+
+  // Un reintento automático ante fallo de red: Apps Script a veces tarda
+  // en "despertar" (cold start) y la primera petición expira sin llegar
+  // a escribir nada — reintentar una vez evita la mayoría de los falsos
+  // "Error de conexión" sin que el usuario tenga que hacer nada.
+  function attempt(retriesLeft) {
+    return fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
     })
-  })
-  .then(function(r){ return r.json(); })
+    .then(function(r){ return r.json(); })
+    .catch(function(err) {
+      if (retriesLeft > 0) {
+        return new Promise(function(resolve){ setTimeout(resolve, 1200); }).then(function(){
+          return attempt(retriesLeft - 1);
+        });
+      }
+      throw err;
+    });
+  }
+
+  attempt(1)
   .then(function(result){
     btn.style.pointerEvents = '';
     btn.textContent = originalText;
@@ -2158,7 +2175,9 @@ function submitEditReport() {
   .catch(function(){
     btn.style.pointerEvents = '';
     btn.textContent = originalText;
-    showToast('Error de conexión', true);
+    // El modal NO se cierra: la edición del trabajador sigue ahí, puede
+    // pulsar de nuevo sin perder nada de lo que escribió.
+    showToast('No se pudo enviar — revisa tu conexión e inténtalo de nuevo', true);
   });
 }
 
