@@ -118,7 +118,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);pad
 
 /* CARDS */
 .card{background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07)}
-.row{display:flex;align-items:center;padding:0 14px;min-height:50px;border-bottom:.5px solid #f2f2f7}
+.row{display:flex;align-items:center;padding:6px 14px;min-height:64px;border-bottom:.5px solid #f2f2f7}
 .row:last-child{border-bottom:none}
 .row:active{background:#f9f9f9}
 
@@ -145,7 +145,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);pad
 .rta::placeholder{color:#c7c7cc}
 
 /* MODE TOGGLE */
-.mode-header{display:flex;align-items:center;padding:0 14px;min-height:50px;border-bottom:.5px solid #f2f2f7}
+.mode-header{display:flex;align-items:center;padding:6px 14px;min-height:64px;border-bottom:.5px solid #f2f2f7}
 .mode-toggle{display:flex;background:#f2f2f7;border-radius:8px;padding:2px;gap:1px;margin-left:auto;border:none}
 .ct{font-size:12px;font-weight:500;padding:5px 12px;border-radius:7px;border:none;cursor:pointer;background:transparent;color:#8e8e93;font-family:inherit;touch-action:manipulation}
 .ct.on{background:#007AFF;color:#fff;box-shadow:0 2px 6px rgba(0,122,255,.35)}
@@ -347,7 +347,7 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
 /* TABBAR — cápsula flotante estilo Uber/Ride, con acento azul */
 .bottom-tabbar{
   position:fixed;left:0;right:0;
-  bottom:calc(env(safe-area-inset-bottom,0px) + 2px);
+  bottom:env(safe-area-inset-bottom,0px);
   z-index:200;
   display:flex;
   justify-content:center;
@@ -678,13 +678,13 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
       <div class="photo-row">
         <div class="photo-row-head">
           <span class="rlabel" id="lbl-foto-obra" style="font-size:13px">Fotos de obra</span>
+          <label class="photo-input-btn" id="addBtnObra">
+            <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
+            Añadir
+            <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosObra" onchange="handlePhotoSelect(this,'obra')">
+          </label>
         </div>
         <div class="photo-hint" id="hint-obra">Añade fotos del estado de la obra</div>
-        <label class="photo-input-btn" id="addBtnObra" style="display:flex;margin:0 auto 4px;width:fit-content">
-          <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
-          Añadir
-          <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosObra" onchange="handlePhotoSelect(this,'obra')">
-        </label>
         <div class="photo-thumbs" id="thumbsObra"></div>
       </div>
     </div>
@@ -722,13 +722,13 @@ body.pin-mode{padding-top:0 !important;overflow:hidden}
       <div class="photo-row">
         <div class="photo-row-head">
           <span class="rlabel" id="lbl-foto-mat" style="font-size:13px">Materiales / recibo</span>
+          <label class="photo-input-btn" id="addBtnMat">
+            <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
+            Añadir
+            <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosMat" onchange="handlePhotoSelect(this,'materiales')">
+          </label>
         </div>
         <div class="photo-hint" id="hint-mat">Añade fotos del recibo o albarán de materiales</div>
-        <label class="photo-input-btn" id="addBtnMat" style="display:flex;margin:0 auto 4px;width:fit-content">
-          <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
-          Añadir
-          <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosMat" onchange="handlePhotoSelect(this,'materiales')">
-        </label>
         <div class="photo-thumbs" id="thumbsMat"></div>
       </div>
     </div>
@@ -1330,8 +1330,18 @@ function markVisibleQueueAsSeen() {
   // se considera "visto" por el usuario, aunque no haya abierto el detalle.
   document.querySelectorAll('.mg-card[data-id], .ad-card[data-id]').forEach(function(card) {
     var id = card.getAttribute('data-id');
-    if (id) markAsSeen(id);
+    var ts = card.getAttribute('data-ts') || '';
+    if (id) markAsSeen(id + '@' + ts);
   });
+  // Recalculamos el badge del icono AL INSTANTE con los datos que ya
+  // tenemos en memoria, sin esperar al próximo sondeo (hasta 10s de retraso).
+  if (currentUser && currentUser.rol === 'manager') {
+    var seenNow = getSeenIds();
+    updateAppIconBadge(mgReportsCache.filter(function(r){ return seenNow.indexOf(seenKey(r)) === -1; }).length);
+  } else if (currentUser && currentUser.rol === 'admin') {
+    var seenNowAd = getSeenIds();
+    updateAppIconBadge(adAllRecords.filter(function(r){ return r.STATUS === 'pending' && seenNowAd.indexOf(seenKey(r)) === -1; }).length);
+  }
 }
 
 function changeUser() {
@@ -1871,15 +1881,28 @@ function clearForm(skip) {
 var editingReportId = null;
 
 function loadMyReports() {
-  document.getElementById('miList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
+  var cached = dataCacheGet('myReports');
+  if (cached) {
+    // Datos instantáneos desde caché — sin spinner, sin pantalla en blanco.
+    renderMyReports(cached);
+    myReportsLoaded = true;
+  } else {
+    document.getElementById('miList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
+  }
   fetch(WEBAPP_URL + '?action=getMyReports&operario=' + encodeURIComponent(currentUser.nombre) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
       myReportsLoaded = true;
-      if (!result || result.status !== 'ok') { document.getElementById('miList').innerHTML = '<div class="mi-empty">Error al cargar</div>'; return; }
+      if (!result || result.status !== 'ok') {
+        if (!cached) document.getElementById('miList').innerHTML = '<div class="mi-empty">Error al cargar</div>';
+        return;
+      }
+      dataCacheSet('myReports', result.data || []);
       renderMyReports(result.data || []);
     })
-    .catch(function(){ document.getElementById('miList').innerHTML = '<div class="mi-empty">Error de conexión</div>'; });
+    .catch(function(){
+      if (!cached) document.getElementById('miList').innerHTML = '<div class="mi-empty">Error de conexión</div>';
+    });
 }
 
 var myReportsCache = [];
@@ -1920,9 +1943,10 @@ function renderMyReports(reports) {
     if (r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
       html += '<div class="mi-comment" style="margin-top:8px"><b>Comentario</b>'+r.COMENTARIO_MANAGER+'</div>';
       html += '<button class="mi-edit-btn" style="margin-top:8px" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">Editar y reenviar</button>';
-    } else if (r.STATUS === 'pending') {
-      html += '<button class="mi-edit-btn" style="margin-top:8px;background:#f2f2f7;color:#007AFF;border:.5px solid #d1d1d6" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">Editar</button>';
     }
+    // STATUS 'pending' → sin botón de editar. Mientras el manager no lo
+    // rechace, el informe queda bloqueado en solo-lectura (evita que el
+    // trabajador siga re-editando algo que ya está esperando revisión).
     html += '</div>';
     return html;
   }).join('');
@@ -2128,6 +2152,33 @@ var mgReportsCache = [];
 var mgPendingLoaded = false;
 var mgPendingSyncing = false;
 
+/* ═══ CACHÉ "STALE-WHILE-REVALIDATE" ═══
+   Al entrar en una pantalla mostramos INMEDIATAMENTE los últimos datos
+   guardados (sin spinner, sin pantalla en blanco) y, en paralelo, pedimos
+   los datos frescos al servidor; cuando llegan, se vuelve a renderizar en
+   silencio. Así la app se siente instantánea (como Tinkoff) en vez de
+   mostrar "Cargando..." cada vez que se cambia de pestaña o se reabre. */
+function dataCacheGet(key) {
+  if (!currentPin) return null;
+  try {
+    var raw = localStorage.getItem('parte_cache_' + currentPin + '_' + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+function dataCacheSet(key, data) {
+  if (!currentPin) return;
+  try { localStorage.setItem('parte_cache_' + currentPin + '_' + key, JSON.stringify(data)); } catch(e) {}
+}
+
+// Clave compuesta ID+TIMESTAMP para el tracking de "visto": si el trabajador
+// edita y reenvía un informe rechazado, el TIMESTAMP cambia en el backend
+// (ver resubmitRecord) y por tanto esta clave es NUEVA — así el manager
+// vuelve a ver el informe como "NUEVO" aunque ya hubiera visto (y rechazado)
+// la versión anterior con el mismo ID.
+function seenKey(r) {
+  return r.ID + '@' + (r.TIMESTAMP || '');
+}
+
 function getSeenIds() {
   var key = 'parte_seen_' + currentPin;
   try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
@@ -2153,7 +2204,13 @@ function markAsSeen(id) {
 
 function loadManagerQueue() {
   if (!mgPendingLoaded) {
-    document.getElementById('mgList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
+    var cached = dataCacheGet('mgPending');
+    if (cached) {
+      renderManagerQueue(cached);
+      mgPendingLoaded = true; // ya hay algo en pantalla — el fetch de abajo actualiza en silencio
+    } else {
+      document.getElementById('mgList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
+    }
   }
   return fetch(WEBAPP_URL + '?action=getPending&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
@@ -2165,6 +2222,7 @@ function loadManagerQueue() {
           document.getElementById('mgList').innerHTML = '<div class="mi-empty">Error al cargar las solicitudes</div>';
         return;
       }
+      dataCacheSet('mgPending', result.data || []);
       renderManagerQueue(result.data || []);
     })
     .catch(function(){
@@ -2199,18 +2257,20 @@ function renderManagerQueue(reports) {
 
   // Sincroniza el centro de notificaciones (campana): todo informe que
   // aparece como "NUEVO" en la lista debe existir también como entrada
-  // en la campana — addNotification es idempotente, así que es seguro
-  // llamarlo aquí en cada render (no duplica ni repite sonido/toast).
+  // en la campana. Versión por lotes — una sola operación de I/O en vez
+  // de una por cada informe no visto (evita jank en el render/scroll).
+  var pendingBellItems = [];
   reports.forEach(function(r) {
-    if (seen.indexOf(r.ID) === -1) {
-      addNotification(r.ID + '_new_mg', 'Nuevo informe', r.ID + ' · ' + r.OPERARIO);
+    if (seen.indexOf(seenKey(r)) === -1) {
+      pendingBellItems.push({ id: r.ID + '_new_mg', title: 'Nuevo informe', body: r.ID + ' · ' + r.OPERARIO });
     }
   });
+  addNotificationsBatch(pendingBellItems);
 
   // Новые сверху: сначала непросмотренные, потом просмотренные
   reports.sort(function(a, b) {
-    var aNew = seen.indexOf(a.ID) === -1 ? 0 : 1;
-    var bNew = seen.indexOf(b.ID) === -1 ? 0 : 1;
+    var aNew = seen.indexOf(seenKey(a)) === -1 ? 0 : 1;
+    var bNew = seen.indexOf(seenKey(b)) === -1 ? 0 : 1;
     if (aNew !== bNew) return aNew - bNew;
     // внутри группы — новые по дате сверху
     return new Date(b.FECHA||0) - new Date(a.FECHA||0);
@@ -2218,8 +2278,8 @@ function renderManagerQueue(reports) {
 
   listEl.innerHTML = reports.map(function(r){
     var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
-    var isNew = seen.indexOf(r.ID) === -1;
-    var html = '<div class="mg-card'+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" onclick="openManagerDetail(\''+r.ID+'\')">';
+    var isNew = seen.indexOf(seenKey(r)) === -1;
+    var html = '<div class="mg-card'+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
     // Строка 1: дата слева, NUEVO справа
     html += '<div class="mg-head">';
     html += '<span class="mg-id">'+fecha+'</span>';
@@ -2315,7 +2375,7 @@ function openManagerDetail(id) {
   var r = mgReportsCache.find(function(x){ return x.ID === id; });
   if (!r) return;
   mgDetailId = id;
-  markAsSeen(id);
+  markAsSeen(seenKey(r));
 
   // После открытия убираем подсветку "новое" с карточки в ленте
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
@@ -2575,14 +2635,22 @@ var adInformeRecords = [];
 var adDetailCurrentId = null;
 
 function loadAdminData() {
-  document.getElementById('adList').innerHTML = '<div class="mi-empty"><span class="spinner-inline" style="border-top-color:#1a3080;border-color:rgba(20,40,100,0.2)"></span> Cargando...</div>';
+  var cached = dataCacheGet('adminStats');
+  if (cached) {
+    adAllRecords = capReports(cached);
+    buildAdminDatalistOptions();
+    applyAdminFilters();
+  } else {
+    document.getElementById('adList').innerHTML = '<div class="mi-empty"><span class="spinner-inline" style="border-top-color:#1a3080;border-color:rgba(20,40,100,0.2)"></span> Cargando...</div>';
+  }
   return fetch(WEBAPP_URL + '?action=getAdminStats&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
       if (!result || result.status !== 'ok') {
-        document.getElementById('adList').innerHTML = '<div class="mi-empty">Error al cargar</div>';
+        if (!cached) document.getElementById('adList').innerHTML = '<div class="mi-empty">Error al cargar</div>';
         return;
       }
+      dataCacheSet('adminStats', result.data || []);
       adAllRecords = capReports((result.data || []).sort(function(a,b){
         return new Date(b.TIMESTAMP||0) - new Date(a.TIMESTAMP||0);
       }));
@@ -2590,7 +2658,7 @@ function loadAdminData() {
       applyAdminFilters();
     })
     .catch(function(){
-      document.getElementById('adList').innerHTML = '<div class="mi-empty">Error de conexión</div>';
+      if (!cached) document.getElementById('adList').innerHTML = '<div class="mi-empty">Error de conexión</div>';
     });
 }
 
@@ -2733,7 +2801,7 @@ function applyAdminFilters() {
     // Фильтр NUEVO — только непросмотренные текущим пользователем
     if (adShowNewOnly) {
       var seen = getSeenIds();
-      if (seen.indexOf(r.ID) !== -1) return false;
+      if (seen.indexOf(seenKey(r)) !== -1) return false;
     }
     return true;
   });
@@ -2756,11 +2824,14 @@ function renderAdminJournal() {
 
   // Sincroniza la campana solo con los PENDING no vistos (los que requieren
   // acción) — el resto del histórico no debe inundar el centro de notificaciones.
+  // Versión por lotes — una sola operación de I/O en vez de una por informe.
+  var pendingBellItemsAd = [];
   adFilteredRecords.forEach(function(r) {
-    if (r.STATUS === 'pending' && seen.indexOf(r.ID) === -1) {
-      addNotification(r.ID + '_new_ad', 'Nuevo informe', r.ID);
+    if (r.STATUS === 'pending' && seen.indexOf(seenKey(r)) === -1) {
+      pendingBellItemsAd.push({ id: r.ID + '_new_ad', title: 'Nuevo informe', body: r.ID });
     }
   });
+  addNotificationsBatch(pendingBellItemsAd);
 
   // Группируем по году+месяцу
   var groups = {};
@@ -2783,7 +2854,7 @@ function renderAdminJournal() {
     var g = groups[key];
     var isCurMonth = (g.year === curYear && g.month === curMonth);
     var isCollapsed = collapsed[key] !== undefined ? collapsed[key] : !isCurMonth;
-    var newCount = g.records.filter(function(r){ return seen.indexOf(r.ID) === -1; }).length;
+    var newCount = g.records.filter(function(r){ return seen.indexOf(seenKey(r)) === -1; }).length;
 
     // Заголовок группы
     html += '<div class="ad-month-header" onclick="toggleAdMonth(\''+key+'\')" data-key="'+key+'">';
@@ -2800,8 +2871,8 @@ function renderAdminJournal() {
     g.records.forEach(function(r){
       var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       var st = r.STATUS || 'pending';
-      var isNew = seen.indexOf(r.ID) === -1;
-      html += '<div class="ad-card st-'+st+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" onclick="openAdminDetail(\''+r.ID+'\')">';
+      var isNew = seen.indexOf(seenKey(r)) === -1;
+      html += '<div class="ad-card st-'+st+(isNew?' mg-card-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
       html += '<span style="font-size:12px;color:rgba(40,60,120,0.55);font-weight:600">'+fecha+'</span>';
       var rightEl = isNew
@@ -2878,7 +2949,7 @@ function openAdminDetail(id) {
   var r = adAllRecords.find(function(x){ return x.ID === id; });
   if (!r) return;
   adDetailCurrentId = id;
-  markAsSeen(id); // помечаем как просмотренное текущим пользователем
+  markAsSeen(seenKey(r)); // помечаем как просмотренное текущим пользователем
   // Убираем метку NUEVO с карточки без перерисовки всего списка
   var card = document.querySelector('.ad-card[onclick*="\''+id+'\'"]');
   if (card) {
@@ -3389,6 +3460,37 @@ function addNotification(notifId, title, body) {
   return true;
 }
 
+// Versión por lotes: evita N×(varias lecturas/escrituras de localStorage +
+// actualización del DOM) cuando hay que reconciliar muchos informes no
+// vistos de golpe (p.ej. al renderizar la lista de manager/admin en cada
+// sondeo). Antes esto se hacía llamando a addNotification() en un forEach,
+// lo que con varios informes pendientes generaba decenas de operaciones
+// síncronas de localStorage en cada refresco — causa real de los "tirones"
+// notados al hacer scroll justo cuando llegaba un refresco en segundo plano.
+function addNotificationsBatch(items) {
+  if (!items || !items.length || !currentPin) return;
+  var everSeen = getSeenNotifIds();
+  var everSeenSet = {};
+  everSeen.forEach(function(id){ everSeenSet[id] = true; });
+
+  var log = null;
+  var changed = false;
+  items.forEach(function(it) {
+    if (everSeenSet[it.id]) return;
+    everSeenSet[it.id] = true;
+    everSeen.push(it.id);
+    if (!log) log = getNotifLog();
+    log.push({ id: it.id, title: it.title, body: it.body, ts: Date.now(), read: false });
+    changed = true;
+  });
+
+  if (changed) {
+    saveNotifLog(log);
+    try { localStorage.setItem('parte_notif_seen_ever_' + currentPin, JSON.stringify(everSeen.slice(-500))); } catch(e) {}
+    updateBellUI();
+  }
+}
+
 function updateBellUI() {
   var bell = document.getElementById('notifBellWrap');
   var badgeEl = document.getElementById('notifBadge');
@@ -3770,7 +3872,7 @@ function checkManagerNotifications() {
       if (!result || result.status !== 'ok') return;
       var reports = result.data || [];
       var seen = getSeenIds();
-      var unseenReports = reports.filter(function(r){ return seen.indexOf(r.ID) === -1; });
+      var unseenReports = reports.filter(function(r){ return seen.indexOf(seenKey(r)) === -1; });
 
       // Detectar informes realmente nuevos desde el último poll
       var knownIds = mgReportsCache.map(function(r){ return r.ID; });
@@ -3797,7 +3899,7 @@ function checkAdminNotifications() {
       if (!result || result.status !== 'ok') return;
       var reports = result.data || [];
       var seen = getSeenIds();
-      var pendingUnseen = reports.filter(function(r){ return r.STATUS === 'pending' && seen.indexOf(r.ID) === -1; });
+      var pendingUnseen = reports.filter(function(r){ return r.STATUS === 'pending' && seen.indexOf(seenKey(r)) === -1; });
 
       var knownIds = adAllRecords.map(function(r){ return r.ID; });
       var brandNew = reports.filter(function(r){ return knownIds.indexOf(r.ID) === -1; });
@@ -4029,15 +4131,13 @@ document.addEventListener('visibilitychange', function() {
         modal.style.height = '100dvh';
         modal.style.maxHeight = '100dvh';
         modal.style.borderRadius = '0';
-        modal.style.paddingTop = 'calc(env(safe-area-inset-top,0px) + 16px)';
-        overlay.style.background = '#fff'; // sin hueco visible tras el modal a pantalla completa
+        modal.style.paddingTop = 'env(safe-area-inset-top,0px)';
         ensureCloseBtn().style.display = 'flex';
       } else {
         modal.style.height = '';
         modal.style.maxHeight = DEFAULT_MAXH;
         modal.style.borderRadius = '22px 22px 0 0';
         modal.style.paddingTop = '';
-        overlay.style.background = '';
         if (closeBtn) closeBtn.style.display = 'none';
       }
     }
@@ -4225,6 +4325,7 @@ if ('serviceWorker' in navigator) {
   // Anclamos el modal abierto al alto real visible del visualViewport.
   if (window.visualViewport) {
     var vv = window.visualViewport;
+    var vvTicking = false;
     function adjustOpenModalToViewport() {
       var openModal = document.querySelector('.mg-modal-overlay.show, .mg-modal-overlay[style*="display: flex"]');
       if (!openModal) return;
@@ -4234,8 +4335,13 @@ if ('serviceWorker' in navigator) {
       var availH = Math.round(vv.height - 8);
       inner.style.maxHeight = availH + 'px';
     }
-    vv.addEventListener('resize', adjustOpenModalToViewport);
-    vv.addEventListener('scroll', adjustOpenModalToViewport);
+    function onViewportChange() {
+      if (vvTicking) return;
+      vvTicking = true;
+      requestAnimationFrame(function() { vvTicking = false; adjustOpenModalToViewport(); });
+    }
+    vv.addEventListener('resize', onViewportChange);
+    vv.addEventListener('scroll', onViewportChange);
   }
 
   window.addEventListener('load', function() {
