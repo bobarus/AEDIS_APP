@@ -2239,9 +2239,33 @@ function submitEditReport() {
   .catch(function(){
     btn.style.pointerEvents = '';
     btn.textContent = originalText;
-    // El modal NO se cierra: la edición del trabajador sigue ahí, puede
-    // pulsar de nuevo sin perder nada de lo que escribió.
-    showToast('No se pudo enviar — revisa tu conexión e inténtalo de nuevo', true);
+    // BUG CORREGIDO: antes se asumía directamente que había fallado y se
+    // mostraba un error que asustaba al trabajador — pero Apps Script a
+    // veces tarda tanto en "despertar" (cold start) que el navegador da
+    // el fetch por fallido aunque la escritura en la hoja SÍ haya
+    // terminado bien del otro lado. Antes de mostrar el error,
+    // comprobamos con una lectura si el informe realmente llegó a
+    // guardarse (pasó a "pending") — si es así, lo tratamos como éxito.
+    fetch(WEBAPP_URL + '?action=getMyReports&operario=' + encodeURIComponent(currentUser.nombre) + '&t=' + Date.now())
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        var landed = res && res.status === 'ok' && res.data && res.data.some(function(r){
+          return r.ID === erCurrentReport.ID && r.STATUS === 'pending';
+        });
+        if (landed) {
+          showToast('Informe reenviado para aprobación');
+          closeEditReportModal();
+          myReportsLoaded = false;
+          loadMyReports();
+        } else {
+          // El modal NO se cierra: la edición del trabajador sigue ahí,
+          // puede pulsar de nuevo sin perder nada de lo que escribió.
+          showToast('No se pudo enviar — revisa tu conexión e inténtalo de nuevo', true);
+        }
+      })
+      .catch(function(){
+        showToast('No se pudo enviar — revisa tu conexión e inténtalo de nuevo', true);
+      });
   });
 }
 
