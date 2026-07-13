@@ -3629,7 +3629,30 @@ window.diagnosePush = function() {
     }
     return oneSignalReg.pushManager.getSubscription().then(function(sub) {
       lines.push('Suscripción push (SW OneSignal): ' + (sub ? 'ACTIVA (' + sub.endpoint.substring(0,40) + '...)' : 'NO EXISTE'));
-      alert(lines.join('\n'));
+      if (sub) { alert(lines.join('\n')); return; }
+
+      // El Service Worker ya está activo pero pushManager no tiene
+      // suscripción — OneSignal no ha llegado a llamar pushManager.subscribe().
+      // Forzamos el paso explícitamente vía el propio SDK (no a mano, porque
+      // subscribe() a mano necesitaría la VAPID key pública que no tenemos
+      // hardcodeada aquí) para ver el error real si lo hay.
+      lines.push('Forzando OneSignal.User.PushSubscription.optIn()...');
+      try {
+        var optInResult = OneSignal.User.PushSubscription.optIn();
+        Promise.resolve(optInResult).then(function() {
+          lines.push('optIn(): completado sin error');
+          return oneSignalReg.pushManager.getSubscription();
+        }).then(function(sub2) {
+          lines.push('Suscripción tras optIn(): ' + (sub2 ? 'ACTIVA (' + sub2.endpoint.substring(0,40) + '...)' : 'SIGUE SIN EXISTIR'));
+          alert(lines.join('\n'));
+        }).catch(function(err) {
+          lines.push('optIn() FALLÓ: ' + (err && err.name) + ' — ' + (err && err.message));
+          alert(lines.join('\n'));
+        });
+      } catch(err) {
+        lines.push('optIn() lanzó excepción síncrona: ' + err.message);
+        alert(lines.join('\n'));
+      }
     });
   }).catch(function(e) {
     lines.push('Error durante diagnóstico: ' + (e && e.name) + ' — ' + (e && e.message));
