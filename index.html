@@ -1315,12 +1315,30 @@ function applyLang() {
   }
 }
 
+// BUG CORREGIDO: el idioma elegido nunca se guardaba en ningún sitio —
+// currentLang volvía a 'es' en cada apertura de la app, obligando a
+// reelegir el idioma cada vez. Ahora se guarda en este dispositivo y,
+// si hay sesión iniciada, también en el backend (columna LANG de
+// USUARIOS) para que los push lleguen en ese mismo idioma (ver
+// PUSH_TEXTS / sendPushLocalized en Code_v5.gs).
+function saveLangToDevice(lang) {
+  try { localStorage.setItem('parte_lang', lang); } catch(e) {}
+}
+function getSavedLang() {
+  try { return localStorage.getItem('parte_lang'); } catch(e) { return null; }
+}
+
 function setLang(lang) {
   currentLang = lang;
+  saveLangToDevice(lang);
   document.querySelectorAll('#langDrop .lang-opt').forEach(function(opt){ opt.classList.remove('active'); });
   if (event && event.target) event.target.classList.add('active');
   document.getElementById('langDrop').classList.remove('open');
   applyLang();
+  if (currentPin) {
+    fetch(WEBAPP_URL + '?action=setUserLang&codigo=' + encodeURIComponent(currentPin) + '&lang=' + encodeURIComponent(lang) + '&t=' + Date.now())
+      .catch(function(){});
+  }
 }
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#globeWrap')) {
@@ -1467,6 +1485,10 @@ function submitPin() {
         currentUser = result;
         saveUserToDevice(pinToCheck);
         saveUserCache(result);
+        // El idioma guardado para este PIN en el backend manda al iniciar
+        // sesión — así el idioma "sigue" al usuario aunque cambie de
+        // dispositivo o reinstale la app.
+        if (result.lang) { currentLang = result.lang; saveLangToDevice(result.lang); applyLang(); }
         showGreetThenRoute();
       } else {
         showPinError('Código incorrecto');
@@ -1525,8 +1547,13 @@ function routeToRoleScreen() {
   document.getElementById('tabbarAdmin').style.display = 'none';
   document.getElementById('navExit').style.visibility = 'visible';
 
-  var titles = { operario: 'PARTE DE TRABAJO', manager: 'Aprobaciones', admin: 'Panel admin' };
-  document.getElementById('navTitle').textContent = titles[currentUser.rol] || 'AEDIS';
+  // BUG CORREGIDO: este título estaba escrito directamente en español,
+  // ignorando por completo el sistema de traducción t()/currentLang — así
+  // que aunque el usuario tuviera ruso o inglés seleccionado, el título
+  // de la barra superior siempre volvía a aparecer en español en cada
+  // login/ruteo. Usa las mismas claves que applyLang() (nav_new/nav_manager/nav_admin).
+  var titleKeys = { operario: 'nav_new', manager: 'nav_manager', admin: 'nav_admin' };
+  document.getElementById('navTitle').textContent = t(titleKeys[currentUser.rol] || 'nav_new');
 
   var initPromise = Promise.resolve();
   if (currentUser.rol === 'operario') {
@@ -3372,6 +3399,21 @@ function updateAppIconBadge(count) {
     if (count > 0) navigator.setAppBadge(count).catch(function(){});
     else navigator.clearAppBadge().catch(function(){});
   }
+  // Sincroniza el contador que usa el Service Worker (ver el listener
+  // 'push' en OneSignalSDKWorker.js) para poder incrementar el badge en
+  // tiempo real cuando llega un push con la app totalmente cerrada — sin
+  // esto, el SW no tiene forma de saber el valor actual (setAppBadge no
+  // tiene "getter"). Cada vez que la app recalcula el número real aquí,
+  // ese valor se guarda también para el SW, así el contador nunca queda
+  // desincronizado por mucho tiempo.
+  try {
+    var req = indexedDB.open('aedis-badge', 1);
+    req.onupgradeneeded = function() { req.result.createObjectStore('state'); };
+    req.onsuccess = function() {
+      var tx = req.result.transaction('state', 'readwrite');
+      tx.objectStore('state').put(count, 'count');
+    };
+  } catch(e) {}
 }
 
 // Beep corto tipo iOS — generado con Web Audio, sin archivos externos
@@ -3677,6 +3719,14 @@ window.diagnosePush = function() {
 // Dispara la alerta completa: sonido + vibración + notificación de sistema (si backgrounded) + toast (si visible)
 /* ════════ CENTRO DE NOTIFICACIONES — persistente por usuario (PIN), nunca repite ════════ */
 
+// El texto de los push ahora puede incluir el motivo de rechazo escrito
+// libremente por el manager (ver Code_v5.gs) — antes de insertarlo en el
+// HTML de la campana hay que escaparlo, igual que se hace en el resto de
+// la app para texto libre del usuario.
+function escNotif(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function getNotifLog() {
   if (!currentPin) return [];
   try { return JSON.parse(localStorage.getItem('parte_notif_log_' + currentPin) || '[]'); } catch(e) { return []; }
@@ -3764,8 +3814,8 @@ function renderNotifList() {
     var d = new Date(n.ts);
     var timeStr = ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' · '+('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2);
     return '<div class="notif-card">' +
-      '<div class="ni-title">'+n.title+'</div>' +
-      '<div class="ni-body">'+n.body+'</div>' +
+      '<div class="ni-title">'+escNotif(n.title)+'</div>' +
+      '<div class="ni-body">'+escNotif(n.body)+'</div>' +
       '<div class="ni-time">'+timeStr+'</div>' +
     '</div>';
   }).join('');
@@ -3790,7 +3840,16 @@ function openNotifModal() {
       if (/^PT-\d+$/.test(baseId)) reportIdsToMark.push(baseId);
     }
   });
-  if (changed) { saveNotifLog(log); updateBellUI(); }
+  if (changed) {
+    saveNotifLog(log);
+    updateBellUI();
+    // El badge del icono del operario usa este mismo contador (ver
+    // checkWorkerNotifications) — lo refrescamos ya, sin esperar al
+    // próximo sondeo de 10s, para que abrir la campana lo baje al instante.
+    if (currentUser && currentUser.rol === 'operario') {
+      updateAppIconBadge(getNotifLog().filter(function(n){ return !n.read; }).length);
+    }
+  }
   // Quitamos también el resaltado azul de las tarjetas correspondientes.
   // markAsSeen() espera la clave compuesta "ID@TIMESTAMP" (ver seenKey()),
   // igual que la usan renderManagerQueue/renderAdminJournal para decidir
@@ -4133,14 +4192,12 @@ function checkWorkerNotifications() {
       var reports = result.data || [];
       var last = getLastStatuses();
       var changed = [];
-      var unseenCount = 0;
 
       reports.forEach(function(r){
         var prev = last[r.ID];
         if (prev && prev !== r.STATUS && (r.STATUS === 'approved' || r.STATUS === 'rejected')) {
           changed.push(r);
         }
-        if (r.STATUS === 'rejected') unseenCount++;
         last[r.ID] = r.STATUS;
       });
       saveLastStatuses(last);
@@ -4155,8 +4212,15 @@ function checkWorkerNotifications() {
         });
       }
 
-      // Badge en "Mis informes": nº de rechazados (requieren acción)
-      updateAppIconBadge(unseenCount);
+      // BUG CORREGIDO: antes el badge del icono mostraba el nº de informes
+      // rechazados (pendientes de corregir), NO el nº de notificaciones sin
+      // leer — por eso quedaba "pegado" en 1 aunque el trabajador ya hubiera
+      // abierto la campana y visto todo: eran dos contadores con semántica
+      // distinta. Ahora el badge del icono usa el MISMO contador que la
+      // campana (notificaciones sin leer), así que abrir la campana también
+      // baja el número del icono, de forma consistente.
+      var unreadLog = getNotifLog().filter(function(n){ return !n.read; }).length;
+      updateAppIconBadge(unreadLog);
 
       // Si la lista ya está cargada y visible, refrescamos silenciosamente
       if (myReportsLoaded) renderMyReports(reports);
@@ -4286,6 +4350,12 @@ document.addEventListener('visibilitychange', function() {
   document.getElementById('mainNav').style.display = 'none';
   document.body.classList.add('pin-mode');
 
+  // Restaura el idioma guardado en este dispositivo YA, antes de cualquier
+  // llamada al servidor — así ni siquiera la pantalla del PIN aparece en
+  // español si el usuario había elegido otro idioma la última vez.
+  var savedLang = getSavedLang();
+  if (savedLang && savedLang !== currentLang) { currentLang = savedLang; applyLang(); }
+
   var saved = getSavedPin();
 
   // Если PIN не сохранён — роль ещё не выбрана. Мгновенно, синхронно
@@ -4335,6 +4405,7 @@ document.addEventListener('visibilitychange', function() {
         if (result && result.status === 'ok' && result.valid) {
           currentUser = result;
           saveUserCache(result);
+          if (result.lang && result.lang !== currentLang) { currentLang = result.lang; saveLangToDevice(result.lang); applyLang(); }
         } else {
           try { localStorage.removeItem('parte_user_pin'); } catch(e) {}
           changeUser();
@@ -4352,6 +4423,7 @@ document.addEventListener('visibilitychange', function() {
         currentUser = result;
         saveUserCache(result);
         currentPin = saved;
+        if (result.lang) { currentLang = result.lang; saveLangToDevice(result.lang); applyLang(); }
         var readyPromise2 = routeToRoleScreen();
         hideSplashWhenReady(readyPromise2, 3000);
       } else {
