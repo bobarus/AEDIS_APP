@@ -4388,16 +4388,22 @@ document.addEventListener('visibilitychange', function() {
 if ('serviceWorker' in navigator) {
   // ═══ SERVICE WORKER ÚNICO ═══
   // OneSignal.init() (arriba, con serviceWorkerPath:"OneSignalSDKWorker.js")
-  // ya registra el único service worker de la app en la raíz — no hay que
-  // registrar nada aparte aquí. Solo necesitamos: (1) recargar la pestaña
-  // cuando llega una versión nueva del worker, y (2) limpiar registros
-  // viejos que puedan quedar de la versión anterior con DOS workers.
-  var reloading = false;
-  navigator.serviceWorker.addEventListener('controllerchange', function() {
-    if (reloading) return;
-    reloading = true;
-    window.location.reload();
-  });
+  // ya registra el único service worker de la app — no hay que registrar
+  // nada aparte aquí. Solo queda limpiar registros viejos que puedan
+  // quedar de la versión anterior con DOS workers.
+  //
+  // BUG CORREGIDO: antes recargábamos la página automáticamente en cada
+  // evento "controllerchange" (para que un redeploy se viera al instante).
+  // Pero OneSignal usa DOS archivos de service worker (Main + Updater,
+  // configurados en su Dashboard) como mecanismo interno para forzar
+  // comprobaciones de actualización de la suscripción push — y ese
+  // mecanismo dispara "controllerchange" por su cuenta, sin relación con
+  // ningún redeploy nuestro. El resultado era una página que se recargaba
+  // en bucle sin parar ("la pantalla del PIN tiembla"). Quitamos la
+  // recarga automática: el contenido siempre se sirve fresco igualmente
+  // gracias a { cache: 'no-store' } en el fetch del propio worker, así
+  // que el usuario ya ve el código nuevo en su siguiente apertura normal
+  // de la app, sin necesidad de forzar un reload aquí.
 
   // ═══ LIMPIEZA DE REGISTROS DE LA VERSIÓN ANTERIOR (dos workers) ═══
   // Antes había sw.js en la raíz + OneSignalSDKWorker.js anidado en
