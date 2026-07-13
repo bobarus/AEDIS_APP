@@ -12,6 +12,26 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 
 <!-- OneSignal Web Push SDK -->
+<script>
+// Registro MANUAL del service worker, lo antes posible, ANTES de que
+// cargue el SDK de OneSignal (que va con "defer", así que esto se
+// ejecuta primero). Se confirmó con diagnosePush() en un iPhone real:
+// el registro manual con exactamente el mismo path/scope que usa
+// OneSignal.init() funciona al instante y sin error, pero el registro
+// que intenta el propio SDK internamente no llega a completarse en ese
+// dispositivo (Notification.permission quedaba en "granted", el SDK
+// creaba un OneSignal.User.PushSubscription con id, pero
+// "Service Workers registrados" era 0 — es decir, el SDK nunca llega a
+// registrar el worker de verdad). Registrar aquí de antemano no genera
+// conflicto: si el registro ya existe con el mismo script/scope cuando
+// el SDK intenta registrar el suyo, el navegador simplemente devuelve el
+// registro existente (no lo duplica).
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('OneSignalSDKWorker.js', { scope: '/AEDIS_APP/' })
+    .then(function(reg) { console.log('[SW] registro manual previo OK, scope=' + reg.scope); })
+    .catch(function(e) { console.log('[SW] registro manual previo FALLÓ:', e && e.name, e && e.message); });
+}
+</script>
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
