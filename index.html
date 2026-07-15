@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AEDIS">
+<meta name="apple-mobile-web-app-title" content="AEDIS" id="appTitleMeta">
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png" id="appleTouchIconLink">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
 
 <!-- OneSignal Web Push SDK -->
@@ -314,6 +315,26 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 .greet-screen{position:fixed;inset:0;z-index:7000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#fff}
 .greet-name{font-size:20px;font-weight:700;color:#000;margin-top:14px}
 .greet-role{font-size:14px;color:#8e8e93;font-weight:400;margin-top:4px}
+
+/* APP ICON (pantallas de instalación / bienvenida) */
+.app-icon-tile{width:84px;height:84px;border-radius:20px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.28);margin-bottom:18px;flex-shrink:0}
+.app-icon-tile img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* PANTALLA: INSTALAR COMO APP */
+.ig-steps{width:100%;max-width:340px;margin-top:26px;display:flex;flex-direction:column;gap:10px}
+.ig-step{display:flex;align-items:center;gap:14px;background:#f7f7f8;border-radius:16px;padding:13px 16px;text-align:left}
+.ig-step-num{width:26px;height:26px;border-radius:50%;background:#007AFF;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ig-step-icon{width:34px;height:34px;border-radius:10px;background:#e8f0ff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ig-step-icon i{font-size:17px;color:#007AFF}
+.ig-step-text{font-size:13.5px;color:#000;font-weight:500;line-height:1.35}
+
+/* PANTALLA: BIENVENIDA — IDIOMA */
+.lw-options{width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;margin-top:32px}
+.lw-opt{width:100%;padding:16px;border-radius:16px;border:1.5px solid #e5e5ea;background:#fff;font-size:16px;font-weight:600;color:#000;font-family:inherit;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;gap:10px;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.1);transition:border-color .15s,background .15s,box-shadow .15s,color .15s}
+.lw-opt:active{background:#f2f2f7}
+.lw-opt.selected{background:#007AFF;border-color:#007AFF;color:#fff;box-shadow:0 8px 20px rgba(0,122,255,.35)}
+.lw-continue-btn{width:100%;max-width:320px;margin-top:auto;margin-bottom:calc(env(safe-area-inset-bottom,0px) + 28px);background:#34c759;color:#fff;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;box-shadow:0 8px 20px rgba(52,199,89,.35);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.lw-continue-btn.show{opacity:1;transform:translateY(0);pointer-events:auto}
 
 /* MIS INFORMES */
 .op-tabs{display:none}
@@ -680,7 +701,7 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 </div>
 
 <!-- ═══ PANTALLA: PIN ENTRY ═══ -->
-<div id="screenPin" class="pin-screen">
+<div id="screenPin" class="pin-screen" style="display:none">
   <div class="pin-logo">
     <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/><circle cx="12" cy="19.5" r=".5" fill="#fff"/></svg>
   </div>
@@ -713,6 +734,29 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 
   <div class="pin-error" id="pinError">Código incorrecto</div>
   <div class="pin-loading" id="pinLoading"><div class="spinner"></div></div>
+</div>
+
+<!-- ═══ PANTALLA: INSTALAR COMO APP (se muestra en vez del PIN si se abre
+     en una pestaña normal del navegador, no como PWA instalada) ═══ -->
+<div id="screenInstallGate" class="pin-screen" style="display:none">
+  <div class="app-icon-tile"><img src="icon-192.png" alt="AEDIS"></div>
+  <div class="pin-title" id="igTitle">Instala AEDIS</div>
+  <div class="pin-sub" id="igSub">Añádela a tu pantalla de inicio para poder usarla y recibir avisos</div>
+  <div class="ig-steps" id="igSteps"></div>
+</div>
+
+<!-- ═══ PANTALLA: BIENVENIDA — ELEGIR IDIOMA (solo la primera vez que se
+     abre la app ya instalada en este dispositivo) ═══ -->
+<div id="screenLangWelcome" class="pin-screen" style="display:none">
+  <div class="app-icon-tile"><img src="icon-192.png" alt="AEDIS"></div>
+  <div class="pin-title">AEDIS</div>
+  <div class="pin-sub">Elige tu idioma · Выберите язык · Choose your language</div>
+  <div class="lw-options">
+    <button class="lw-opt" data-lang="es" onclick="selectInitialLang('es')">🇪🇸 Español</button>
+    <button class="lw-opt" data-lang="ru" onclick="selectInitialLang('ru')">🇷🇺 Русский</button>
+    <button class="lw-opt" data-lang="en" onclick="selectInitialLang('en')">🇬🇧 English</button>
+  </div>
+  <button class="lw-continue-btn" id="lwContinueBtn" onclick="confirmInitialLang()">Continuar</button>
 </div>
 
 <!-- ═══ PANTALLA: SALUDO TRAS LOGIN (breve, luego redirige al rol) ═══ -->
@@ -1219,6 +1263,10 @@ var LANGS = {
     perm_banner_admin:'Te avisaremos de cada informe nuevo, aprobado o rechazado',
     perm_banner_btn:'Activar', perm_banner_later:'Ahora no', install_banner_title:'Instala la app para recibir avisos',
     install_banner_body:'Pulsa Compartir y luego "Añadir a pantalla de inicio" para no perderte ninguna novedad',
+    install_gate_title:'Instala AEDIS', install_gate_sub:'Añádela a tu pantalla de inicio para poder usarla y recibir avisos',
+    install_step_ios1:'Toca el botón Compartir', install_step_ios2:'Selecciona "Añadir a pantalla de inicio"', install_step_ios3:'Toca "Añadir" y listo',
+    install_step_and1:'Toca el menú ⋮ del navegador', install_step_and2:'Selecciona "Instalar app" o "Añadir a pantalla de inicio"',
+    lw_continue:'Continuar',
   },
   ru: {
     pin_title:'Введите код', pin_sub:'PIN из 4 цифр', pin_ok:'OK', pin_error:'Неверный код',
@@ -1261,6 +1309,10 @@ var LANGS = {
     perm_banner_admin:'Мы сообщим о каждом новом, одобренном или отклонённом отчёте',
     perm_banner_btn:'Включить', perm_banner_later:'Не сейчас', install_banner_title:'Установите приложение, чтобы получать уведомления',
     install_banner_body:'Нажмите «Поделиться», затем «На экран «Домой»» — так вы не пропустите ни одного уведомления',
+    install_gate_title:'Установите AEDIS', install_gate_sub:'Добавьте её на главный экран, чтобы пользоваться приложением и получать уведомления',
+    install_step_ios1:'Нажмите кнопку «Поделиться»', install_step_ios2:'Выберите «На экран «Домой»»', install_step_ios3:'Нажмите «Добавить» — готово',
+    install_step_and1:'Откройте меню ⋮ браузера', install_step_and2:'Выберите «Установить приложение» или «Добавить на главный экран»',
+    lw_continue:'Продолжить',
   },
   en: {
     pin_title:'Enter your code', pin_sub:'4-digit PIN', pin_ok:'OK', pin_error:'Incorrect code',
@@ -1303,6 +1355,10 @@ var LANGS = {
     perm_banner_admin:"We'll let you know about every new, approved or rejected report",
     perm_banner_btn:'Turn on', perm_banner_later:'Not now', install_banner_title:'Install the app to get notified',
     install_banner_body:'Tap Share, then "Add to Home Screen" so you never miss an update',
+    install_gate_title:'Install AEDIS', install_gate_sub:'Add it to your home screen to use the app and receive notifications',
+    install_step_ios1:'Tap the Share button', install_step_ios2:'Select "Add to Home Screen"', install_step_ios3:'Tap "Add" — done',
+    install_step_and1:'Open the browser’s ⋮ menu', install_step_and2:'Select "Install app" or "Add to Home Screen"',
+    lw_continue:'Continue',
   }
 };
 
@@ -1471,6 +1527,9 @@ function applyLang() {
   setEl('req-badge-obligatorio', t('lbl_obligatorio'));
   // Splash loading text
   setEl('splashText', t('loading'));
+  setEl('igTitle', t('install_gate_title'));
+  setEl('igSub', t('install_gate_sub'));
+  renderInstallGateSteps();
 
   // Перестраиваем select'ы с новым placeholder
   if (typeof LISTS !== 'undefined' && LISTS.clientes) {
@@ -4921,16 +4980,7 @@ document.addEventListener('visibilitychange', function() {
   });
 })();
 
-(function initApp(){
-  document.getElementById('mainNav').style.display = 'none';
-  document.body.classList.add('pin-mode');
-
-  // Restaura el idioma guardado en este dispositivo YA, antes de cualquier
-  // llamada al servidor — así ni siquiera la pantalla del PIN aparece en
-  // español si el usuario había elegido otro idioma la última vez.
-  var savedLang = getSavedLang();
-  if (savedLang && savedLang !== currentLang) { currentLang = savedLang; applyLang(); }
-
+function startAppAfterGates(){
   var saved = getSavedPin();
 
   // Если PIN не сохранён — роль ещё не выбрана. Мгновенно, синхронно
@@ -5015,6 +5065,128 @@ document.addEventListener('visibilitychange', function() {
       currentPin = '';
       document.getElementById('screenPin').style.display = 'flex';
     });
+}
+
+function isAndroidDevice() {
+  return /android/i.test(navigator.userAgent);
+}
+
+function renderInstallGateSteps() {
+  var stepsEl = document.getElementById('igSteps');
+  if (!stepsEl) return;
+  if (isAndroidDevice()) {
+    stepsEl.innerHTML =
+      '<div class="ig-step"><div class="ig-step-num">1</div><div class="ig-step-icon"><i class="ti ti-dots-vertical"></i></div><div class="ig-step-text">'+t('install_step_and1')+'</div></div>' +
+      '<div class="ig-step"><div class="ig-step-num">2</div><div class="ig-step-icon"><i class="ti ti-square-plus"></i></div><div class="ig-step-text">'+t('install_step_and2')+'</div></div>';
+  } else {
+    stepsEl.innerHTML =
+      '<div class="ig-step"><div class="ig-step-num">1</div><div class="ig-step-icon"><i class="ti ti-square-arrow-up"></i></div><div class="ig-step-text">'+t('install_step_ios1')+'</div></div>' +
+      '<div class="ig-step"><div class="ig-step-num">2</div><div class="ig-step-icon"><i class="ti ti-square-plus"></i></div><div class="ig-step-text">'+t('install_step_ios2')+'</div></div>' +
+      '<div class="ig-step"><div class="ig-step-num">3</div><div class="ig-step-icon"><i class="ti ti-check"></i></div><div class="ig-step-text">'+t('install_step_ios3')+'</div></div>';
+  }
+}
+
+// Pedido: elegir un idioma ya no aplica y avanza al instante — solo
+// resalta la opción en azul y revela el botón "Continuar", que es quien
+// realmente confirma y avanza. currentLang se actualiza ya (vista previa)
+// para que el propio botón "Continuar" se traduzca al idioma elegido.
+var initialLangSelected = null;
+
+function selectInitialLang(lang) {
+  initialLangSelected = lang;
+  document.querySelectorAll('.lw-opt').forEach(function(btn){
+    btn.classList.toggle('selected', btn.getAttribute('data-lang') === lang);
+  });
+  currentLang = lang;
+  applyLang();
+  var btn = document.getElementById('lwContinueBtn');
+  btn.textContent = t('lw_continue');
+  btn.classList.add('show');
+}
+
+// ═══ MODO DESARROLLADOR: varios iconos en la pantalla de inicio, cada
+// uno logueado como un rol fijo — para poder probar notificaciones
+// cruzadas entre roles en un mismo teléfono. Se activa con parámetros en
+// la URL, ej.: index.html?dev=manager&pin=1234
+//   - "dev" (operario|manager|admin): solo cambia el icono/nombre que
+//     verá el Share Sheet al pulsar "Añadir a pantalla de inicio", para
+//     poder distinguir los 3 iconos luego en el springboard.
+//   - "pin": si viene, se guarda como PIN de este dispositivo ANTES de
+//     que arranque el login normal, sobrescribiendo lo que hubiera —
+//     así cada icono, aunque comparta el mismo localStorage de origen
+//     que los otros 2 (iOS no aísla el almacenamiento entre iconos del
+//     mismo dominio), vuelve a fijar SU pin fijo cada vez que se abre,
+//     sin tocar el resto del código de login (reutiliza tal cual el
+//     flujo normal de PIN guardado).
+// El PIN va en la URL del propio marcador que el desarrollador crea a
+// mano — no se expone en ningún sitio público ni se guarda en el código.
+function applyDevModeIfPresent() {
+  var params = new URLSearchParams(window.location.search);
+  var dev = params.get('dev');
+  var pin = params.get('pin');
+
+  if (dev && ['operario','manager','admin'].indexOf(dev) !== -1) {
+    var iconLink = document.getElementById('appleTouchIconLink');
+    if (iconLink) iconLink.href = 'icon-dev-' + dev + '-180.png';
+    var label = dev.charAt(0).toUpperCase() + dev.slice(1);
+    var titleMeta = document.getElementById('appTitleMeta');
+    if (titleMeta) titleMeta.content = 'AEDIS · ' + label;
+    document.title = 'AEDIS · ' + label;
+  }
+
+  if (pin) {
+    saveUserToDevice(pin);
+  }
+}
+
+(function initApp(){
+  applyDevModeIfPresent();
+
+  // Se oculta la barra superior y se activa el modo pantalla-completa-
+  // blanca ANTES de decidir qué pantalla mostrar — las 2 gates nuevas
+  // (instalar / elegir idioma) también la necesitan oculta, no solo el
+  // PIN (antes esto vivía dentro de startAppAfterGates() y esas 2
+  // pantallas se veían con la barra superior asomando encima).
+  document.getElementById('mainNav').style.display = 'none';
+  document.body.classList.add('pin-mode');
+
+  // Restaura el idioma guardado en este dispositivo YA, antes de cualquier
+  // llamada al servidor — así ni siquiera la pantalla de instalación o de
+  // bienvenida aparecen en español si el usuario ya había elegido otro
+  // idioma. Si nunca eligió (primera vez), probamos con el idioma del
+  // navegador como mejor valor por defecto — la pantalla de bienvenida
+  // igualmente le dejará confirmarlo o cambiarlo.
+  var savedLang = getSavedLang();
+  if (savedLang) {
+    currentLang = savedLang;
+  } else {
+    var browserLang = (navigator.language || 'es').slice(0, 2).toLowerCase();
+    if (browserLang === 'ru' || browserLang === 'en') currentLang = browserLang;
+  }
+  applyLang();
+
+  // GATE 1: abierta en un navegador normal (pestaña de Safari/Chrome), no
+  // como PWA instalada — en iOS las notificaciones push NUNCA funcionan
+  // así, sin importar el permiso (ver comentario en ensureNotifyPermission
+  // más abajo), así que en vez del PIN se explica cómo instalarla.
+  if ((isIOSDevice() || isAndroidDevice()) && !isStandalonePWA()) {
+    renderInstallGateSteps();
+    var s0 = document.getElementById('splashScreen');
+    if (s0) s0.style.display = 'none';
+    document.getElementById('screenInstallGate').style.display = 'flex';
+    return;
+  }
+
+  // GATE 2: primera vez que se abre la app YA instalada en este
+  // dispositivo (nunca eligió idioma) — se pregunta antes que nada.
+  if (!savedLang) {
+    var s1 = document.getElementById('splashScreen');
+    if (s1) s1.style.display = 'none';
+    document.getElementById('screenLangWelcome').style.display = 'flex';
+    return;
+  }
+
+  startAppAfterGates();
 })();
 
 /* ═══ MODALES — patrón estándar de apps modernas ═══
