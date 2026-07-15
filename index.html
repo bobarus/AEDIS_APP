@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AEDIS">
@@ -108,18 +108,23 @@ html,body{background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"SF Pr
    Android puede aparecer y da un aspecto poco pulido). */
 *{scrollbar-width:none;-ms-overflow-style:none}
 *::-webkit-scrollbar{display:none;width:0;height:0}
-body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
+body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 96px)}
 
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #e5e5ea;transition:transform .25s ease;}
 .nav.nav-hidden{transform:translateY(-100%);}
-.nav-center{flex:1;text-align:center}
-.nav-title{font-size:17px;font-weight:800;color:#000;letter-spacing:.3px;text-transform:uppercase}
+.nav-center{flex:1;text-align:center;min-width:0}
+/* BUG CORREGIDO: sin white-space:nowrap, un nombre de usuario largo
+   envolvía a 2 líneas — la barra superior crecía más alta de lo que
+   body{padding-top} preveía (valor fijo), así que la primera tarjeta de
+   la lista quedaba tapada/pisada por la barra. Truncamos con "…" en vez
+   de dejar que la barra crezca. */
+.nav-title{font-size:17px;font-weight:800;color:#000;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Pedido: mostrar el nombre del usuario en negrita en la cabecera de
    todas las pantallas — antes solo se veía el título genérico de la
    pantalla ("PARTE DE TRABAJO"/"Aprobaciones"/"Panel admin"). Ahora ese
    título pasa a subtítulo pequeño debajo del nombre. */
-.nav-subtitle{font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.2px;text-transform:uppercase;margin-top:1px}
+.nav-subtitle{font-size:11px;font-weight:600;color:#8e8e93;letter-spacing:.2px;text-transform:uppercase;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-side{width:112px;display:flex;justify-content:center;align-items:center}
 .nav-side.right{justify-content:flex-end;gap:4px}
 .globe-btn{width:52px;height:44px;border-radius:15px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;touch-action:manipulation;transition:background .15s}
@@ -279,7 +284,7 @@ body{min-height:100dvh;padding-top:calc(env(safe-area-inset-top,0px) + 68px);pad
 .btn-new{width:100%;background:#34c759;color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation}
 
 /* PIN */
-.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:0 24px;text-align:center;width:100%;gap:0;overflow:hidden}
+.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:9vh 24px 0;text-align:center;width:100%;gap:0;overflow:hidden}
 /* BUG CORREGIDO: solo se anulaba el padding-top del body en modo PIN — el
    padding-bottom (reservado para la barra de pestañas inferior, que en
    esta pantalla no existe) seguía aplicado, así que el contenido
@@ -309,7 +314,7 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.12);border-top-color:#007AFF;border-radius:50%;animation:spin .7s linear infinite}
 
 /* GREET */
-.greet-screen{position:fixed;inset:0;z-index:7000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#f2f2f7}
+.greet-screen{position:fixed;inset:0;z-index:7000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:#fff}
 .greet-name{font-size:20px;font-weight:700;color:#000;margin-top:14px}
 .greet-role{font-size:14px;color:#8e8e93;font-weight:400;margin-top:4px}
 
@@ -429,15 +434,16 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 .rd-photo-link{display:flex;align-items:center;justify-content:center;gap:6px;background:#f7f7f8;border:.5px solid #ececee;border-radius:14px;padding:11px;font-size:13px;font-weight:600;color:#007AFF;text-decoration:none;margin-top:6px;width:100%;font-family:inherit;cursor:pointer;touch-action:manipulation}
 .rd-photo-link svg,.rd-photo-link i{width:15px;height:15px;font-size:15px;stroke:#007AFF;fill:none;stroke-width:2;stroke-linecap:round;color:#007AFF}
 
-/* TABBAR — cápsula flotante estilo Uber/Ride, con acento azul.
-   Pegada al borde inferior real de la pantalla (bottom:0, sin hueco) —
-   el propio padding interno ya deja aire suficiente para el dedo. */
+/* TABBAR — cápsula oscura flotante (referencia: dock tipo app de
+   finanzas), separada de los bordes de la pantalla, con la pestaña
+   activa como píldora ancha con icono+texto y las inactivas como
+   círculos solo-icono. Como en AEDIS siempre hay exactamente 2 pestañas
+   (1 activa ancha + 1 inactiva estrecha en todo momento), el ancho total
+   de la cápsula no cambia al alternar — evita el "salto" que sí ocurría
+   con la versión antigua (mostraba texto en todas, o ninguna). */
 .bottom-tabbar{
   position:fixed;left:0;right:0;
-  /* BUG CORREGIDO: bottom:8px fijo no contaba con el safe-area-inset del
-     home indicator de iPhone — la barra flotante quedaba pegada casi
-     encima de la línea de "deslizar para inicio", pisándose con ella. */
-  bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
   z-index:200;
   display:flex;
   justify-content:center;
@@ -448,34 +454,33 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
   padding:6px;
   background:#1c1c1e;
   border-radius:999px;
-  box-shadow:0 8px 24px rgba(0,0,0,.28);
-  transition:transform .25s ease, opacity .25s ease;
+  box-shadow:0 8px 24px rgba(0,0,0,.32);
+  /* Fuerza una capa de composición GPU propia — evita el "salto"/jitter
+     que WebKit produce en elementos position:fixed durante el scroll con
+     inercia (rubber-band) en iOS Safari/PWA standalone. */
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
 .bottom-tabbar.tabbar-hidden{
-  transform:translateY(calc(100% + 24px));
+  transform:translateY(calc(100% + 24px)) translateZ(0);
   opacity:0;
   pointer-events:none;
 }
 .bottom-tab{
-  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:7px;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;
   cursor:pointer;touch-action:manipulation;background:none;border:none;font-family:inherit;
-  padding:11px 16px;min-height:auto;border-radius:999px;transition:background .2s;
+  width:46px;height:46px;padding:0;border-radius:999px;
+  transition:background .2s,width .2s,padding .2s;
 }
 .bottom-tab .tab-icon{width:auto;height:auto;border-radius:0;display:flex;align-items:center;justify-content:center;transition:none;background:transparent !important}
-.bottom-tab i{font-size:20px;color:#98989d;line-height:1;display:block;font-style:normal;transition:color .15s}
-/* BUG CORREGIDO: la etiqueta de texto solo se mostraba en la pestaña
-   activa (display:none en las demás) — al cambiar de pestaña, el ancho
-   total de la píldora cambiaba (una gana texto, otra lo pierde), y como
-   toda la barra se centra con left:0;right:0;margin:0 auto, el cambio de
-   ancho hacía que TODA la barra "saltara" horizontalmente en cada tap,
-   con scroll o al abrir una pestaña nueva. Mostrando el texto siempre en
-   todas las pestañas, el ancho de la píldora es constante — solo cambia
-   el color, nunca la posición. */
-.bottom-tab span{font-size:13px;font-weight:600;color:#98989d;transition:color .15s;white-space:nowrap}
-.bottom-tab.active{background:#007AFF;padding:11px 16px}
+.bottom-tab i{font-size:21px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .15s}
+.bottom-tab span{display:none;font-size:13px;font-weight:600;color:#fff;white-space:nowrap;margin-left:7px}
+.bottom-tab.active{background:#007AFF;width:auto;padding:0 18px 0 14px}
 .bottom-tab.active i{color:#fff}
-.bottom-tab.active span{color:#fff}
-.bottom-tab:active{opacity:.75}
+.bottom-tab.active span{display:inline}
+.bottom-tab:active{opacity:.7}
 .tab-icon{position:relative}
 .tab-badge{
   position:absolute;top:-3px;right:-6px;
@@ -556,8 +561,8 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 </nav>
 
 <!-- ═══ MODAL: NOTIFICACIONES (pantalla completa) ═══ -->
-<div id="notifFullModal" style="display:none;position:fixed;inset:0;z-index:8000;background:#f2f2f7;flex-direction:column">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;background:rgba(242,242,247,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #d1d1d6;flex-shrink:0">
+<div id="notifFullModal" style="display:none;position:fixed;inset:0;z-index:8000;background:#fff;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #e5e5ea;flex-shrink:0">
     <div style="width:40px"></div>
     <div style="font-size:17px;font-weight:600;color:#000">Notificaciones</div>
     <div onclick="closeNotifModal()" style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
@@ -568,7 +573,13 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 </div>
 
 <!-- ═══ MODAL: GALERÍA DE FOTOS (visor tipo iOS Photos) ═══ -->
-<div id="photoGalleryModal" style="display:none;position:fixed;inset:0;height:100dvh;width:100vw;z-index:9500;background:#000;flex-direction:column">
+<div id="photoGalleryModal" style="display:none;position:fixed;inset:0;z-index:9500;background:#000;flex-direction:column">
+  <!-- BUG CORREGIDO: "height:100dvh;width:100vw" junto con "inset:0" sobre-
+       especificaba el tamaño — en algunos estados de la barra de
+       herramientas de Safari, 100dvh podía quedar más corto que el
+       viewport visual real en ese instante, dejando ver una franja del
+       fondo BLANCO de <body> justo debajo del visor negro. inset:0 solo
+       ya ancla los 4 bordes al viewport sin ese margen de error. -->
   <!-- Barra superior: contador + cerrar -->
   <div id="pgTopBar" style="position:absolute;top:0;left:0;right:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 40px;background:linear-gradient(to bottom,rgba(0,0,0,.55),rgba(0,0,0,0));transition:opacity .25s">
     <div id="pgCounter" style="font-size:13px;font-weight:600;color:#fff">1 / 1</div>
@@ -582,7 +593,7 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 
   <!-- Franja de miniaturas — como en la galería de iPhone: se ve de un
        vistazo cuántas fotos hay y cuál está activa; tocar una salta a ella. -->
-  <div id="pgThumbStrip" style="position:absolute;left:0;right:0;bottom:64px;z-index:2;display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;transition:opacity .25s"></div>
+  <div id="pgThumbStrip" style="position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:2;display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;transition:opacity .25s"></div>
 
   <!-- Barra inferior: compartir -->
   <div id="pgBottomBar" style="position:absolute;bottom:0;left:0;right:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 16px);background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,0));transition:opacity .25s">
@@ -937,8 +948,8 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
 
 <!-- MODAL: DETALLE DE INFORME (Mis informes) -->
 <div class="mg-modal-overlay" id="reportDetailModal" onclick="if(event.target===this)closeReportDetail()">
-  <div class="mg-modal" style="height:100dvh;max-height:100dvh;border-radius:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:calc(env(safe-area-inset-top,0px) + 20px)">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+  <div class="mg-modal" style="height:100dvh;max-height:100dvh;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 12px;border-bottom:.5px solid #f0f0f0;flex-shrink:0">
       <div style="min-width:0">
         <div class="mg-modal-title" id="rdTitle">—</div>
         <div class="mg-modal-sub" id="rdSub">—</div>
@@ -947,10 +958,12 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
         <i class="ti ti-x" style="font-size:16px;color:#000"></i>
       </button>
     </div>
-    <div id="rdBody" style="margin:14px 0"></div>
-    <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
-      <i class="ti ti-send" style="font-size:16px"></i> Compartir
-    </button>
+    <div id="rdBody" style="overflow-y:auto;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch"></div>
+    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
+      <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
+        <i class="ti ti-send" style="font-size:16px"></i> Compartir
+      </button>
+    </div>
   </div>
 </div>
 
@@ -969,13 +982,12 @@ body.pin-mode{padding-top:0 !important;padding-bottom:0 !important;overflow:hidd
         </button>
       </div>
       <div id="mgdBody" style="margin:14px 0"></div>
-      <!-- Compartir — после Total, в контенте -->
+    </div>
+    <!-- Фиксированный footer — TODOS los botones de acción, incluido Compartir -->
+    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px" onclick="shareManagerDetail()">
         <i class="ti ti-send" style="font-size:16px"></i> Compartir
       </button>
-    </div>
-    <!-- Фиксированный footer — только кнопки решения -->
-    <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <div class="mg-actions">
         <button class="mg-btn mg-btn-reject" onclick="rejectFromDetail()">Rechazar</button>
         <button class="mg-btn mg-btn-approve" onclick="approveFromDetail()">Aprobar</button>
@@ -1200,7 +1212,7 @@ var LANGS = {
     perm_banner_worker:'Te avisaremos en cuanto tu informe sea aprobado o rechazado',
     perm_banner_manager:'Te avisaremos cada vez que un operario envíe un informe para aprobar',
     perm_banner_admin:'Te avisaremos de cada informe nuevo, aprobado o rechazado',
-    perm_banner_btn:'Activar', install_banner_title:'Instala la app para recibir avisos',
+    perm_banner_btn:'Activar', perm_banner_later:'Ahora no', install_banner_title:'Instala la app para recibir avisos',
     install_banner_body:'Pulsa Compartir y luego "Añadir a pantalla de inicio" para no perderte ninguna novedad',
   },
   ru: {
@@ -1242,7 +1254,7 @@ var LANGS = {
     perm_banner_worker:'Мы сообщим, как только ваш отчёт одобрят или отклонят',
     perm_banner_manager:'Мы сообщим, когда рабочий отправит отчёт на согласование',
     perm_banner_admin:'Мы сообщим о каждом новом, одобренном или отклонённом отчёте',
-    perm_banner_btn:'Включить', install_banner_title:'Установите приложение, чтобы получать уведомления',
+    perm_banner_btn:'Включить', perm_banner_later:'Не сейчас', install_banner_title:'Установите приложение, чтобы получать уведомления',
     install_banner_body:'Нажмите «Поделиться», затем «На экран «Домой»» — так вы не пропустите ни одного уведомления',
   },
   en: {
@@ -1284,7 +1296,7 @@ var LANGS = {
     perm_banner_worker:"We'll let you know as soon as your report is approved or rejected",
     perm_banner_manager:"We'll let you know whenever a worker submits a report for approval",
     perm_banner_admin:"We'll let you know about every new, approved or rejected report",
-    perm_banner_btn:'Turn on', install_banner_title:'Install the app to get notified',
+    perm_banner_btn:'Turn on', perm_banner_later:'Not now', install_banner_title:'Install the app to get notified',
     install_banner_body:'Tap Share, then "Add to Home Screen" so you never miss an update',
   }
 };
@@ -1741,6 +1753,7 @@ function routeToRoleScreen() {
   var titleKeys = { operario: 'nav_new', manager: 'nav_manager', admin: 'nav_admin' };
   document.getElementById('navTitle').textContent = currentUser.nombre || 'AEDIS';
   document.getElementById('navSubtitle').textContent = t(titleKeys[currentUser.rol] || 'nav_new');
+  updateBellUI(); // sincroniza el badge de la campana con lo persistido, evita que quede "pegado" de una sesión anterior
 
   var initPromise = Promise.resolve();
   if (currentUser.rol === 'operario') {
@@ -3927,48 +3940,50 @@ function ensureNotifyPermission() {
   waitForOneSignal(function() { showPermissionBanner(); });
 }
 
+// Diálogo centrado (estilo app moderna) para pedir permiso/instalación —
+// antes era un banner pegado cerca del tabbar inferior, que quedaba
+// escondido/poco visible. Función compartida: crea overlay + tarjeta
+// centrada, deja el contenido interior a cargo del caller.
+function showCenteredPermDialog(iconClass, title, body, btnText, onBtnClick) {
+  if (document.getElementById('notifyPermBanner')) return null;
+  var overlay = document.createElement('div');
+  overlay.id = 'notifyPermBanner';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:6000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .25s';
+  overlay.innerHTML =
+    '<div id="notifyPermCard" style="background:#fff;border-radius:24px;padding:28px 24px 20px;max-width:320px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);transform:scale(.92);transition:transform .25s">' +
+      '<div style="width:56px;height:56px;border-radius:50%;background:#e8f0ff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="'+iconClass+'" style="font-size:28px;color:#007AFF"></i></div>' +
+      '<div style="font-size:18px;font-weight:700;color:#000;margin-bottom:8px">'+title+'</div>' +
+      '<div style="font-size:14px;color:#636366;line-height:1.45;margin-bottom:22px">'+body+'</div>' +
+      (onBtnClick ? '<button id="notifyPermBtn" style="width:100%;background:#007AFF;color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;margin-bottom:8px">'+btnText+'</button>' : '') +
+      '<button id="notifyPermClose" style="width:100%;background:none;border:none;color:#8e8e93;padding:10px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;touch-action:manipulation">'+t('perm_banner_later')+'</button>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  var card = overlay.querySelector('#notifyPermCard');
+  requestAnimationFrame(function(){ overlay.style.opacity = '1'; card.style.transform = 'scale(1)'; });
+
+  function close() {
+    overlay.style.opacity = '0';
+    card.style.transform = 'scale(.92)';
+    setTimeout(function(){ overlay.remove(); }, 250);
+  }
+  overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
+  document.getElementById('notifyPermClose').onclick = close;
+  if (onBtnClick) document.getElementById('notifyPermBtn').onclick = function() { onBtnClick(this, close); };
+  return { close: close };
+}
+
 function showInstallBanner() {
-  if (document.getElementById('notifyPermBanner')) return;
-  var b = document.createElement('div');
-  b.id = 'notifyPermBanner';
-  b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:6000;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;align-items:center;gap:12px;border:.5px solid #e5e5ea;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s';
-  b.innerHTML =
-    '<i class="ti ti-square-plus" style="font-size:22px;color:#007AFF;flex-shrink:0"></i>' +
-    '<div style="flex:1;font-size:12.5px;color:#000;line-height:1.4"><b style="display:block;font-size:13px;margin-bottom:2px">'+t('install_banner_title')+'</b>'+t('install_banner_body')+'</div>' +
-    '<button id="notifyPermClose" style="background:none;border:none;color:#8e8e93;font-size:18px;padding:2px;flex-shrink:0;cursor:pointer;touch-action:manipulation">×</button>';
-  document.body.appendChild(b);
-  requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'translateY(0)'; });
-  document.getElementById('notifyPermClose').onclick = function() {
-    b.style.opacity = '0'; b.style.transform = 'translateY(10px)';
-    setTimeout(function(){ b.remove(); }, 250);
-  };
+  showCenteredPermDialog('ti ti-square-plus', t('install_banner_title'), t('install_banner_body'), null, null);
 }
 
 function showPermissionBanner() {
   if (document.getElementById('notifyPermBanner')) return; // evita duplicados
   if (Notification.permission !== 'default') return; // pudo cambiar mientras esperábamos
 
-  var b = document.createElement('div');
-  b.id = 'notifyPermBanner';
-  b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);z-index:6000;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;align-items:center;gap:12px;border:.5px solid #e5e5ea;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s';
   var roleBannerKey = { operario:'perm_banner_worker', manager:'perm_banner_manager', admin:'perm_banner_admin' };
   var bannerBody = t(roleBannerKey[(currentUser||{}).rol] || 'perm_banner_worker');
-  b.innerHTML =
-    '<i class="ti ti-bell-ringing" style="font-size:22px;color:#007AFF;flex-shrink:0"></i>' +
-    '<div style="flex:1;font-size:12.5px;color:#000;line-height:1.4"><b style="display:block;font-size:13px;margin-bottom:2px">'+t('perm_banner_title')+'</b>'+bannerBody+'</div>' +
-    '<button id="notifyPermBtn" style="background:#007AFF;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;font-family:inherit;flex-shrink:0;cursor:pointer;touch-action:manipulation">'+t('perm_banner_btn')+'</button>' +
-    '<button id="notifyPermClose" style="background:none;border:none;color:#8e8e93;font-size:18px;padding:2px;flex-shrink:0;cursor:pointer;touch-action:manipulation">×</button>';
-  document.body.appendChild(b);
-  requestAnimationFrame(function(){ b.style.opacity = '1'; b.style.transform = 'translateY(0)'; });
 
-  function closeBanner() {
-    b.style.opacity = '0';
-    b.style.transform = 'translateY(10px)';
-    setTimeout(function(){ b.remove(); }, 250);
-  }
-
-  document.getElementById('notifyPermBtn').onclick = function() {
-    var btn = this;
+  showCenteredPermDialog('ti ti-bell-ringing', t('perm_banner_title'), bannerBody, t('perm_banner_btn'), function(btn, close) {
     btn.textContent = '...';
     btn.disabled = true;
     // IMPORTANTE: usamos el método del SDK de OneSignal, NO el nativo
@@ -3978,14 +3993,13 @@ function showPermissionBanner() {
     OneSignal.Notifications.requestPermission()
       .then(function(granted) {
         console.log('[OneSignal] permiso concedido:', granted);
-        closeBanner();
+        close();
       })
       .catch(function(e) {
         console.log('[OneSignal] error al pedir permiso:', e && e.message);
-        closeBanner();
+        close();
       });
-  };
-  document.getElementById('notifyPermClose').onclick = closeBanner;
+  });
 }
 
 /* ════════ AUTODIAGNÓSTICO — sin necesidad de depuración remota ════════
@@ -4369,6 +4383,17 @@ function showPhotoGalleryLoading() {
   document.getElementById('pgBottomBar').style.pointerEvents = 'none';
 }
 
+// Las URL de Drive vienen como .../thumbnail?id=...&sz=w2000 (ver
+// Code_v5.gs) — perfecto para el visor a pantalla completa, pero
+// reutilizar ese mismo tamaño de 2000px para una miniatura de 44×44px
+// (renderPgThumbStrip) obligaba a descargar imágenes enormes solo para
+// mostrarlas en un cuadradito, y competía por ancho de banda con la foto
+// grande que el usuario está viendo — la causa real de "tardan mucho en
+// cargar". Reescribimos sz=w2000 → sz=w150 solo para las miniaturas.
+function pgThumbUrl(url) {
+  return String(url).replace(/([?&]sz=)w\d+/, '$1w150');
+}
+
 function renderPhotoGallery(photos) {
   pgPhotos = photos;
   pgIndex = 0;
@@ -4376,8 +4401,15 @@ function renderPhotoGallery(photos) {
 
   var track = document.getElementById('pgTrack');
   track.innerHTML = photos.map(function(url, i){
-    return '<div class="pg-slide" data-idx="'+i+'" style="flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;height:100%">' +
-      '<img src="'+url+'" style="max-width:100%;max-height:100%;object-fit:contain;-webkit-user-select:none;user-select:none;pointer-events:none" draggable="false">' +
+    // loading="lazy" — el track completo (todas las fotos) se pinta de
+    // golpe, pero sin esto el navegador arrancaba la descarga de TODAS
+    // las fotos en paralelo nada más abrir la galería, compitiendo por
+    // ancho de banda con la que el usuario ve primero. Al ser "lazy" y
+    // estar las demás fuera del área visible del scroll horizontal, el
+    // navegador las difiere hasta que el swipe las acerca a la pantalla.
+    return '<div class="pg-slide" data-idx="'+i+'" style="flex:0 0 100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;height:100%;position:relative">' +
+      '<div class="pg-slide-spinner splash-ring" style="border-color:rgba(255,255,255,.2);border-top-color:#fff;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div>' +
+      '<img src="'+url+'" loading="'+(i===0?'eager':'lazy')+'" onload="this.previousElementSibling.style.display=\'none\'" style="max-width:100%;max-height:100%;object-fit:contain;-webkit-user-select:none;user-select:none;pointer-events:none" draggable="false">' +
     '</div>';
   }).join('');
   track.scrollLeft = 0;
@@ -4409,9 +4441,14 @@ function renderPgThumbStrip() {
   strip.style.display = 'flex';
   strip.innerHTML = pgPhotos.map(function(url, i){
     var active = i === pgIndex;
-    return '<div onclick="pgJumpTo('+i+')" style="flex-shrink:0;width:44px;height:44px;border-radius:8px;overflow:hidden;cursor:pointer;touch-action:manipulation;' +
+    // click Y touchend: un <div> no interactivo por naturaleza no siempre
+    // recibe el "click" sintético tras un tap en iOS Safari, sobre todo
+    // dentro de una franja con overflow-x:auto como esta — con touchend
+    // como refuerzo el salto a la foto responde de forma fiable. pgJumpTo
+    // es idempotente, así que no pasa nada si ambos llegan a disparar.
+    return '<div onclick="pgJumpTo('+i+')" ontouchend="event.preventDefault();pgJumpTo('+i+')" style="flex-shrink:0;width:44px;height:44px;border-radius:8px;overflow:hidden;cursor:pointer;touch-action:manipulation;' +
       'border:2px solid ' + (active ? '#fff' : 'transparent') + ';opacity:' + (active ? '1' : '.55') + ';transition:opacity .15s,border-color .15s">' +
-      '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover;-webkit-user-select:none;user-select:none;pointer-events:none" draggable="false">' +
+      '<img src="'+pgThumbUrl(url)+'" style="width:100%;height:100%;object-fit:cover;-webkit-user-select:none;user-select:none;pointer-events:none" draggable="false">' +
     '</div>';
   }).join('');
 }
@@ -4653,6 +4690,7 @@ function checkWorkerNotifications() {
       // baja el número del icono, de forma consistente.
       var unreadLog = getNotifLog().filter(function(n){ return !n.read; }).length;
       updateAppIconBadge(unreadLog);
+      updateBellUI(); // resincroniza el badge de la campana en cada sondeo, no solo cuando llega algo nuevo
 
       // BUG CORREGIDO: antes se volvía a pintar TODA la lista (innerHTML
       // completo) en cada sondeo de 10s, aunque los datos fueran
@@ -4709,6 +4747,7 @@ function checkManagerNotifications() {
         });
       }
       updateAppIconBadge(unseenReports.length);
+      updateBellUI(); // resincroniza el badge de la campana en cada sondeo, no solo cuando llega algo nuevo
 
       // Ver el comentario en checkWorkerNotifications: no repintar si no
       // hay cambios reales, para no romper un scroll/tap en curso.
@@ -4742,6 +4781,7 @@ function checkAdminNotifications() {
         });
       }
       updateAppIconBadge(pendingUnseen.length);
+      updateBellUI(); // resincroniza el badge de la campana en cada sondeo, no solo cuando llega algo nuevo
     })
     .catch(function(){});
 }
