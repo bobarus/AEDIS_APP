@@ -5605,8 +5605,103 @@ function applyDevModeIfPresent() {
   }
 }
 
+/* ═══ PANEL DE DIAGNÓSTICO DE LAYOUT (temporal) ═══
+   Se activa con ?debug=layout en la URL. Muestra en pantalla, con
+   números REALES leídos del dispositivo en el momento, todo lo relevante
+   para el problema "el tabbar/espacio inferior no está a la distancia
+   correcta": los env(safe-area-inset-*) reales (medidos con una sonda,
+   no adivinados), las dimensiones reales de #appScroll/.bottom-tabbar/.nav,
+   y el modo de visualización real. Sin esto, cualquier ajuste de píxeles
+   hecho a ciegas desde aquí es una suposición — con esto, es un hecho. */
+function showLayoutDebugPanel() {
+  var probeTop = document.createElement('div');
+  probeTop.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);pointer-events:none;opacity:0';
+  var probeBottom = document.createElement('div');
+  probeBottom.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none;opacity:0';
+  document.body.appendChild(probeTop);
+  document.body.appendChild(probeBottom);
+
+  var panel = document.createElement('div');
+  panel.id = 'layoutDebugPanel';
+  panel.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;color:#0f0;font-family:monospace;font-size:12px;line-height:1.6;padding:16px;overflow-y:auto;white-space:pre-wrap;-webkit-user-select:text;user-select:text';
+  document.body.appendChild(panel);
+
+  function fmt() {
+    var tabbar = document.querySelector('.bottom-tabbar[style*="flex"]') || document.querySelector('.bottom-tabbar');
+    var nav = document.querySelector('.nav');
+    var appScroll = document.getElementById('appScroll');
+    var vv = window.visualViewport;
+    var tbRect = tabbar ? tabbar.getBoundingClientRect() : null;
+    var navRect = nav ? nav.getBoundingClientRect() : null;
+    var asRect = appScroll ? appScroll.getBoundingClientRect() : null;
+    var asStyle = appScroll ? getComputedStyle(appScroll) : null;
+    var tbStyle = tabbar ? getComputedStyle(tabbar) : null;
+
+    var lines = [];
+    lines.push('=== MODO DE VISUALIZACIÓN ===');
+    lines.push('navigator.standalone: ' + navigator.standalone);
+    lines.push('display-mode standalone: ' + window.matchMedia('(display-mode: standalone)').matches);
+    lines.push('display-mode fullscreen: ' + window.matchMedia('(display-mode: fullscreen)').matches);
+    lines.push('display-mode browser: ' + window.matchMedia('(display-mode: browser)').matches);
+    lines.push('');
+    lines.push('=== SAFE AREA (medido con sonda real, no CSS de memoria) ===');
+    lines.push('env(safe-area-inset-top): ' + probeTop.offsetHeight + 'px');
+    lines.push('env(safe-area-inset-bottom): ' + probeBottom.offsetHeight + 'px');
+    lines.push('');
+    lines.push('=== VIEWPORT ===');
+    lines.push('window.innerWidth x innerHeight: ' + window.innerWidth + ' x ' + window.innerHeight);
+    lines.push('document.documentElement.clientHeight: ' + document.documentElement.clientHeight);
+    lines.push('visualViewport: ' + (vv ? (vv.width.toFixed(1) + ' x ' + vv.height.toFixed(1) + ', offsetTop=' + vv.offsetTop.toFixed(1) + ', scale=' + vv.scale) : 'no disponible'));
+    lines.push('');
+    lines.push('=== #appScroll ===');
+    lines.push('existe: ' + !!appScroll);
+    if (appScroll) {
+      lines.push('padding-top computado: ' + asStyle.paddingTop);
+      lines.push('padding-bottom computado: ' + asStyle.paddingBottom);
+      lines.push('getBoundingClientRect: top=' + asRect.top.toFixed(1) + ' bottom=' + asRect.bottom.toFixed(1) + ' height=' + asRect.height.toFixed(1));
+      lines.push('scrollHeight: ' + appScroll.scrollHeight + '  clientHeight: ' + appScroll.clientHeight);
+      lines.push('--nav-h (var CSS): ' + getComputedStyle(document.documentElement).getPropertyValue('--nav-h'));
+    }
+    lines.push('');
+    lines.push('=== .nav ===');
+    lines.push('existe: ' + !!nav + (nav ? (' display=' + getComputedStyle(nav).display) : ''));
+    if (navRect) lines.push('getBoundingClientRect: top=' + navRect.top.toFixed(1) + ' bottom=' + navRect.bottom.toFixed(1) + ' height=' + navRect.height.toFixed(1));
+    lines.push('');
+    lines.push('=== .bottom-tabbar (el que está visible) ===');
+    lines.push('existe: ' + !!tabbar + (tabbar ? (' id=' + tabbar.id) : ''));
+    if (tbRect) {
+      lines.push('getBoundingClientRect: top=' + tbRect.top.toFixed(1) + ' bottom=' + tbRect.bottom.toFixed(1) + ' height=' + tbRect.height.toFixed(1));
+      lines.push('distancia real tabbar.bottom → window.innerHeight: ' + (window.innerHeight - tbRect.bottom).toFixed(1) + 'px');
+      lines.push('CSS "bottom" computado: ' + tbStyle.bottom);
+    }
+    lines.push('');
+    lines.push('=== body / html ===');
+    lines.push('body computed height: ' + getComputedStyle(document.body).height);
+    lines.push('body getBoundingClientRect height: ' + document.body.getBoundingClientRect().height.toFixed(1));
+    lines.push('html getBoundingClientRect height: ' + document.documentElement.getBoundingClientRect().height.toFixed(1));
+    lines.push('');
+    lines.push('(toca la pantalla para cerrar — o haz una captura ahora)');
+    panel.textContent = lines.join('\n');
+  }
+
+  fmt();
+  window.addEventListener('resize', fmt);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', fmt);
+  panel.addEventListener('click', function() {
+    window.removeEventListener('resize', fmt);
+    panel.remove();
+    probeTop.remove();
+    probeBottom.remove();
+  });
+}
+
 (function initApp(){
   applyDevModeIfPresent();
+  if (new URLSearchParams(window.location.search).get('debug') === 'layout') {
+    // Se dispara tras el primer frame para que #appScroll ya tenga su
+    // display/padding reales aplicados (evita medir un estado transitorio).
+    requestAnimationFrame(function(){ requestAnimationFrame(showLayoutDebugPanel); });
+  }
 
   // Se oculta la barra superior y se activa el modo pantalla-completa-
   // blanca ANTES de decidir qué pantalla mostrar — las 2 gates nuevas
