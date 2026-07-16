@@ -282,7 +282,7 @@ body{height:100dvh}
 .photo-row:last-child{border-bottom:none}
 .photo-row-head{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:4px}
 .photo-row-head .rlabel{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#737687}
-.photo-hint{font-size:12.5px;color:#737687;margin-bottom:14px;line-height:1.4}
+.photo-hint{font-size:12.5px;color:#737687;margin-top:-4px;line-height:1.4}
 /* Pedido: sombra alrededor de todo el perímetro, como si el botón
    fuera convexo/abombado — no una sombra "caída" de un solo lado, sino
    difusa en todas direcciones (offset 0, blur grande) para simular
@@ -976,13 +976,13 @@ body.pin-mode{overflow:hidden}
       <div class="photo-row">
         <div class="photo-row-head">
           <span class="rlabel" id="lbl-foto-obra">Fotos de obra</span>
+          <div class="photo-hint" id="hint-obra">Añade fotos del estado de la obra</div>
           <label class="photo-input-btn" id="addBtnObra">
             <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
             Añadir
             <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosObra" onchange="handlePhotoSelect(this,'obra')">
           </label>
         </div>
-        <div class="photo-hint" id="hint-obra">Añade fotos del estado de la obra</div>
         <div class="photo-thumbs" id="thumbsObra"></div>
       </div>
     </div>
@@ -1020,13 +1020,13 @@ body.pin-mode{overflow:hidden}
       <div class="photo-row">
         <div class="photo-row-head">
           <span class="rlabel" id="lbl-foto-mat">Materiales / recibo</span>
+          <div class="photo-hint" id="hint-mat">Añade fotos del recibo o albarán de materiales</div>
           <label class="photo-input-btn" id="addBtnMat">
             <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
             Añadir
             <input type="file" accept="image/*" multiple style="display:none" id="inputPhotosMat" onchange="handlePhotoSelect(this,'materiales')">
           </label>
         </div>
-        <div class="photo-hint" id="hint-mat">Añade fotos del recibo o albarán de materiales</div>
         <div class="photo-thumbs" id="thumbsMat"></div>
       </div>
     </div>
@@ -5840,6 +5840,39 @@ if ('serviceWorker' in navigator) {
     }
     navTitleEl.addEventListener('click', registerTap);
     navTitleEl.addEventListener('touchend', function(e) { e.preventDefault(); registerTap(); }, { passive: false });
+  })();
+
+  // ═══ ACCESO AL PANEL DE DIAGNÓSTICO DE LAYOUT DESDE LA UI ═══
+  // BUG CORREGIDO ("el debug=layout no funciona"): pedir al usuario que
+  // añada un icono nuevo a la pantalla de inicio con ?debug=layout no es
+  // fiable — si en vez de eso toca el enlace directamente (desde el chat,
+  // Notas, etc.) Safari lo abre como pestaña normal, nunca como standalone,
+  // que es justo lo que había que medir (navigator.standalone volvía a
+  // salir false en el segundo intento). Además el panel se disparaba antes
+  // de terminar el login, con el nav aún oculto. Se sustituye por el mismo
+  // gesto de 5 toques ya usado para diagnosePush(), pero sobre el
+  // subtítulo — así se activa DESDE DENTRO de la propia app ya instalada
+  // y ya logueada, sin navegar a ningún sitio ni perder el modo standalone.
+  (function() {
+    var navSubtitleEl = document.getElementById('navSubtitle');
+    if (!navSubtitleEl) return;
+    navSubtitleEl.style.cursor = 'pointer';
+    var tapCount2 = 0, tapTimer2 = null, lastHandledAt2 = 0;
+    function registerTap2() {
+      var now = Date.now();
+      if (now - lastHandledAt2 < 300) return;
+      lastHandledAt2 = now;
+      tapCount2++;
+      if (tapTimer2) clearTimeout(tapTimer2);
+      tapTimer2 = setTimeout(function(){ tapCount2 = 0; }, 2000);
+      if (tapCount2 >= 5) {
+        tapCount2 = 0;
+        clearTimeout(tapTimer2);
+        showLayoutDebugPanel();
+      }
+    }
+    navSubtitleEl.addEventListener('click', registerTap2);
+    navSubtitleEl.addEventListener('touchend', function(e) { e.preventDefault(); registerTap2(); }, { passive: false });
   })();
 
   // ═══ NAVBAR HIDE-ON-SCROLL (estilo Tinkoff) ═══
