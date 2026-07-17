@@ -103,13 +103,6 @@ input,textarea,.rta,.mode-text-input,.mi-comment,
   -webkit-user-select:text;-moz-user-select:text;user-select:text;
 }
 html,body{background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-/* DIAGNÓSTICO TEMPORAL — quitar esta línea en cuanto tengamos la respuesta.
-   Sobrescribe el fondo de html/body a un color imposible de confundir con
-   blanco, para saber si la franja bajo el tabbar es el propio fondo de
-   html/body asomando (entonces se verá de este color) o algo fuera del
-   control de la página (WKWebView/UI del sistema — seguirá blanco/gris
-   pase lo que pase con el CSS). */
-html,body{background:#ff00aa !important}
 /* Ocultar la barra de scroll en TODA la app — el gesto táctil sigue
    funcionando igual, solo desaparece la línea visual del lateral derecho
    (en móvil suele ya estar oculta por defecto, pero en desktop/algunos
@@ -127,7 +120,24 @@ html,body{background:#ff00aa !important}
    solución real es que <html>/<body> NUNCA scrolleen: toda la pantalla
    de contenido va dentro de #appScroll (un div normal, no fixed), que es
    el único que scrollea. Como nav/tabbar dejan de ser hermanos de un
-   elemento que se mueve, WebKit ya no tiene motivo para "temblarlos". */
+   elemento que se mueve, WebKit ya no tiene motivo para "temblarlos".
+   NO QUITAR overflow:hidden DE <html> — 2026-07-17, INTENTO REVERTIDO EN
+   LA MISMA SESIÓN: se probó quitarlo (dejándolo solo en <body>) para que
+   el "colchón" de -60px de .bottom-tabbar/.fullbleed dejara de recortarse
+   en el borde del viewport (teoría: overflow:hidden en el elemento RAÍZ
+   se propaga al viewport y recorta ahí cualquier position:fixed que
+   sobresalga, lo que explicaría por qué el colchón nunca evitó la franja
+   blanca). La teoría puede ser correcta, pero quitarlo en la práctica
+   reabrió el bug ORIGINAL que este overflow:hidden prevenía: en un
+   iPhone real, sin él, todo el documento vuelve a sentirse "arrastrable"
+   como una página web al deslizar el dedo (rubber-band del viewport raíz)
+   en vez de comportarse como una interfaz de app fija — confirmado por el
+   usuario en su dispositivo real justo después de probarlo. Revertido de
+   inmediato: el gap blanco (nunca confirmado al 100% como resuelto) es un
+   problema menor comparado con toda la app sintiéndose "web" al tacto.
+   Cualquier futuro intento de arreglar el gap DEBE mantener
+   overflow:hidden en <html> — buscar otra vía (p.ej. no depender de
+   sobresalir del viewport en absoluto). */
 html,body{height:100%;overflow:hidden}
 body{height:100dvh}
 /* BUG CORREGIDO ("las secciones quedan tapadas bajo la cabecera"): antes
@@ -871,7 +881,7 @@ body.pin-mode{overflow:hidden}
         <i class="ti ti-x" style="font-size:17px;color:#000"></i>
       </button>
     </div>
-    <div style="overflow-y:auto;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch">
+    <div style="overflow-y:auto;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
 
       <div class="mi-comment full" style="margin:12px 0" id="erCommentBlock"><b id="erCommentLabel">Comentario del manager</b><span id="erComment"></span></div>
 
@@ -1303,7 +1313,7 @@ body.pin-mode{overflow:hidden}
         </button>
       </div>
     </div>
-    <div id="rdBody" style="overflow-y:auto;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch"></div>
+    <div id="rdBody" style="overflow-y:auto;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain"></div>
     <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
         <i class="ti ti-upload" style="font-size:16px"></i> <span id="rdShareBtnLbl">Compartir</span>
@@ -1319,7 +1329,7 @@ body.pin-mode{overflow:hidden}
 <div class="mg-modal-overlay fullbleed" id="mgDetailModal" onclick="if(event.target===this)closeManagerDetail()">
   <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0 0 60px">
     <!-- Скроллируемый контент -->
-    <div style="overflow-y:auto;flex:1;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 8px;-webkit-overflow-scrolling:touch">
+    <div style="overflow-y:auto;flex:1;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
         <div style="min-width:0">
           <div class="mg-modal-title" id="mgdTitle">—</div>
