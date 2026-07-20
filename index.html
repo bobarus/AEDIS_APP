@@ -689,7 +689,15 @@ body.pin-mode{overflow:hidden}
   display:flex;
   background:#1c1c1e;
   border-radius:24px 24px 0 0;
-  padding:10px 0 max(env(safe-area-inset-bottom,0px), 10px);
+  /* BUG CORREGIDO (2026-07-17, intento directo pedido por el usuario:
+     "bajar el propio tabbar hasta donde está la franja, no taparla con
+     otra capa"): el despeje inferior ya no es max(env,10px) — ahora tiene
+     un suelo mucho más generoso, max(env(safe-area-inset-bottom,0px),
+     50px), para que el propio fondo REAL del tabbar (contenido normal
+     del documento, no una capa aparte) llegue de sobra a la zona donde
+     se veía blanco, en vez de depender de que los últimos píxeles de un
+     cálculo ajustado se rastericen bien. */
+  padding:10px 0 max(env(safe-area-inset-bottom,0px), 50px);
   /* BUG CORREGIDO (2026-07-17, confirmado con datos reales del
      dispositivo — no una teoría): document.elementFromPoint() en varios
      puntos del área inferior (2 a 90px del borde, todo el ancho) devolvía
