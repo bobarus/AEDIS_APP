@@ -901,6 +901,41 @@ body.pin-mode{overflow:hidden}
 
 </head>
 <body>
+<script>
+// BUG CORREGIDO (2026-07-17, intento 16 — todas las unidades CSS de
+// viewport (%, dvh, svh, con o sin interactive-widget) probadas y
+// descartadas por datos reales: en este dispositivo/WebKit,
+// window.innerHeight se queda fijo en un valor menor que
+// window.screen.height (una diferencia real y constante, confirmada
+// con capturas de pantalla, no una lectura de API poco fiable) — y
+// NINGÚN cálculo de altura hecho en CSS logra alcanzar screen.height,
+// venga de la unidad que venga. En vez de seguir intentando que CSS lo
+// resuelva solo, se fuerza aquí por JS: <html> y <body> se miden y
+// fijan explícitamente en píxeles contra screen.height (el único valor
+// que las capturas de pantalla confirman como el tamaño físico real),
+// en vez de confiar en que 100dvh/100% lo resuelvan bien. Se ejecuta
+// SÍNCRONO aquí (antes de pintar cualquier contenido) y de nuevo en
+// cada resize/orientationchange, con un pequeño margen de reintento
+// porque en el arranque en frío de una PWA standalone
+// window.screen.height a veces tarda uno o dos frames en estabilizarse.
+(function () {
+  function applyRealHeight() {
+    var h = window.screen && window.screen.height;
+    if (!h || h < 200) return; // valor no fiable todavía, no lo usamos
+    var px = h + 'px';
+    document.documentElement.style.height = px;
+    document.body.style.height = px;
+  }
+  applyRealHeight();
+  document.addEventListener('DOMContentLoaded', applyRealHeight);
+  window.addEventListener('load', applyRealHeight);
+  window.addEventListener('resize', applyRealHeight);
+  window.addEventListener('orientationchange', function () {
+    setTimeout(applyRealHeight, 50);
+    setTimeout(applyRealHeight, 300);
+  });
+})();
+</script>
 
 <!-- ═══ SPLASH SCREEN ═══ -->
 <div id="splashScreen">
