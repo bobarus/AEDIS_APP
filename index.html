@@ -798,16 +798,16 @@ body.pin-mode{overflow:hidden}
   display:flex;
   background:#1c1c1e;
   border-radius:24px 24px 0 0;
-  /* BUG CORREGIDO (2026-07-17, intento directo pedido por el usuario:
-     "bajar el propio tabbar hasta donde está la franja, no taparla con
-     otra capa"): el despeje inferior ya no es max(env,10px) — ahora tiene
-     un suelo mucho más generoso, max(env(safe-area-inset-bottom,0px),
-     50px), para que el propio fondo REAL del tabbar (contenido normal
-     del documento, no una capa aparte) llegue de sobra a la zona donde
-     se veía blanco, en vez de depender de que los últimos píxeles de un
-     cálculo ajustado se rastericen bien. */
-    padding:10px 0 calc(env(safe-area-inset-bottom));
-    
+  /* 2026-07-20: altura reducida a petición explícita ("tamaño óptimo
+     como en apps modernas") — el suelo de 50px de la nota de abajo ya no
+     hace falta: quedó obsoleto en cuanto el "intento 16" (más abajo,
+     applyRealHeight()) empezó a forzar por JS la altura real de html/body
+     contra screen.height — el propio mecanismo que hacía falta un suelo
+     grande para compensar ya no existe, así que un padding pequeño no
+     reabre el hueco blanco. Solo queda el propio safe-area-inset-bottom,
+     sin suelo artificial. */
+  padding:6px 0 env(safe-area-inset-bottom,0px);
+
   /* BUG CORREGIDO (2026-07-17, confirmado con datos reales del
      dispositivo — no una teoría): document.elementFromPoint() en varios
      puntos del área inferior (2 a 90px del borde, todo el ancho) devolvía
@@ -878,9 +878,9 @@ body.pin-mode{overflow:hidden}
    claramente por encima de ese mínimo. */
 .bottom-tab{
   flex:1;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   cursor:pointer;touch-action:manipulation;background:none;border:none;font-family:inherit;
-  padding:10px 4px 6px;
+  padding:6px 4px 4px;
   transition:opacity .15s;
 }
 .bottom-tab .tab-icon{width:auto;height:auto;border-radius:0;display:flex;align-items:center;justify-content:center;background:transparent !important}
@@ -895,8 +895,8 @@ body.pin-mode{overflow:hidden}
    pero esta es la navegación PRINCIPAL, debería notarse más que el resto,
    no menos), acercándose a los ~24-28pt que usan los tab bars nativos de
    iOS/Android de referencia. */
-.bottom-tab i{font-size:30px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
-.bottom-tab span{display:block;font-size:12px;font-weight:600;letter-spacing:.1px;color:#8e8e93;white-space:nowrap;transition:color .25s ease,font-weight .15s ease}
+.bottom-tab i{font-size:24px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.bottom-tab span{display:block;font-size:11px;font-weight:600;letter-spacing:.1px;color:#8e8e93;white-space:nowrap;transition:color .25s ease,font-weight .15s ease}
 .bottom-tab.active i,.bottom-tab.active span{color:#4d94ff}
 .bottom-tab.active i{filter:drop-shadow(0 0 7px rgba(77,148,255,.55));transform:scale(1.08)}
 .bottom-tab.active span{font-weight:700}
@@ -1851,7 +1851,7 @@ var LANGS = {
     lbl_cliente:'Cliente', lbl_obra:'Obra', lbl_fecha:'Fecha', lbl_operario:'Operario',
     lbl_ayudante:'Ayudante', lbl_vehiculo:'Vehículo', lbl_tipo:'Tipo', lbl_horas:'Horas',
     sub_trabajos:'Trabajos realizados', lbl_compania:'Compañía', sub_materiales:'Materiales utilizados',
-    lbl_precio:'Precio', lbl_foto_obra:'Fotos de obra', lbl_foto_mat:'Materiales / recibo',
+    lbl_precio:'Precio', lbl_foto_obra:'Fotos de obra', lbl_foto_mat:'Materiales / recibo', share_header:'Parte de trabajo',
     lbl_tipo_trabajo:'Tipo de trabajo', lbl_horas_trabajadas:'Horas trabajadas',
     lbl_compania_mat:'Compañía (materiales)', lbl_precio_mat:'Precio materiales (€)',
     lbl_descripcion:'Descripción', lbl_coste_materiales:'Coste materiales',
@@ -1903,7 +1903,7 @@ var LANGS = {
     lbl_cliente:'Клиент', lbl_obra:'Объект', lbl_fecha:'Дата', lbl_operario:'Рабочий',
     lbl_ayudante:'Помощник', lbl_vehiculo:'Транспорт', lbl_tipo:'Тип', lbl_horas:'Часы',
     sub_trabajos:'Выполненные работы', lbl_compania:'Компания', sub_materiales:'Использованные материалы',
-    lbl_precio:'Цена', lbl_foto_obra:'Фото работ', lbl_foto_mat:'Материалы / чек',
+    lbl_precio:'Цена', lbl_foto_obra:'Фото работ', lbl_foto_mat:'Материалы / чек', share_header:'Рабочий отчёт',
     lbl_tipo_trabajo:'Тип работы', lbl_horas_trabajadas:'Отработанные часы',
     lbl_compania_mat:'Компания (материалы)', lbl_precio_mat:'Цена материалов (€)',
     lbl_descripcion:'Описание', lbl_coste_materiales:'Стоимость материалов',
@@ -1955,7 +1955,7 @@ var LANGS = {
     lbl_cliente:'Client', lbl_obra:'Site', lbl_fecha:'Date', lbl_operario:'Worker',
     lbl_ayudante:'Assistant', lbl_vehiculo:'Vehicle', lbl_tipo:'Type', lbl_horas:'Hours',
     sub_trabajos:'Work done', lbl_compania:'Company', sub_materiales:'Materials used',
-    lbl_precio:'Price', lbl_foto_obra:'Site photos', lbl_foto_mat:'Materials / receipt',
+    lbl_precio:'Price', lbl_foto_obra:'Site photos', lbl_foto_mat:'Materials / receipt', share_header:'Work report',
     lbl_tipo_trabajo:'Type of work', lbl_horas_trabajadas:'Hours worked',
     lbl_compania_mat:'Company (materials)', lbl_precio_mat:'Materials price (€)',
     lbl_descripcion:'Description', lbl_coste_materiales:'Materials cost',
@@ -3157,7 +3157,7 @@ function showSuccess(payload) {
 
 /* ── Универсальный текст для шаринга (все заполненные поля, без Total) ── */
 function buildShareText(r) {
-  var lines = ['📋 Parte de trabajo', '──────────────'];
+  var lines = ['📋 ' + t('share_header'), '──────────────'];
   var fecha = r.FECHA || r.fecha;
   var fechaStr = fecha ? fmtDate(fecha) : '';
   if (fechaStr)                  lines.push('📅 ' + fechaStr);
@@ -3167,12 +3167,25 @@ function buildShareText(r) {
   if (r.AYUDANTE || r.ayudante)  lines.push('👥 ' + (r.AYUDANTE || r.ayudante));
   if (r['VEHÍCULO'] || r.vehiculo) lines.push('🚗 ' + (r['VEHÍCULO'] || r.vehiculo));
   if (r['TIPO DE TRABAJO'] || r.tipo) lines.push('🔧 ' + (r['TIPO DE TRABAJO'] || r.tipo));
-  if (r.HORAS || r.horas)        lines.push('⏱ ' + (r.HORAS || r.horas) + ' h');
+  if (r.HORAS || r.horas)        lines.push('⏱ ' + (r.HORAS || r.horas) + ' ' + t('unit_hora_corta'));
   if (r['TRABAJOS REALIZADOS'] || r.trabajos) lines.push('📝 ' + (r['TRABAJOS REALIZADOS'] || r.trabajos));
   if (r['COMPAÑÍA'] || r.compania) lines.push('🏪 ' + (r['COMPAÑÍA'] || r.compania));
   if (r['MATERIALES UTILIZADOS'] || r.materiales) lines.push('📦 ' + (r['MATERIALES UTILIZADOS'] || r.materiales));
   if (r['PRECIO (EUR)'] || r.precio) lines.push('💶 ' + (r['PRECIO (EUR)'] || r.precio) + ' €');
   if (r.ID) lines.push('🆔 ' + r.ID);
+
+  // Pedido: los enlaces a las carpetas de Drive de las fotos (no una foto
+  // suelta) van al final, en su propia sección — ya están guardados como
+  // enlace de carpeta directamente en el registro (FOTOS DE OBRA/FOTO
+  // MATERIALES · ver el modelo de datos), no hace falta pedir nada al
+  // backend para compartirlos.
+  var fotosObra = r['FOTOS DE OBRA'] || r.fotosObra;
+  var fotosMat = r['FOTO MATERIALES / RECIBO'] || r.fotosMat;
+  if (fotosObra || fotosMat) {
+    lines.push('──────────────');
+    if (fotosObra) lines.push('📷 ' + t('lbl_foto_obra') + ': ' + fotosObra);
+    if (fotosMat)  lines.push('🧾 ' + t('lbl_fotos_materiales') + ': ' + fotosMat);
+  }
   return lines.join('\n');
 }
 
@@ -5843,6 +5856,7 @@ function closeNotifModal() {
 var pgPhotos = [];
 var pgIndex = 0;
 var pgChromeVisible = true;
+var pgFolderUrl = '';
 
 var pgLastTriggerEl = null;
 function openPhotoGallery(triggerEl) {
@@ -5859,12 +5873,18 @@ function openPhotoGallery(triggerEl) {
   } catch(e) { /* No es JSON — es un enlace a carpeta de Drive, tratamos abajo */ }
 
   if (isJsonArray) {
+    // Caso defensivo sin usar hoy (data-photos siempre es un enlace de
+    // carpeta en la práctica, ver buildDetailHtml) — sin carpeta real que
+    // enlazar, Compartir cae de vuelta a compartir solo la foto actual.
+    pgFolderUrl = '';
     if (photos.length) renderPhotoGallery(photos);
     return;
   }
 
-  // Es un enlace de carpeta de Drive (formato original, sin modificar en la hoja).
-  // Pedimos al backend las fotos individuales de esa carpeta para la galería.
+  // Es un enlace de carpeta de Drive (formato original, sin modificar en la hoja) —
+  // se guarda para que "Compartir" desde la galería enlace la carpeta
+  // completa, no la foto suelta que se esté viendo en ese momento.
+  pgFolderUrl = value;
   showPhotoGalleryLoading();
   console.log('[PhotoGallery] pidiendo fotos de:', value);
   fetch(WEBAPP_URL + '?action=getFolderPhotos&codigo=' + encodeURIComponent(currentPin) + '&url=' + encodeURIComponent(value))
@@ -6048,7 +6068,13 @@ function togglePgChrome() {
 }
 
 function sharePhotoGalleryCurrent() {
-  var url = pgPhotos[pgIndex];
+  // Pedido: compartir desde la galería debe enlazar la carpeta ENTERA de
+  // Drive (todas las fotos de esa sección del informe), no solo la foto
+  // individual que se esté viendo en ese instante — pgFolderUrl se guarda
+  // al abrir la galería (ver openPhotoGallery). Si por lo que sea no hay
+  // carpeta conocida (caso defensivo, no ocurre en la práctica actual),
+  // se cae de vuelta a compartir la foto actual antes que no compartir nada.
+  var url = pgFolderUrl || pgPhotos[pgIndex];
   if (!url) return;
   if (navigator.share) {
     navigator.share({ url: url }).catch(function(){});
