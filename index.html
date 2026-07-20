@@ -179,7 +179,23 @@ html,body{background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"SF Pr
    Cualquier futuro intento de arreglar el gap DEBE mantener
    overflow:hidden en <html> — buscar otra vía (p.ej. no depender de
    sobresalir del viewport en absoluto). */
-html,body{height:100%;overflow:hidden}
+/* BUG CORREGIDO (2026-07-17, intento 14 — la corrección de svh→dvh de
+   abajo NO cambió el hueco ni un píxel según el propio dispositivo, así
+   que la unidad no era instrucción suficiente por sí sola): <html> tenía
+   height:100% (un porcentaje "clásico", sin ninguna conciencia de
+   safe-area/dynamic viewport) mientras <body> usa height:100dvh (unidad
+   moderna). Ambos DEBERÍAN resolver al mismo valor en teoría, pero son
+   dos algoritmos de resolución de tamaño distintos — si no coinciden
+   exactamente en píxeles en este WebKit/dispositivo concreto, y <html>
+   tiene overflow:hidden, cualquier diferencia entre ambos recortaría a
+   <body> (su hijo) por el borde más corto de los dos, sin que ningún
+   diagnóstico basado en getBoundingClientRect()/elementFromPoint pudiera
+   detectarlo — esas APIs miden dentro del sistema de coordenadas ya
+   recortado, nunca fuera de él. <html> pasa a usar la misma unidad
+   dinámica que <body>, eliminando cualquier posible desajuste entre
+   ambos por usar dos formas distintas de expresar "toda la pantalla". */
+html{height:100dvh;overflow:hidden}
+body{overflow:hidden}
 /* BUG RAÍZ ENCONTRADO Y CORREGIDO (2026-07-17, tras 12 intentos fallidos
    con otras teorías): esta regla decía "100svh", no "100dvh" — un error
    real en el código, no una teoría. svh ("small viewport height") es,
