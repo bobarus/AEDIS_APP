@@ -6,18 +6,32 @@
      overlays-content — con resizes-content, cada vez que aparecía el
      teclado el visualViewport se encogía y TODO lo dimensionado con
      100dvh/height:100% (el modal de editar informe incluido) se
-     achicaba visiblemente con él, sintiéndose como si "la pantalla se
-     partiera a la mitad" en vez de comportarse como una app nativa,
-     donde el teclado simplemente se superpone sin encoger el layout. Con
-     overlays-content, 100dvh/height:100% siempre reportan la altura
-     completa real, pase lo que pase con el teclado; el propio WebKit
-     sigue encargándose de desplazar el campo enfocado por encima del
-     teclado (comportamiento nativo del focus, no depende de esta
-     meta). El hack JS que ajustaba a mano el maxHeight del modal vía
-     visualViewport (ver más abajo, ya eliminado) existía específicamente
-     para paliar el encogimiento de resizes-content — con
-     overlays-content ya no hace falta. -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content">
+     achicaba visiblemente con él. El hack JS que ajustaba a mano el
+     maxHeight del modal vía visualViewport (ver más abajo, ya eliminado)
+     existía específicamente para paliar ese encogimiento.
+     REVERTIDO EN LA MISMA SESIÓN a "resizes-visual" (2026-07-17,
+     más tarde): tras cambiar a overlays-content, el usuario reportó que
+     la franja blanca bajo el tabbar dejó de ser un detalle localizado —
+     pasó a notarse en TODA la app, con el espacio útil reducido en todas
+     las pantallas y los elementos anclados al fondo (footers de modales
+     incluidos) sistemáticamente "levantados" por encima del borde físico
+     real. Ese patrón (generalizado, no localizado en un elemento) encaja
+     con que 100dvh/window.innerHeight estuvieran reportando una altura
+     MENOR que la pantalla física real — algo que ningún diagnóstico
+     anterior habría detectado, porque todos comparaban un elemento
+     CONTRA innerHeight (relativo), nunca innerHeight contra la altura
+     física real del dispositivo (absoluto). overlays-content es la
+     variante más nueva y menos probada de las tres del spec
+     interactive-widget — "resizes-visual" es el comportamiento por
+     defecto/histórico (el que ya usaban los navegadores antes de que
+     existiera esta meta): el visualViewport SÍ se encoge con el teclado
+     (así que WebKit sigue desplazando el campo enfocado por encima de
+     él, comportamiento nativo, sin cambios) pero el LAYOUT viewport
+     (100dvh/height:100%) NUNCA se encoge — ni con el teclado ni, con
+     suerte, con ningún otro efecto colateral de overlays-content. Debería
+     seguir evitando el "modal se encoge a la mitad" sin el efecto
+     secundario sistémico. Sin confirmar en dispositivo real todavía. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AEDIS" id="appTitleMeta">
