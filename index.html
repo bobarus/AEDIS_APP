@@ -194,8 +194,8 @@ html,body{background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"SF Pr
    recortado, nunca fuera de él. <html> pasa a usar la misma unidad
    dinámica que <body>, eliminando cualquier posible desajuste entre
    ambos por usar dos formas distintas de expresar "toda la pantalla". */
-html{height:100dvh;overflow:hidden}
-body{overflow:hidden}
+html{height:100dvh;overflow:hidden;touch-action:manipulation}
+body{overflow:hidden;touch-action:manipulation}
 /* BUG RAÍZ ENCONTRADO Y CORREGIDO (2026-07-17, tras 12 intentos fallidos
    con otras teorías): esta regla decía "100svh", no "100dvh" — un error
    real en el código, no una teoría. svh ("small viewport height") es,
@@ -708,10 +708,32 @@ body.pin-mode{overflow:hidden}
    la tarjeta ni bloquea su tap normal cuando está cerrada. overflow:hidden
    en el wrap recorta el desplazamiento para que nunca se vea nada fuera
    de las esquinas redondeadas de la propia tarjeta. */
-.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;overflow:hidden}
+/* BUG CORREGIDO ("la tarjeta se ve mal dibujada"): con dos capas
+   superpuestas de exactamente el mismo tamaño (la tarjeta blanca encima,
+   el botón rojo debajo) cada una redondea su propia esquina por
+   separado — aunque la geometría coincide al píxel, el antialiasing de
+   cada esquina se rasteriza de forma independiente y puede dejar un hilo
+   de un color de fondo distinto asomando en la curva. Poniendo el propio
+   fondo blanco en el wrap (el mismo color que las 3 tarjetas), cualquier
+   resto de ese hilo queda blanco sobre blanco — invisible — en vez de
+   dejar ver un filo rojo del botón de eliminar. */
+.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;overflow:hidden;background:#fff}
 .swipe-wrap.r12{border-radius:12px;margin:0 16px 8px}
 .swipe-wrap>.mi-card,.swipe-wrap>.mg-card,.swipe-wrap>.ad-card{margin:0;position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
-.swipe-delete-action{position:absolute;top:0;right:0;bottom:0;width:84px;background:#ff3b30;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
+/* BUG CORREGIDO ("la tarjeta se ve mal dibujada" — el fondo blanco del
+   wrap de más arriba no era la causa real): border-radius en una caja
+   deja sus 4 esquinas SIN pintar (las recorta en diagonal) — la propia
+   tarjeta, al tener sus esquinas redondeadas, deja justo esas esquinas
+   "agujereadas" por diseño, revelando lo que haya pintado detrás en ese
+   hueco. Sin este radio a juego en el botón rojo, ese hueco enseñaba el
+   rectángulo recto del botón (confirmado con elementFromPoint: a 1-2px
+   de la esquina, el punto pertenece al botón, no a la tarjeta) aunque la
+   tarjeta cubriera el resto entero. Con el mismo radio en sus dos
+   esquinas del lado del borde del wrap, el hueco de la tarjeta cae sobre
+   un hueco idéntico del botón, y lo único que queda debajo es el fondo
+   blanco liso del wrap — invisible sobre la tarjeta blanca. */
+.swipe-delete-action{position:absolute;top:0;right:0;bottom:0;width:84px;background:#ff3b30;border:none;border-radius:0 20px 20px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
+.swipe-wrap.r12 .swipe-delete-action{border-radius:0 12px 12px 0}
 .swipe-delete-action i{font-size:22px}
 .ad-month-header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;cursor:pointer;touch-action:manipulation}
 .ad-month-header:active{opacity:.7}
@@ -6400,9 +6422,20 @@ document.addEventListener('visibilitychange', function() {
 (function() {
   var modalIds = [
     'reportDetailModal', 'mgDetailModal', 'editReportModal',
-    'mgRejectModal', 'notifFullModal', 'photoGalleryModal'
+    'mgRejectModal', 'notifFullModal', 'photoGalleryModal', 'confirmDeleteModal'
   ];
+  // BUG CORREGIDO ("al confirmar borrar, Cancelar/Eliminar quedan tapados
+  // por el tabbar inferior"): mgRejectModal/confirmDeleteModal son
+  // ventanas tipo "hoja inferior" (align-items:flex-end en su overlay,
+  // NO son .fullbleed) — su borde inferior cae exactamente donde vive el
+  // tabbar, y este ya demostró (ver el comentario "SUCCESS SCREEN") que
+  // no siempre se deja tapar por un z-index más alto en el dispositivo
+  // real. Mismo remedio ya probado ahí: mientras cualquiera de estas dos
+  // esté abierta, el tabbar se oculta de verdad en vez de confiar en el
+  // z-index.
+  var bottomSheetIds = ['mgRejectModal', 'confirmDeleteModal'];
   var isLocked = false;
+  var tabbarHiddenForSheet = false;
 
   function isAnyModalOpen() {
     return modalIds.some(function(id) {
@@ -6412,16 +6445,39 @@ document.addEventListener('visibilitychange', function() {
     });
   }
 
+  function isAnyBottomSheetOpen() {
+    return bottomSheetIds.some(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return false;
+      return el.classList.contains('show') || el.style.display === 'flex';
+    });
+  }
+
   function updateLock() {
     var shouldLock = isAnyModalOpen();
     var scroller = document.getElementById('appScroll');
-    if (!scroller) return;
-    if (shouldLock && !isLocked) {
-      scroller.style.overflow = 'hidden';
-      isLocked = true;
-    } else if (!shouldLock && isLocked) {
-      scroller.style.overflow = '';
-      isLocked = false;
+    if (scroller) {
+      if (shouldLock && !isLocked) {
+        scroller.style.overflow = 'hidden';
+        isLocked = true;
+      } else if (!shouldLock && isLocked) {
+        scroller.style.overflow = '';
+        isLocked = false;
+      }
+    }
+
+    var shouldHideTabbar = isAnyBottomSheetOpen();
+    if (shouldHideTabbar && !tabbarHiddenForSheet) {
+      var map = { operario: 'tabbarOperario', manager: 'tabbarManager', admin: 'tabbarAdmin' };
+      var tbId = map[(currentUser || {}).rol];
+      var tb = tbId && document.getElementById(tbId);
+      if (tb) tb.style.display = 'none';
+      var safetyBg = document.getElementById('tabbarSafetyBg');
+      if (safetyBg) safetyBg.style.display = 'none';
+      tabbarHiddenForSheet = true;
+    } else if (!shouldHideTabbar && tabbarHiddenForSheet) {
+      if (typeof revealActiveTabbar === 'function') revealActiveTabbar();
+      tabbarHiddenForSheet = false;
     }
   }
 
