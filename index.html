@@ -564,11 +564,17 @@ body.pin-mode{overflow:hidden}
 /* MIS INFORMES */
 .op-tabs{display:none}
 /* ═══ TARJETAS DE INFORME — estilo unificado en las 3 pantallas ═══
-   Base: tarjeta blanca con sombra neutra, sin bordes de color. El estado
-   se señaliza SOLO con el color/intensidad de la sombra: azul = nuevo/no
-   visto, rojo = rechazado (más limpio y consistente en toda la app). */
+   Base: tarjeta blanca con sombra gris neutra (ver .mi-card/.mg-card/
+   .ad-card), sin bordes de color. Un único estado de "atención" en toda
+   la app, señalizado SOLO con el color/intensidad de la sombra: azul
+   mientras el usuario no ha visto ese cambio (recién creado, aprobado,
+   rechazado/vuelto a pending tras editar — cualquiera) — en cuanto abre
+   la tarjeta (markVisibleQueueAsSeen/openReportDetail/openManagerDetail/
+   openAdminDetail quitan esta clase del DOM al instante) vuelve a la
+   sombra gris de siempre. Antes "rechazado" tenía su propio rojo
+   permanente (card-shadow-rejected, ya retirada) — se unificó a petición
+   explícita para no tener dos lenguajes de color distintos. */
 .card-shadow-new{box-shadow:0 4px 18px rgba(0,73,197,.30) !important}
-.card-shadow-rejected{box-shadow:0 4px 18px rgba(255,59,48,.30) !important}
 
 .mi-card{background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
 .mi-card:active{background:#f9f9f9}
@@ -596,7 +602,8 @@ body.pin-mode{overflow:hidden}
 /* MANAGER CARDS */
 .mg-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 20px rgba(0,0,0,.06)}
 .mg-card:active{background:#f9f9f9}
-.mg-new-label{font-size:11px;font-weight:800;color:#ff3b30;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
+.mg-new-label{font-size:11px;font-weight:800;color:#0049c5;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
+.ad-new-label{font-size:11px;font-weight:800;color:#0049c5;letter-spacing:.3px}
 .mg-operario{font-size:11px;color:#8e8e93;margin-bottom:10px;margin-top:2px;font-weight:500}
 .mg-cliente{font-size:12px;color:#8e8e93;margin-bottom:0}
 .mg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
@@ -675,6 +682,12 @@ body.pin-mode{overflow:hidden}
    motivo en vez de aparecer junto a Aprobar; deben verse idénticos. */
 .mg-modal-confirm{flex:1;background:#ff3b30;color:#fff;border:none;border-radius:999px;padding:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;box-shadow:0 10px 20px -8px rgba(255,59,48,.5)}
 .mg-modal-confirm:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+/* Variante verde de .mg-modal-confirm (misma forma/tamaño que .mg-modal-cancel,
+   solo cambia el color) — para que un botón de acción positiva (Guardar/
+   Reenviar) que aparece junto a Cancelar tenga SIEMPRE la misma forma que
+   él, en vez de la forma rectangular de 14px que usan Aprobar/Rechazar
+   cuando van el uno junto al otro (ese par sigue igual, no se toca). */
+.mg-modal-confirm.positive{background:linear-gradient(160deg,#1c8a49,#22b862);box-shadow:0 10px 20px -8px rgba(34,184,98,.5)}
 
 /* ADMIN CARDS */
 .ad-card{position:relative;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;margin:0 16px 8px;padding:14px 14px;cursor:pointer;touch-action:manipulation;box-shadow:0 2px 10px rgba(0,0,0,.07)}
@@ -686,6 +699,20 @@ body.pin-mode{overflow:hidden}
 .ad-manager-line{font-size:11px;color:#8e8e93;margin-top:6px;text-align:right}
 .ad-manager-line.approved{color:#34c759}
 .ad-manager-line.rejected{color:#ff3b30}
+/* SWIPE-TO-DELETE (estilo Telegram) — solo envuelve tarjetas con
+   STATUS==='pending' (ver buildMiGroupedHtml/renderManagerQueue/
+   renderAdminJournal). El botón rojo vive DEBAJO de la tarjeta real en el
+   DOM (pintado primero) y queda oculto por completo hasta que la propia
+   tarjeta se desliza a la izquierda sobre él — así el gesto solo puede
+   revelar exactamente lo que ya existe, nada se superpone por encima de
+   la tarjeta ni bloquea su tap normal cuando está cerrada. overflow:hidden
+   en el wrap recorta el desplazamiento para que nunca se vea nada fuera
+   de las esquinas redondeadas de la propia tarjeta. */
+.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;overflow:hidden}
+.swipe-wrap.r12{border-radius:12px;margin:0 16px 8px}
+.swipe-wrap>.mi-card,.swipe-wrap>.mg-card,.swipe-wrap>.ad-card{margin:0;position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
+.swipe-delete-action{position:absolute;top:0;right:0;bottom:0;width:84px;background:#ff3b30;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
+.swipe-delete-action i{font-size:22px}
 .ad-month-header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;cursor:pointer;touch-action:manipulation}
 .ad-month-header:active{opacity:.7}
 .ad-month-body{margin-bottom:2px}
@@ -693,7 +720,7 @@ body.pin-mode{overflow:hidden}
 .ad-flt-btn.active{background:#0049c5;color:#fff}
 .mi-seg{display:flex;gap:4px;background:#f4f4f7;border-radius:999px;padding:4px;margin:0 16px 14px}
 .mi-seg-btn{flex:1;padding:9px 0;border:none;border-radius:999px;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:#737687;cursor:pointer;touch-action:manipulation;transition:background .15s,color .15s}
-.mi-seg-btn.active{background:#fff;color:#000;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mi-seg-btn.active{background:#0049c5;color:#fff;box-shadow:0 2px 6px rgba(0,73,197,.35)}
 #adFilterToggle.has-filters{background:#e5f0ff;border-color:#0049c5}
 #adFilterToggle.has-filters i,#adFilterToggle.has-filters svg{color:#0049c5;stroke:#0049c5}
 
@@ -846,7 +873,7 @@ body.pin-mode{overflow:hidden}
    pero esta es la navegación PRINCIPAL, debería notarse más que el resto,
    no menos), acercándose a los ~24-28pt que usan los tab bars nativos de
    iOS/Android de referencia. */
-.bottom-tab i{font-size:26px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.bottom-tab i{font-size:30px;color:#8e8e93;line-height:1;display:block;font-style:normal;transition:color .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
 .bottom-tab span{display:block;font-size:12px;font-weight:600;letter-spacing:.1px;color:#8e8e93;white-space:nowrap;transition:color .25s ease,font-weight .15s ease}
 .bottom-tab.active i,.bottom-tab.active span{color:#4d94ff}
 .bottom-tab.active i{filter:drop-shadow(0 0 7px rgba(77,148,255,.55));transform:scale(1.08)}
@@ -935,6 +962,19 @@ body.pin-mode{overflow:hidden}
     setTimeout(applyRealHeight, 300);
   });
 })();
+
+// BUG: la app se puede pellizcar para hacer zoom y luego arrastrar por
+// toda la página con dos dedos, como una web normal, pese a que el meta
+// viewport ya tiene user-scalable=no/maximum-scale=1 — WebKit (iOS
+// Safari y las PWA standalone que corren sobre él) ignora esa directiva
+// para el gesto de pellizco desde iOS 10 a propósito (accesibilidad) y
+// no hay forma de desactivarlo solo con el meta tag. El bloqueo real se
+// hace cancelando los eventos gesture* propios de WebKit, que solo
+// existen para gestos de 2+ dedos — no interfiere con el scroll normal
+// de un dedo en ningún sitio de la app.
+document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+document.addEventListener('gesturechange', function (e) { e.preventDefault(); });
+document.addEventListener('gestureend', function (e) { e.preventDefault(); });
 </script>
 
 <!-- ═══ SPLASH SCREEN ═══ -->
@@ -1138,7 +1178,7 @@ body.pin-mode{overflow:hidden}
     <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <div class="mg-actions">
         <button class="mg-modal-cancel" style="flex:1" onclick="erRequestClose()">Cancelar</button>
-        <button class="mg-btn mg-btn-approve" style="flex:1" id="erSaveBtn" onclick="submitEditReport()">Reenviar</button>
+        <button class="mg-modal-confirm positive" style="flex:1" id="erSaveBtn" onclick="submitEditReport()">Reenviar</button>
       </div>
     </div>
   </div>
@@ -1500,6 +1540,23 @@ body.pin-mode{overflow:hidden}
   </div>
 </div>
 
+<!-- MODAL: CONFIRMAR ELIMINAR INFORME (ventana bonita compartida por el
+     botón "Eliminar" del detalle Y por el swipe-to-delete de las tarjetas
+     pendientes — ver callDeleteReport()/confirmDeleteModalYes() en el JS) -->
+<div class="mg-modal-overlay" id="confirmDeleteModal">
+  <div class="mg-modal" style="text-align:center">
+    <div style="width:64px;height:64px;border-radius:50%;background:#fff0f0;display:flex;align-items:center;justify-content:center;margin:4px auto 14px">
+      <i class="ti ti-trash" style="font-size:28px;color:#ff3b30"></i>
+    </div>
+    <div class="mg-modal-title" id="confirmDeleteTitle" style="margin-bottom:6px">Eliminar informe</div>
+    <div class="mg-modal-sub" id="confirmDeleteSub" style="margin-bottom:20px">¿Eliminar este informe? Esta acción no se puede deshacer.</div>
+    <div class="mg-modal-actions">
+      <button class="mg-modal-cancel" id="confirmDeleteCancelBtn" onclick="closeConfirmDeleteModal()">Cancelar</button>
+      <button class="mg-modal-confirm" id="confirmDeleteYesBtn" onclick="confirmDeleteModalYes()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: DETALLE DE INFORME (Mis informes) -->
 <div class="mg-modal-overlay fullbleed" id="reportDetailModal" onclick="if(event.target===this)closeReportDetail()">
   <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0 0 60px">
@@ -1811,7 +1868,7 @@ var LANGS = {
     install_step_ios1:'Toca el botón Compartir', install_step_ios2:'Selecciona "Añadir a pantalla de inicio"', install_step_ios3:'Toca "Añadir" y listo',
     install_step_and1:'Toca el menú ⋮ del navegador', install_step_and2:'Selecciona "Instalar app" o "Añadir a pantalla de inicio"',
     lw_continue:'Continuar',
-    btn_eliminar_informe:'Eliminar informe', confirm_eliminar:'¿Eliminar este informe? Esta acción no se puede deshacer.',
+    btn_eliminar_informe:'Eliminar informe', confirm_eliminar:'¿Eliminar este informe? Esta acción no se puede deshacer.', swipe_eliminar:'Eliminar',
     confirm_cerrar_sin_guardar:'¿Deseas cerrar sin guardar los cambios?',
     toast_eliminado:'Informe eliminado', toast_eliminar_error:'No se pudo eliminar el informe',
   },
@@ -1863,7 +1920,7 @@ var LANGS = {
     install_step_ios1:'Нажмите кнопку «Поделиться»', install_step_ios2:'Выберите «На экран «Домой»»', install_step_ios3:'Нажмите «Добавить» — готово',
     install_step_and1:'Откройте меню ⋮ браузера', install_step_and2:'Выберите «Установить приложение» или «Добавить на главный экран»',
     lw_continue:'Продолжить',
-    btn_eliminar_informe:'Удалить отчёт', confirm_eliminar:'Удалить этот отчёт? Действие необратимо.',
+    btn_eliminar_informe:'Удалить отчёт', confirm_eliminar:'Удалить этот отчёт? Действие необратимо.', swipe_eliminar:'Удалить',
     confirm_cerrar_sin_guardar:'Закрыть без сохранения изменений?',
     toast_eliminado:'Отчёт удалён', toast_eliminar_error:'Не удалось удалить отчёт',
   },
@@ -1915,7 +1972,7 @@ var LANGS = {
     install_step_ios1:'Tap the Share button', install_step_ios2:'Select "Add to Home Screen"', install_step_ios3:'Tap "Add" — done',
     install_step_and1:'Open the browser’s ⋮ menu', install_step_and2:'Select "Install app" or "Add to Home Screen"',
     lw_continue:'Continue',
-    btn_eliminar_informe:'Delete report', confirm_eliminar:'Delete this report? This action cannot be undone.',
+    btn_eliminar_informe:'Delete report', confirm_eliminar:'Delete this report? This action cannot be undone.', swipe_eliminar:'Delete',
     confirm_cerrar_sin_guardar:'Close without saving your changes?',
     toast_eliminado:'Report deleted', toast_eliminar_error:'Could not delete the report',
   }
@@ -2027,6 +2084,13 @@ function applyLang() {
   setPh('mgRejectComment',    t('reject_ph'));
   setEl('mgRejectHint',       t('reject_hint'));
   setEl('btn-cancelar',       t('btn_cancelar'));
+
+  // Confirmar eliminar (modal bonito, compartido por detalle + swipe)
+  setEl('confirmDeleteTitle',     t('btn_eliminar_informe'));
+  setEl('confirmDeleteSub',       t('confirm_eliminar'));
+  setEl('confirmDeleteCancelBtn', t('btn_cancelar'));
+  setEl('confirmDeleteYesBtn',    t('swipe_eliminar'));
+  document.querySelectorAll('.swipe-delete-action span').forEach(function(b){ b.textContent = t('swipe_eliminar'); });
 
   // Detail modal buttons
   document.querySelectorAll('.mg-btn-approve').forEach(function(b){ b.textContent = t('btn_aprobar'); });
@@ -2268,16 +2332,18 @@ function markVisibleQueueAsSeen() {
   // sincronizan juntos aquí.
   var notifLogChanged = false;
   var notifLog = getNotifLog();
-  document.querySelectorAll('.mg-card[data-id], .ad-card[data-id]').forEach(function(card) {
+  document.querySelectorAll('.mg-card[data-id], .ad-card[data-id], .mi-card[data-id]').forEach(function(card) {
     if (card.offsetParent === null) return;
     var id = card.getAttribute('data-id');
     var ts = card.getAttribute('data-ts') || '';
     if (!id) return;
     markAsSeen(id + '@' + ts);
-    var notifSuffix = card.classList.contains('mg-card') ? '_new_mg' : '_new_ad';
-    notifLog.forEach(function(n) {
-      if (!n.read && n.id === id + notifSuffix) { n.read = true; notifLogChanged = true; }
-    });
+    if (card.classList.contains('mg-card') || card.classList.contains('ad-card')) {
+      var notifSuffix = card.classList.contains('mg-card') ? '_new_mg' : '_new_ad';
+      notifLog.forEach(function(n) {
+        if (!n.read && n.id === id + notifSuffix) { n.read = true; notifLogChanged = true; }
+      });
+    }
     // BUG CORREGIDO: markAsSeen() solo actualizaba localStorage — el
     // resaltado "NUEVO" seguía en pantalla hasta el próximo re-render
     // (hasta 10s después, en el siguiente sondeo). Lo quitamos ya del DOM,
@@ -2287,12 +2353,12 @@ function markVisibleQueueAsSeen() {
     if (card.classList.contains('mg-card')) {
       var mgLabel = card.querySelector('.mg-new-label');
       if (mgLabel) mgLabel.remove();
-    } else {
+    } else if (card.classList.contains('ad-card')) {
       // Admin: el "NUEVO" no se borra sin más, se sustituye por el
       // badge de estado real (igual que openAdminDetail) para no dejar
       // un hueco vacío donde antes iba el estado.
-      var adLabel = card.querySelector('span[style*="ff3b30"]');
-      if (adLabel && adLabel.textContent.indexOf('NUEVO') !== -1) {
+      var adLabel = card.querySelector('.ad-new-label');
+      if (adLabel) {
         var rec = adAllRecords.find(function(x){ return x.ID === id; });
         var st = rec ? (rec.STATUS || 'pending') : 'pending';
         var statusLabelsMap = { pending:t('status_pending'), approved:t('status_approved'), rejected:t('status_rejected') };
@@ -2302,6 +2368,9 @@ function markVisibleQueueAsSeen() {
         adLabel.textContent = statusLabelsMap[st];
       }
     }
+    // mi-card (operario): no hay etiqueta "NUEVO" que sustituir — el
+    // badge de estado (.mi-badge) ya está siempre visible, el brillo
+    // azul era la única marca de "no visto" y ya se ha quitado arriba.
   });
   if (notifLogChanged) { saveNotifLog(notifLog); updateBellUI(); }
   // Recalculamos el badge del icono AL INSTANTE con los datos que ya
@@ -2393,38 +2462,60 @@ function submitPin() {
     });
 }
 
-/* ════════ GREETING + ROUTING ════════ */
+/* ════════ CARGA → SALUDO → PERMISO DE NOTIFICACIONES ════════
+ * Pedido: tras el PIN correcto, el orden visible debe ser siempre carga
+ * (spinner, reutiliza #splashScreen) → una vez los datos están listos,
+ * saludo de bienvenida → y solo DESPUÉS se pide el permiso de
+ * notificaciones — antes el saludo aparecía a la vez que se cargaban los
+ * datos (no "una vez listo") y el permiso podía solaparse con cualquiera
+ * de los dos. El tabbar se revela junto con el saludo (routeToRoleScreen
+ * lo deja diferido, igual que en el arranque con splash — ver el
+ * comentario de revealActiveTabbar()), nunca antes. */
 function showGreetThenRoute() {
   document.getElementById('screenPin').style.display = 'none';
+
+  var splash = document.getElementById('splashScreen');
+  if (splash) { splash.classList.remove('hide'); splash.style.display = 'flex'; }
+
+  // routeToRoleScreen ya empieza a cargar los datos AHORA MISMO, en
+  // paralelo con la pantalla de carga.
+  var dataPromise = routeToRoleScreen(true);
+
+  var done = false;
+  var proceedToGreet = function() {
+    if (done) return;
+    done = true;
+    revealActiveTabbar();
+    if (splash) {
+      splash.classList.add('hide');
+      setTimeout(function(){ splash.style.display = 'none'; }, 400);
+    }
+    showGreetThenNotify();
+  };
+
+  Promise.race([
+    dataPromise.then(proceedToGreet).catch(proceedToGreet),
+    // Tope de seguridad — nunca dejamos al usuario más de 3s en la carga
+    new Promise(function(resolve){ setTimeout(function(){ proceedToGreet(); resolve(); }, 3000); })
+  ]);
+}
+
+function showGreetThenNotify() {
   document.getElementById('screenGreet').style.display = 'flex';
 
   var roleLabels = { operario: 'Operario', manager: 'Manager', admin: 'Administrador' };
   document.getElementById('greetName').textContent = currentUser.nombre;
   document.getElementById('greetRole').textContent = roleLabels[currentUser.rol] || currentUser.rol;
 
-  // routeToRoleScreen ya empieza a cargar los datos AHORA MISMO, en paralelo
-  // con la animación de bienvenida — no esperamos a que termine la animación
-  // para empezar a pedir la lista al servidor.
-  var dataPromise = routeToRoleScreen();
-
-  var minDelay = 500; // tiempo mínimo para que el saludo sea legible
-  var done = false;
-  var finish = function() {
-    if (done) return;
-    done = true;
+  // Tiempo fijo para que el saludo sea legible — luego, y no antes, se
+  // pide el permiso de notificaciones.
+  setTimeout(function() {
     document.getElementById('screenGreet').style.display = 'none';
-  };
-
-  Promise.all([
-    dataPromise,
-    new Promise(function(resolve){ setTimeout(resolve, minDelay); })
-  ]).then(finish).catch(finish);
-
-  // Tope de seguridad — nunca dejamos al usuario más de 2.5s en el saludo
-  setTimeout(finish, 2500);
+    ensureNotifyPermission();
+  }, 900);
 }
 
-function routeToRoleScreen() {
+function routeToRoleScreen(deferTabbar) {
   // Показываем навбар и убираем pin-mode
   document.getElementById('mainNav').style.display = '';
   document.body.classList.remove('pin-mode');
@@ -2468,25 +2559,42 @@ function routeToRoleScreen() {
   var initPromise = Promise.resolve();
   if (currentUser.rol === 'operario') {
     document.getElementById('screenOperario').style.display = 'block';
-    document.getElementById('tabbarOperario').style.display = 'flex';
-    document.getElementById('tabbarSafetyBg').style.display = 'block';
+    if (!deferTabbar) revealActiveTabbar();
     initPromise = initOperarioScreen();
   } else if (currentUser.rol === 'manager') {
     document.getElementById('screenManager').style.display = 'block';
-    document.getElementById('tabbarManager').style.display = 'flex';
-    document.getElementById('tabbarSafetyBg').style.display = 'block';
+    if (!deferTabbar) revealActiveTabbar();
     initPromise = initManagerScreen();
   } else if (currentUser.rol === 'admin') {
     document.getElementById('screenAdmin').style.display = 'block';
-    document.getElementById('tabbarAdmin').style.display = 'flex';
-    document.getElementById('tabbarSafetyBg').style.display = 'block';
+    if (!deferTabbar) revealActiveTabbar();
     initPromise = initAdminScreen();
   }
   startNotifyPoll();
-  ensureNotifyPermission();
   updateBellUI();
   linkOneSignalUser();
   return (initPromise || Promise.resolve()).then(function(v){ tryOpenDeepLinkedReport(); return v; });
+}
+
+// BUG CORREGIDO ("al reabrir la app se ve el tabbar un instante encima de
+// la pantalla de carga"): antes routeToRoleScreen() ponía el tabbar en
+// display:flex de forma síncrona, ANTES de que #splashScreen empezara a
+// ocultarse — esto ya causó un problema idéntico una vez con
+// #successScreen (ver su comentario "SUCCESS SCREEN") por un fallo real
+// de stacking en el dispositivo del usuario (un position:fixed con
+// z-index alto no siempre gana visualmente frente a .bottom-tabbar, que
+// fuerza su propia capa de composición con transform:translateZ(0)) — la
+// mitigación fiable en ambos casos es la misma: nunca dejar el tabbar
+// visible mientras la pantalla que debería taparlo aún exista, en vez de
+// confiar en el z-index. routeToRoleScreen(true) desde startAppAfterGates
+// deja el tabbar oculto y es hideSplash() quien lo revela, justo en el
+// mismo instante en que el splash empieza a desaparecer.
+function revealActiveTabbar() {
+  var map = { operario: 'tabbarOperario', manager: 'tabbarManager', admin: 'tabbarAdmin' };
+  var id = map[(currentUser || {}).rol];
+  if (!id) return;
+  document.getElementById(id).style.display = 'flex';
+  document.getElementById('tabbarSafetyBg').style.display = 'block';
 }
 
 /* ════════ OPERARIO: LISTAS (servicio) ════════ */
@@ -3021,6 +3129,8 @@ function showSuccess(payload) {
   }).join('');
 
   document.getElementById('successScreen').classList.add('show');
+  document.getElementById('tabbarOperario').style.display = 'none';
+  document.getElementById('tabbarSafetyBg').style.display = 'none';
 }
 
 /* ── Универсальный текст для шаринга (все заполненные поля, без Total) ── */
@@ -3069,6 +3179,8 @@ function shareManagerDetail() {
 
 function startNew() {
   document.getElementById('successScreen').classList.remove('show');
+  document.getElementById('tabbarOperario').style.display = 'flex';
+  document.getElementById('tabbarSafetyBg').style.display = 'block';
   clearForm(true);
 }
 
@@ -3162,6 +3274,14 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
   var collapsed = {};
   try { collapsed = JSON.parse(localStorage.getItem(collapsedKey) || '{}'); } catch(e) {}
 
+  // Igual que en manager/admin: en vez de un rojo permanente para
+  // "rechazado", TODAS las tarjetas (recién creada, aprobada, rechazada —
+  // cualquier cambio de estado que el operario todavía no ha visto en
+  // pantalla) se resaltan en azul (card-shadow-new) hasta que se abren; a
+  // partir de ahí queda la sombra gris de siempre. markVisibleQueueAsSeen()
+  // ya sabe recorrer .mi-card[data-id] igual que hace con mg-card/ad-card.
+  var seen = getSeenIds();
+
   var html = '';
   groupOrder.forEach(function(key) {
     var g = groups[key];
@@ -3180,7 +3300,13 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
     g.records.forEach(function(r){
       var statusLabel = r.STATUS === 'pending' ? t('status_pending') : (r.STATUS === 'approved' ? t('status_approved') : t('status_rejected'));
       var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
-      html += '<div class="mi-card st-'+r.STATUS+(r.STATUS==='rejected'?' card-shadow-rejected':'')+'" onclick="openReportDetail(\''+r.ID+'\')">';
+      var swipeable = r.STATUS === 'pending';
+      if (swipeable) {
+        html += '<div class="swipe-wrap" data-id="'+r.ID+'">';
+        html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMine(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+      }
+      var isNew = seen.indexOf(seenKey(r)) === -1;
+      html += '<div class="mi-card st-'+r.STATUS+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openReportDetail(\''+r.ID+'\')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
       html += '<span style="font-size:11px;color:#8e8e93">'+fecha+'</span>';
       html += '<span class="mi-badge st-'+r.STATUS+'">'+statusLabel+'</span>';
@@ -3193,6 +3319,7 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
         html += '<button class="mi-edit-btn" style="margin-top:8px" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">'+t('btn_editar_reenviar')+'</button>';
       }
       html += '</div>';
+      if (swipeable) html += '</div>';
     });
     html += '</div>';
   });
@@ -3231,12 +3358,32 @@ function renderMyReports(reports) {
 
   listEl.innerHTML = pendingList.length ? buildMiGroupedHtml(pendingList, 'p_', true) : '<div class="mi-empty">'+t('no_mine')+'</div>';
   listApprovedEl.innerHTML = approvedList.length ? buildMiGroupedHtml(approvedList, 'a_', false) : '<div class="mi-empty">'+t('no_approved')+'</div>';
+  scheduleOperarioAutoSeen();
+}
+
+// Mismo mecanismo que scheduleManagerAutoSeen/scheduleAdminAutoSeen: si el
+// usuario se queda un rato mirando su propia lista sin abrir ninguna
+// tarjeta, lo visible en pantalla se considera "visto" igualmente —
+// markVisibleQueueAsSeen() ya ignora por sí sola lo que no está realmente
+// visible (offsetParent null), así que no hace falta comprobar aquí qué
+// pestaña/pantalla está activa en ese momento.
+var opAutoSeenTimer = null;
+function scheduleOperarioAutoSeen() {
+  if (opAutoSeenTimer) clearTimeout(opAutoSeenTimer);
+  opAutoSeenTimer = setTimeout(function() {
+    opAutoSeenTimer = null;
+    markVisibleQueueAsSeen();
+  }, 2500);
 }
 
 function openReportDetail(id) {
   var r = myReportsCache.find(function(x){ return x.ID === id; });
   if (!r) return;
   rdCurrentId = id;
+
+  markAsSeen(seenKey(r));
+  var card = document.querySelector('.mi-card[data-id="'+id+'"]');
+  if (card) card.classList.remove('card-shadow-new');
 
   // BUG CORREGIDO: el caso 'approved' caía en el "else" y mostraba el
   // STATUS crudo del backend ("approved") en vez de traducirlo, mientras
@@ -3832,7 +3979,11 @@ function renderManagerQueue(reports) {
   listEl.innerHTML = reports.map(function(r){
     var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
     var isNew = seen.indexOf(seenKey(r)) === -1;
-    var html = '<div class="mg-card'+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
+    // La cola de Pendientes solo contiene informes pending por definición
+    // — todas sus tarjetas son swipeables, sin necesidad de comprobar STATUS.
+    var html = '<div class="swipe-wrap" data-id="'+r.ID+'">';
+    html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMg(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+    html += '<div class="mg-card'+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
     // Строка 1: дата слева, NUEVO справа
     html += '<div class="mg-head">';
     html += '<span class="mg-id">'+fecha+'</span>';
@@ -3844,6 +3995,7 @@ function renderManagerQueue(reports) {
     html += '<div class="mg-obra">'+r.ID+'</div>';
     // Строка 4: CLIENTE · OBRA
     html += '<div class="mg-cliente">'+r.CLIENTE+' · '+r.OBRA+'</div>';
+    html += '</div>';
     html += '</div>';
     return html;
   }).join('');
@@ -4002,17 +4154,42 @@ function rejectFromDetail() {
 
 function removeCardFromQueue(id) {
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
-  if (card) card.remove();
+  var toRemove = card ? (card.closest('.swipe-wrap') || card) : null;
+  if (toRemove) toRemove.remove();
   if (!document.querySelector('.mg-card')) {
     document.getElementById('mgList').innerHTML = '<div class="mi-empty">No hay informes pendientes de aprobación</div>';
   }
 }
 
 /* ════════ ELIMINAR INFORME (soft-delete, ver deleteRecord en Code_v5.gs) ════════
- * Un solo helper de red compartido por operario y admin — cada uno decide
- * qué hacer con sus propias cachés/listas al terminar (onSuccess). */
+ * Un solo helper de red compartido por operario, manager y admin, se
+ * llame desde donde se llame (botón del detalle o swipe de una tarjeta)
+ * — cada llamador decide qué hacer con sus propias cachés/listas al
+ * terminar (onSuccess). La confirmación ya no es el confirm() nativo del
+ * navegador — abre #confirmDeleteModal (mismo lenguaje visual que el
+ * resto de la app) y el fetch real solo se dispara si el usuario confirma
+ * ahí, ver confirmDeleteModalYes(). */
+var _confirmDeleteId = null;
+var _confirmDeleteOnSuccess = null;
+
 function callDeleteReport(id, onSuccess) {
-  if (!confirm(t('confirm_eliminar'))) return;
+  _confirmDeleteId = id;
+  _confirmDeleteOnSuccess = onSuccess;
+  document.getElementById('confirmDeleteModal').classList.add('show');
+}
+
+function closeConfirmDeleteModal() {
+  document.getElementById('confirmDeleteModal').classList.remove('show');
+  _confirmDeleteId = null;
+  _confirmDeleteOnSuccess = null;
+}
+
+function confirmDeleteModalYes() {
+  var id = _confirmDeleteId;
+  var onSuccess = _confirmDeleteOnSuccess;
+  if (!id) return;
+  var btn = document.getElementById('confirmDeleteYesBtn');
+  btn.disabled = true;
   fetch(WEBAPP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -4020,14 +4197,18 @@ function callDeleteReport(id, onSuccess) {
   })
   .then(function(r){ return r.json(); })
   .then(function(result){
+    btn.disabled = false;
+    closeConfirmDeleteModal();
     if (result && result.status === 'ok') {
       showToast(t('toast_eliminado'));
-      onSuccess();
+      if (onSuccess) onSuccess();
     } else {
       showToast(result && result.message ? result.message : t('toast_eliminar_error'), true);
     }
   })
   .catch(function(){
+    btn.disabled = false;
+    closeConfirmDeleteModal();
     showToast(t('toast_eliminar_error'), true);
   });
 }
@@ -4065,6 +4246,121 @@ function deleteReportFromOperario() {
     dataCacheSet('myReports', myReportsCache);
   });
 }
+
+// Mismo delete que los botones del detalle, pero disparado desde el botón
+// rojo que revela el swipe de una tarjeta — cada rol actualiza su propia
+// caché/lista igual que ya hacía su equivalente del modal de detalle.
+function requestSwipeDeleteMine(id) {
+  closeSwipeDelete();
+  callDeleteReport(id, function() {
+    myReportsCache = myReportsCache.filter(function(r){ return r.ID !== id; });
+    renderMyReports(myReportsCache);
+    dataCacheSet('myReports', myReportsCache);
+  });
+}
+
+function requestSwipeDeleteMg(id) {
+  closeSwipeDelete();
+  callDeleteReport(id, function() {
+    mgReportsCache = mgReportsCache.filter(function(r){ return r.ID !== id; });
+    removeCardFromQueue(id);
+  });
+}
+
+function requestSwipeDeleteAdmin(id) {
+  closeSwipeDelete();
+  callDeleteReport(id, function() {
+    adAllRecords = adAllRecords.filter(function(r){ return r.ID !== id; });
+    adInformeRecords = adInformeRecords.filter(function(r){ return r.ID !== id; });
+    adFilteredRecords = adFilteredRecords.filter(function(r){ return r.ID !== id; });
+    renderAdminJournal();
+  });
+}
+
+/* ════════ SWIPE-TO-DELETE (estilo Telegram) ════════
+ * Delegado en document una sola vez — cubre las listas re-renderizadas
+ * (innerHTML) de las 3 pantallas sin tener que re-enganchar listeners en
+ * cada render. Solo actúa sobre .swipe-wrap (solo se envuelven así las
+ * tarjetas con STATUS==='pending', ver buildMiGroupedHtml/
+ * renderManagerQueue/renderAdminJournal). Un solo dedo: si el gesto es
+ * más horizontal que vertical se bloquea como swipe (preventDefault, no
+ * scrollea la lista); si es más vertical se deja pasar sin tocar nada. */
+(function () {
+  var DELETE_W = 84;
+  var startX = 0, startY = 0, baseX = 0, dragging = null, locked = null, openEl = null;
+
+  function closeSwipeDelete() {
+    if (openEl) {
+      var card = openEl.querySelector('.mi-card,.mg-card,.ad-card');
+      if (card) card.style.transform = '';
+      openEl.classList.remove('swipe-open');
+      openEl = null;
+    }
+  }
+  window.closeSwipeDelete = closeSwipeDelete;
+
+  document.addEventListener('touchstart', function (e) {
+    var wrap = e.target.closest && e.target.closest('.swipe-wrap');
+    if (openEl && openEl !== wrap) closeSwipeDelete();
+    dragging = wrap;
+    locked = null;
+    if (!wrap) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    baseX = wrap.classList.contains('swipe-open') ? -DELETE_W : 0;
+    var card = wrap.querySelector('.mi-card,.mg-card,.ad-card');
+    if (card) card.style.transition = 'none';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function (e) {
+    if (!dragging) return;
+    var dx = e.touches[0].clientX - startX;
+    var dy = e.touches[0].clientY - startY;
+    if (locked === null) {
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) locked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    }
+    if (locked === 'x') {
+      e.preventDefault();
+      var next = Math.max(-DELETE_W, Math.min(0, baseX + dx));
+      var card = dragging.querySelector('.mi-card,.mg-card,.ad-card');
+      if (card) card.style.transform = 'translateX(' + next + 'px)';
+      dragging.dataset.dragX = next;
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', function () {
+    if (!dragging) return;
+    var card = dragging.querySelector('.mi-card,.mg-card,.ad-card');
+    if (card) card.style.transition = '';
+    if (locked === 'x') {
+      var next = parseFloat(dragging.dataset.dragX || '0');
+      if (next < -DELETE_W / 2) {
+        if (card) card.style.transform = 'translateX(-' + DELETE_W + 'px)';
+        dragging.classList.add('swipe-open');
+        openEl = dragging;
+      } else {
+        if (card) card.style.transform = '';
+        dragging.classList.remove('swipe-open');
+        if (openEl === dragging) openEl = null;
+      }
+    }
+    dragging = null;
+    locked = null;
+  });
+
+  // Tocar en cualquier sitio mientras una tarjeta está abierta la cierra
+  // en vez de disparar además su acción normal (abrir el detalle) — igual
+  // que en Telegram, el primer toque fuera solo cierra.
+  document.addEventListener('click', function (e) {
+    if (!openEl) return;
+    if (e.target.closest('.swipe-delete-action')) return;
+    if (e.target.closest('.swipe-wrap') === openEl) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    closeSwipeDelete();
+  }, true);
+})();
 
 function approveReport(id) {
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
@@ -4521,7 +4817,7 @@ function renderAdminJournal() {
     html += '<span style="font-size:13px;font-weight:700;color:#000">'+g.label+'</span>';
     html += '<span style="font-size:11px;color:#8e8e93">'+g.records.length+' reg.</span>';
     html += '</div>';
-    if (newCount > 0) html += '<span style="font-size:10px;font-weight:800;color:#ff3b30;letter-spacing:0.3px">'+newCount+' NUEVO'+(newCount>1?'S':'')+'</span>';
+    if (newCount > 0) html += '<span style="font-size:10px;font-weight:800;color:#0049c5;letter-spacing:0.3px">'+newCount+' NUEVO'+(newCount>1?'S':'')+'</span>';
     html += '</div>';
 
     // Карточки группы
@@ -4530,12 +4826,17 @@ function renderAdminJournal() {
       var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       var st = r.STATUS || 'pending';
       var isNew = seen.indexOf(seenKey(r)) === -1;
-      var shadowCls = st === 'rejected' ? ' card-shadow-rejected' : (isNew ? ' card-shadow-new' : '');
+      var shadowCls = isNew ? ' card-shadow-new' : '';
+      var swipeable = st === 'pending';
+      if (swipeable) {
+        html += '<div class="swipe-wrap r12" data-id="'+r.ID+'">';
+        html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+      }
       html += '<div class="ad-card st-'+st+shadowCls+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
       html += '<span style="font-size:12px;color:#8e8e93;font-weight:600">'+fecha+'</span>';
       var rightEl = isNew
-        ? '<span style="font-size:11px;font-weight:800;color:#ff3b30;letter-spacing:0.3px">NUEVO</span>'
+        ? '<span class="ad-new-label">NUEVO</span>'
         : '<span class="ad-status-badge st-'+st+'" style="margin-bottom:0">'+statusLabels[st]+'</span>';
       html += rightEl + '</div>';
       html += '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:10px">'+r.OPERARIO+'</div>';
@@ -4563,6 +4864,7 @@ function renderAdminJournal() {
           + r.COMENTARIO_MANAGER + '</div>';
       }
       html += '</div>';
+      if (swipeable) html += '</div>';
     });
     html += '</div>';
   });
@@ -4629,8 +4931,8 @@ function openAdminDetail(id) {
   var card = document.querySelector('.ad-card[onclick*="\''+id+'\'"]');
   if (card) {
     card.classList.remove('card-shadow-new');
-    var newLabel = card.querySelector('span[style*="ff3b30"]');
-    if (newLabel && newLabel.textContent.includes('NUEVO')) {
+    var newLabel = card.querySelector('.ad-new-label');
+    if (newLabel) {
       // Заменяем NUEVO на статус-бейдж
       var st = r.STATUS || 'pending';
       var statusLabels = { pending:t('status_pending'), approved:t('status_approved'), rejected:t('status_rejected') };
@@ -6081,6 +6383,7 @@ document.addEventListener('visibilitychange', function() {
     var pinScreen = document.getElementById('screenPin');
     if (pinScreen && pinScreen.style.display === 'flex') {
       routeToRoleScreen();
+      ensureNotifyPermission();
     }
   }
 });
@@ -6143,6 +6446,10 @@ function startAppAfterGates(){
 
   function hideSplash(delay) {
     setTimeout(function() {
+      // El tabbar se revela justo aquí, no antes — ver el comentario de
+      // revealActiveTabbar() sobre por qué nunca debe existir un momento
+      // en que esté visible mientras el splash todavía debería taparlo.
+      if (currentUser) { revealActiveTabbar(); ensureNotifyPermission(); }
       var s = document.getElementById('splashScreen');
       if (s) {
         s.classList.add('hide');
@@ -6170,7 +6477,7 @@ function startAppAfterGates(){
     // Есть кеш — рендерим экран сразу (он скрыт под splash), но splash
     // держим до тех пор, пока список действительно не подгрузится свежим.
     currentUser = cached;
-    var readyPromise = routeToRoleScreen();
+    var readyPromise = routeToRoleScreen(true);
     hideSplashWhenReady(readyPromise, 3000);
     // Фоновая проверка актуальности PIN.
     // BUG CORREGIDO ("la app pide el PIN constantemente"): antes CUALQUIER
@@ -6210,7 +6517,7 @@ function startAppAfterGates(){
         saveUserCache(result, saved);
         currentPin = saved;
         if (result.lang) { currentLang = result.lang; saveLangToDevice(result.lang); applyLang(); }
-        var readyPromise2 = routeToRoleScreen();
+        var readyPromise2 = routeToRoleScreen(true);
         hideSplashWhenReady(readyPromise2, 3000);
       } else if (result && result.status === 'ok' && result.valid === false) {
         // PIN больше не валиден — de verdad, lo dice el servidor
@@ -6233,7 +6540,7 @@ function startAppAfterGates(){
                 saveUserCache(retryResult, saved);
                 currentPin = saved;
                 if (retryResult.lang) { currentLang = retryResult.lang; saveLangToDevice(retryResult.lang); applyLang(); }
-                var readyPromise3 = routeToRoleScreen();
+                var readyPromise3 = routeToRoleScreen(true);
                 hideSplashWhenReady(readyPromise3, 3000);
               } else if (retryResult && retryResult.status === 'ok' && retryResult.valid === false) {
                 try { localStorage.removeItem('parte_user_pin'); } catch(e) {}
