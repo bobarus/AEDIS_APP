@@ -116,6 +116,26 @@ if ('serviceWorker' in navigator) {
       });
       window.__oneSignalReady = true;
       console.log('[OneSignal] init OK');
+
+      // BUG CORREGIDO ("tocar una notificación con la app ya abierta en
+      // primer plano no hace nada"): OneSignal solo usa la URL del push
+      // para abrir una ventana NUEVA — si el cliente ya está en pantalla,
+      // el SDK simplemente le da foco sin navegar, así que el deep-link
+      // nunca se procesaba en ese caso. reportId/mode viajan en
+      // additionalData (ver sendPushOneSignal en Code_v5.gs) — openReportById
+      // es la misma función que ya usa tryOpenDeepLinkedReport() para el
+      // caso "app cerrada", así que ambos caminos abren exactamente lo
+      // mismo y el informe queda marcado como visto igual en los dos casos
+      // (openReportById → openReportDetail/openManagerDetail/openAdminDetail
+      // ya llaman a markAsSeen()).
+      OneSignal.Notifications.addEventListener('click', function(event) {
+        try {
+          var data = event && event.notification && event.notification.additionalData;
+          var id = data && data.reportId;
+          if (!id) return;
+          openReportById(id, data.mode || 'view');
+        } catch(e) { console.log('[OneSignal] click handler error:', e && e.message); }
+      });
     } catch(err) {
       console.log('[OneSignal] init FAILED:', err && err.message);
     }
@@ -648,18 +668,14 @@ body.pin-mode{overflow:hidden}
    (aquí, el contenido interno con scroll de cada modal). Se añade aquí. */
 .mg-modal-overlay{display:none;position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.35);align-items:flex-end;justify-content:center;transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .mg-modal-overlay.show{display:flex}
-/* BUG CORREGIDO ("franja blanca debajo del footer del modal a pantalla
-   completa, en el iPhone real"): mismo problema de fondo que ya se
-   resolvió para .bottom-tabbar (ver su comentario) — position:fixed con
-   inset:0 no siempre llega de verdad hasta el borde físico inferior en
-   una PWA standalone de iOS. Aplicado aquí a los modales a pantalla
-   completa (detalle de informe, editor): se extiende el overlay 60px por
-   debajo del borde real, y el modal interior (height:100% del overlay,
-   ver estilo inline "mg-modal-full") se compensa con 60px extra de
-   padding-bottom propio — con box-sizing:border-box esos 60px se anulan
-   entre sí para el contenido visible (nada se desplaza), y solo queda el
-   fondo blanco del modal cubriendo ese margen de más. */
-.mg-modal-overlay.fullbleed{bottom:-60px}
+/* 2026-07-21: el parche de "-60px de overshoot + 60px de padding que se
+   cancelan" que vivía aquí (para el mismo problema de fondo que
+   .bottom-tabbar tuvo — position:fixed;inset:0 sin llegar de verdad al
+   borde físico en una PWA standalone de iOS) se retiró: ahora
+   applyRealHeight() (ver el <script> justo después de <body>) fija la
+   altura real en píxeles directamente en estos overlays, igual que ya
+   hacía con html/body — ataca la causa (el cálculo de altura en sí),
+   no un síntoma concreto, así que no hace falta ningún colchón. */
 /* transform/transition/will-change/touch-action:pan-y ELIMINADOS: eran
    resto del antiguo gesto de arrastre para cerrar el modal (ver el
    comentario en el bloque "MODALES" del JS) — el modal ya no cambia su
@@ -717,7 +733,17 @@ body.pin-mode{overflow:hidden}
    fondo blanco en el wrap (el mismo color que las 3 tarjetas), cualquier
    resto de ese hilo queda blanco sobre blanco — invisible — en vez de
    dejar ver un filo rojo del botón de eliminar. */
-.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;overflow:hidden;background:#fff}
+/* BUG CORREGIDO ("las tarjetas se funden con el fondo, apenas se ven"):
+   overflow:hidden aquí recortaba también el propio box-shadow de la
+   tarjeta (.mi-card/.mg-card/.ad-card) — el shadow se pinta FUERA de la
+   caja de la tarjeta, en la misma zona que este overflow recortaba, así
+   que toda tarjeta envuelta (cualquier pending, swipeable) perdía su
+   sombra entera y quedaba plana, mientras las no envueltas (aprobadas/
+   rechazadas) se veían con relieve normal. Ya no hace falta este recorte:
+   el botón de eliminar tiene su propio border-radius a juego con el de
+   la tarjeta (ver .swipe-delete-action), así que no hay ninguna esquina
+   cuadrada que ocultar sin necesidad de overflow:hidden. */
+.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;background:#fff}
 .swipe-wrap.r12{border-radius:12px;margin:0 16px 8px}
 .swipe-wrap>.mi-card,.swipe-wrap>.mg-card,.swipe-wrap>.ad-card{margin:0;position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
 /* BUG CORREGIDO ("la tarjeta se ve mal dibujada" — el fondo blanco del
@@ -974,6 +1000,21 @@ body.pin-mode{overflow:hidden}
     var px = h + 'px';
     document.documentElement.style.height = px;
     document.body.style.height = px;
+    // 2026-07-21: mismo mecanismo aplicado también a los modales a
+    // pantalla completa (.fullbleed) — antes solo cubría html/body.
+    // position:fixed;inset:0 calcula su propio alto contra el viewport
+    // CSS reportado por el navegador, completamente aparte de la altura
+    // que acabamos de forzar en html/body — así que aunque el "hueco
+    // blanco" de html/body ya estuviera resuelto, estos modales seguían
+    // teniendo el mismo problema de fondo sin nadie arreglándolo, tapado
+    // hasta ahora con el parche de "-60px de más + 60px de padding que
+    // los cancela" (ver el comentario de .mg-modal-overlay.fullbleed).
+    // Con la altura real en px puesta aquí, top:0 (heredado de inset:0)
+    // + height:Xpx define la caja completa y el navegador ignora el
+    // bottom:0 implícito — el parche de los 60px ya no hace falta.
+    document.querySelectorAll('.mg-modal-overlay.fullbleed').forEach(function(el) {
+      el.style.height = px;
+    });
   }
   applyRealHeight();
   document.addEventListener('DOMContentLoaded', applyRealHeight);
@@ -1084,7 +1125,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
      daba lugar a comportamientos de scroll poco fiables. Ahora es un
      diálogo a pantalla completa (100dvh) con cierre explícito por botón. -->
 <div id="editReportModal" class="mg-modal-overlay fullbleed" onclick="if(event.target===this)erRequestClose()">
-  <div class="mg-modal mg-modal-full" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0 0 60px">
+  <div class="mg-modal mg-modal-full" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 12px;border-bottom:.5px solid #f0f0f0;flex-shrink:0">
       <div>
         <div class="mg-modal-title" id="erTitle" style="margin-bottom:0">Editar informe</div>
@@ -1579,9 +1620,22 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
   </div>
 </div>
 
+<!-- MODAL: CONFIRMACIÓN BONITA tras guardar/reenviar una edición (antes
+     era solo un toast — "una pequeña franja de texto"). Se autocierra
+     sola, sin botón — ver showEditSavedDialog() en el JS. -->
+<div class="mg-modal-overlay" id="editSavedModal" style="align-items:center">
+  <div class="mg-modal" style="text-align:center;max-width:320px">
+    <div style="width:64px;height:64px;border-radius:50%;background:#e5f9ec;display:flex;align-items:center;justify-content:center;margin:4px auto 14px">
+      <i class="ti ti-check" style="font-size:28px;color:#34c759"></i>
+    </div>
+    <div class="mg-modal-title" id="editSavedTitle" style="margin-bottom:6px">Cambios guardados</div>
+    <div class="mg-modal-sub" id="editSavedSub" style="margin-bottom:0">—</div>
+  </div>
+</div>
+
 <!-- MODAL: DETALLE DE INFORME (Mis informes) -->
 <div class="mg-modal-overlay fullbleed" id="reportDetailModal" onclick="if(event.target===this)closeReportDetail()">
-  <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0 0 60px">
+  <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 12px;border-bottom:.5px solid #f0f0f0;flex-shrink:0">
       <div style="min-width:0">
         <div class="mg-modal-title" id="rdTitle">—</div>
@@ -1615,7 +1669,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
 
 <!-- MODAL: DETALLE Y DECISIÓN (Manager) -->
 <div class="mg-modal-overlay fullbleed" id="mgDetailModal" onclick="if(event.target===this)closeManagerDetail()">
-  <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0 0 60px">
+  <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
     <!-- Скроллируемый контент -->
     <div style="overflow-y:auto;flex:1;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
@@ -3686,6 +3740,25 @@ function erChangeHoras(delta) {
   checkErDirty();
 }
 
+// BUG CORREGIDO ("la confirmación tras editar es una franja de texto
+// diminuta"): antes submitEditReport() solo mostraba un toast — se
+// sustituye por esta tarjeta centrada (mismo lenguaje visual que
+// confirmDeleteModal, círculo verde con check en vez de rojo con
+// papelera) que se autocierra sola, sin necesitar un toque. onDone()
+// se llama al terminar la animación — ahí es donde submitEditReport()
+// engancha erCloseAndReturn(), para no volver a la pantalla anterior
+// hasta que el usuario haya tenido tiempo de leer la confirmación.
+function showEditSavedDialog(title, sub, onDone) {
+  document.getElementById('editSavedTitle').textContent = title;
+  document.getElementById('editSavedSub').textContent = sub;
+  var modal = document.getElementById('editSavedModal');
+  modal.classList.add('show');
+  setTimeout(function() {
+    modal.classList.remove('show');
+    if (onDone) onDone();
+  }, 1400);
+}
+
 function submitEditReport() {
   if (!erCurrentReport) return;
   var btn = document.getElementById('erSaveBtn');
@@ -3748,8 +3821,6 @@ function submitEditReport() {
     btn.disabled = false;
     btn.textContent = originalText;
     if (result && result.status === 'ok') {
-      showToast(wasRejected ? t('toast_informe_reenviado') : t('toast_cambios_guardados'));
-
       // Si el operario adjuntó fotos nuevas al corregir el informe, se
       // suben AHORA (con el mismo ID) — uploadReportPhotos() reutiliza la
       // misma carpeta de Drive del informe, así que se AÑADEN a las fotos
@@ -3795,8 +3866,14 @@ function submitEditReport() {
 
       // Se cierra DESPUÉS de parchear la caché — así, si veníamos de la
       // ficha de detalle, erCloseAndReturn() la reabre ya con los datos
-      // frescos, no con los que había antes de guardar.
-      erCloseAndReturn();
+      // frescos, no con los que había antes de guardar. Se llama dentro
+      // del onDone() de la confirmación, no antes — para que dé tiempo a
+      // leerla.
+      showEditSavedDialog(
+        wasRejected ? t('toast_informe_reenviado') : t('toast_cambios_guardados'),
+        patched.ID + ' — ' + patched.CLIENTE + ' · ' + patched.OBRA,
+        erCloseAndReturn
+      );
     } else {
       showToast(result && result.message ? result.message : 'Error al reenviar', true);
     }
@@ -3841,7 +3918,6 @@ function submitEditReport() {
             && String(r['PRECIO (EUR)']||0) === String(payload.precio||0);
         });
         if (landed) {
-          showToast(wasRejected ? t('toast_informe_reenviado') : t('toast_cambios_guardados'));
           // res.data ya es la lectura fresca que acabamos de usar para
           // comprobar "landed" — la usamos para refrescar la caché ANTES
           // de reabrir la ficha (si venimos de ahí), para no reabrirla
@@ -3849,7 +3925,11 @@ function submitEditReport() {
           myReportsCache = res.data;
           renderMyReports(myReportsCache);
           dataCacheSet('myReports', myReportsCache);
-          erCloseAndReturn();
+          showEditSavedDialog(
+            wasRejected ? t('toast_informe_reenviado') : t('toast_cambios_guardados'),
+            erCurrentReport.ID + ' — ' + (payload.cliente||'') + ' · ' + (payload.obra||''),
+            erCloseAndReturn
+          );
           myReportsLoaded = false;
           loadMyReports();
         } else {
@@ -5716,33 +5796,29 @@ function openReportFromNotif(baseId) {
 // a deepLinkHandled, y limpia la query string para que un refresco
 // posterior no vuelva a reabrir el mismo informe.
 var deepLinkHandled = false;
-// BUG CORREGIDO ("tocar una notificación push no abre nada — enlace
-// perdido en silencio"): esta función se llama justo al terminar
-// routeToRoleScreen(), pero para operario esa ruta solo carga las LISTAS
-// de selects (loadLists en initOperarioScreen) — myReportsCache sigue
-// vacío hasta que el usuario visita la pestaña "Mis informes" a mano. Como
-// tocar un push SIEMPRE abre la app "en frío" (recién lanzada), el caché
-// nunca estaba listo a tiempo y el enlace fallaba EN TODOS los casos para
-// operarios. Lo mismo le pasaba a manager si el enlace apuntaba a un
-// informe ya resuelto (pestaña "Historial", con su propio caché
-// perezoso). Ahora, si la búsqueda inicial falla, se fuerza la carga de
-// la lista correspondiente y se reintenta una vez llegan los datos.
-function tryOpenDeepLinkedReport() {
-  if (deepLinkHandled || !currentUser) return;
-  var params = new URLSearchParams(window.location.search);
-  var id = params.get('openReport');
-  if (!id) return;
-  var mode = params.get('mode') || 'view';
 
-  function consume() {
-    deepLinkHandled = true;
-    try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
-  }
+// Núcleo compartido: dado un id de informe + modo, lo abre en la pantalla
+// correcta según el rol — usado tanto en frío (deep-link por query string
+// al arrancar, ver tryOpenDeepLinkedReport) como con la app YA ABIERTA en
+// primer plano (ver el listener de click de OneSignal más abajo). Antes
+// solo existía la ruta "en frío": tocar una notificación mientras la app
+// ya estaba abierta simplemente le daba foco a la ventana sin navegar a
+// ningún sitio (OneSignal solo usa la URL del push para abrir una ventana
+// NUEVA — si el cliente ya está en pantalla, no hay recarga que lea el
+// query string), así que ese caso no hacía nada en absoluto.
+// BUG CORREGIDO ("tocar una notificación push no abre nada — enlace
+// perdido en silencio"): para operario, myReportsCache sigue vacío hasta
+// que visita la pestaña "Mis informes" a mano (loadLists en
+// initOperarioScreen no la carga) — si la búsqueda inicial en caché
+// falla, se fuerza la carga de la lista correspondiente y se reintenta
+// una vez llegan los datos. Mismo caso para manager con el historial.
+function openReportById(id, mode) {
+  if (!id || !currentUser) return;
+  mode = mode || 'view';
 
   if (currentUser.rol === 'operario') {
     var r = myReportsCache.find(function(x){ return x.ID === id; });
     if (r) {
-      consume();
       if (mode === 'edit' && r.STATUS === 'rejected') openEditReport(id);
       else openReportDetail(id);
       return;
@@ -5750,13 +5826,12 @@ function tryOpenDeepLinkedReport() {
     fetch(WEBAPP_URL + '?action=getMyReports&codigo=' + encodeURIComponent(currentPin) + '&operario=' + encodeURIComponent(currentUser.nombre) + '&t=' + Date.now())
       .then(function(resp){ return resp.json(); })
       .then(function(result){
-        if (deepLinkHandled || !result || result.status !== 'ok') return;
+        if (!result || result.status !== 'ok') return;
         myReportsCache = capReports(result.data || []);
         myReportsLoaded = true;
         dataCacheSet('myReports', myReportsCache);
         var r2 = myReportsCache.find(function(x){ return x.ID === id; });
         if (!r2) return;
-        consume();
         if (mode === 'edit' && r2.STATUS === 'rejected') openEditReport(id);
         else openReportDetail(id);
       })
@@ -5765,19 +5840,18 @@ function tryOpenDeepLinkedReport() {
   }
 
   if (currentUser.rol === 'manager') {
-    if (mgReportsCache.some(function(x){ return x.ID === id; })) { consume(); openManagerDetail(id); return; }
-    if (mgHistorialCache.some(function(x){ return x.ID === id; })) { consume(); openHistorialDetail(id); return; }
+    if (mgReportsCache.some(function(x){ return x.ID === id; })) { openManagerDetail(id); return; }
+    if (mgHistorialCache.some(function(x){ return x.ID === id; })) { openHistorialDetail(id); return; }
     // No está en pendientes (ya cargadas por initManagerScreen) ni en el
     // historial cacheado — puede que sea un informe ya resuelto y el
     // historial nunca se haya visitado en esta sesión. Se fuerza su carga.
     fetch(WEBAPP_URL + '?action=getHistorial&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
       .then(function(resp){ return resp.json(); })
       .then(function(result){
-        if (deepLinkHandled || !result || result.status !== 'ok') return;
+        if (!result || result.status !== 'ok') return;
         mgHistorialCache = capReports(result.data || []);
         mgHistorialLoaded = true;
         if (!mgHistorialCache.some(function(x){ return x.ID === id; })) return;
-        consume();
         openHistorialDetail(id);
       })
       .catch(function(){});
@@ -5785,8 +5859,26 @@ function tryOpenDeepLinkedReport() {
   }
 
   if (currentUser.rol === 'admin') {
-    if (adAllRecords.some(function(x){ return x.ID === id; })) { consume(); openAdminDetail(id); }
+    if (adAllRecords.some(function(x){ return x.ID === id; })) openAdminDetail(id);
   }
+}
+
+// Lee ?openReport=ID&mode=view|edit de la URL con la que arrancó la app
+// (ver buildAppUrl en Code_v5.gs) — el caso "app cerrada, se abre una
+// ventana nueva al tocar la notificación". Se llama tras cada
+// routeToRoleScreen() (login normal o recuperado de caché) — es segura de
+// llamar varias veces: solo actúa una vez gracias a deepLinkHandled, y
+// limpia la query string para que un refresco posterior no reabra el
+// mismo informe.
+function tryOpenDeepLinkedReport() {
+  if (deepLinkHandled || !currentUser) return;
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('openReport');
+  if (!id) return;
+  var mode = params.get('mode') || 'view';
+  deepLinkHandled = true;
+  try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
+  openReportById(id, mode);
 }
 
 function openNotifModal() {
@@ -6448,7 +6540,8 @@ document.addEventListener('visibilitychange', function() {
 (function() {
   var modalIds = [
     'reportDetailModal', 'mgDetailModal', 'editReportModal',
-    'mgRejectModal', 'notifFullModal', 'photoGalleryModal', 'confirmDeleteModal'
+    'mgRejectModal', 'notifFullModal', 'photoGalleryModal', 'confirmDeleteModal',
+    'editSavedModal'
   ];
   // BUG CORREGIDO ("al confirmar borrar, Cancelar/Eliminar quedan tapados
   // por el tabbar inferior"): mgRejectModal/confirmDeleteModal son
