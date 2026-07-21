@@ -398,7 +398,7 @@ body{height:100dvh}
 /* Select de "modo edición" (Cliente/Obra/Tipo/Compañía) — misma caja
    blanca con borde que el resto de campos de este formulario, con una
    flecha propia porque -webkit-appearance:none quita la nativa. */
-.er-select{width:100%;padding:10px 34px 10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit;-webkit-appearance:none;appearance:none;color:#1b1b1d;
+.er-select{width:100%;padding:10px 34px 10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;-webkit-appearance:none;appearance:none;color:#1b1b1d;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a9ca8' stroke-width='2.5' stroke-linecap='round'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat:no-repeat;background-position:right 10px center;background-size:16px}
 .er-select:invalid{color:#8e8e93}
@@ -694,12 +694,24 @@ body.pin-mode{overflow:hidden}
    altura real en píxeles directamente en estos overlays, igual que ya
    hacía con html/body — ataca la causa (el cálculo de altura en sí),
    no un síntoma concreto, así que no hace falta ningún colchón. */
-/* transform/transition/will-change/touch-action:pan-y ELIMINADOS: eran
-   resto del antiguo gesto de arrastre para cerrar el modal (ver el
-   comentario en el bloque "MODALES" del JS) — el modal ya no cambia su
-   transform nunca (siempre translateY(0)), así que solo mantenían viva
-   una capa de composición de más en cada modal abierto sin ningún efecto
-   visual, sin aportar nada al scroll. */
+/* transform/transition/will-change ELIMINADOS: eran resto del antiguo
+   gesto de arrastre para cerrar el modal (ver el comentario en el
+   bloque "MODALES" del JS) — el modal ya no cambia su transform nunca
+   (siempre translateY(0)), así que solo mantenían viva una capa de
+   composición de más en cada modal abierto sin ningún efecto visual,
+   sin aportar nada al scroll.
+   touch-action:pan-y SÍ vuelve a hacer falta, pero por un motivo nuevo
+   y distinto (2026-07-21, "la pantalla de editar se arrastra en
+   cualquier dirección, no solo verticalmente"): sin él, un swipe
+   diagonal sobre el div interno con -webkit-overflow-scrolling:touch de
+   cada modal fullbleed puede iniciar un scroll/rubber-band horizontal
+   aunque su contenido nunca desborda a los lados — pan-y le dice
+   explícitamente al motor que solo el gesto vertical es válido aquí,
+   igual que ya ocurre implícitamente en #appScroll (nunca tuvo este
+   bug porque no es position:fixed/absolute). Se aplica en el HTML, en
+   el div interno con overflow-y de editReportModal/rdBody/mgDetailModal
+   (no en .mg-modal-overlay/.mg-modal, que no son ellos los que
+   scrollean). */
 .mg-modal{width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px);box-shadow:0 -4px 24px rgba(0,0,0,.12);transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .mg-modal-title{font-size:17px;font-weight:700;color:#1b1b1d;margin-bottom:3px}
 .mg-modal-sub{font-size:13px;color:#737687;margin-bottom:14px}
@@ -1155,7 +1167,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         <i class="ti ti-x" style="font-size:17px;color:#000"></i>
       </button>
     </div>
-    <div style="overflow-y:auto;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
+    <div style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
 
       <div class="mi-comment full" style="margin:12px 0" id="erCommentBlock"><b id="erCommentLabel">Comentario del manager</b><span id="erComment"></span></div>
 
@@ -1175,7 +1187,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         </div>
       </div>
       <select id="erClienteSel" class="er-select" onchange="checkErDirty()"></select>
-      <input type="text" id="erClienteNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit" oninput="checkErDirty()">
+      <input type="text" id="erClienteNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
         <span id="erLblObra">Obra</span>
@@ -1185,16 +1197,16 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         </div>
       </div>
       <select id="erObraSel" class="er-select" onchange="checkErDirty()"></select>
-      <input type="text" id="erObraNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit" oninput="checkErDirty()">
+      <input type="text" id="erObraNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblFecha">Fecha</div>
-      <input type="date" id="erFecha" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit">
+      <input type="date" id="erFecha" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblAyudante">Ayudante</div>
       <select id="erAyudante" class="er-select" onchange="checkErDirty()"></select>
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblVehiculo">Vehículo</div>
-      <input type="text" id="erVehiculo" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit">
+      <input type="text" id="erVehiculo" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
 
       <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
         <span id="erLblTipo">Tipo de trabajo</span>
@@ -1204,17 +1216,17 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         </div>
       </div>
       <select id="erTipoSel" class="er-select" onchange="checkErDirty()"></select>
-      <input type="text" id="erTipoNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit" oninput="checkErDirty()">
+      <input type="text" id="erTipoNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblHoras">Horas trabajadas</div>
-      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:.5px solid #d1d1d6;border-radius:10px;padding:8px 14px">
+      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:.5px solid #d1d1d6;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:8px 14px">
         <div class="step-btn" onclick="erChangeHoras(-1)">−</div>
         <div style="flex:1;text-align:center;font-size:18px;font-weight:600" id="erHorasVal">0</div>
         <div class="step-btn" onclick="erChangeHoras(1)">+</div>
       </div>
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblTrabajos">Trabajos realizados</div>
-      <textarea id="erTrabajos" rows="3" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit;resize:none"></textarea>
+      <textarea id="erTrabajos" rows="3" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;resize:none"></textarea>
 
       <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
         <div class="photo-row-head">
@@ -1236,13 +1248,13 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         </div>
       </div>
       <select id="erCompaniaSel" class="er-select" onchange="checkErDirty()"></select>
-      <input type="text" id="erCompaniaNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit" oninput="checkErDirty()">
+      <input type="text" id="erCompaniaNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblMateriales">Materiales utilizados</div>
-      <textarea id="erMateriales" rows="2" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit;resize:none"></textarea>
+      <textarea id="erMateriales" rows="2" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;resize:none"></textarea>
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblPrecio">Precio materiales (€)</div>
-      <input type="number" id="erPrecio" step="0.01" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;font-size:15px;font-family:inherit">
+      <input type="number" id="erPrecio" step="0.01" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
 
       <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
         <div class="photo-row-head">
@@ -1625,33 +1637,48 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     <div id="mgFilterPanel" style="display:none;margin-top:10px;background:#fff;border-radius:14px;border:.5px solid #e5e5ea;box-shadow:0 2px 10px rgba(0,0,0,.07);padding:12px">
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-cliente">Cliente</span></div>
-        <input type="text" id="mgFCliente" list="mgFClienteList" placeholder="Todos los clientes" oninput="applyMgFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="mgFClienteList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="mgFCliente" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los clientes</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-obra">Obra</span></div>
-        <input type="text" id="mgFObra" list="mgFObraList" placeholder="Todas las obras" oninput="applyMgFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="mgFObraList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="mgFObra" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todas las obras</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-operario">Operario</span></div>
-        <input type="text" id="mgFOperario" list="mgFOperarioList" placeholder="Todos los operarios" oninput="applyMgFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="mgFOperarioList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="mgFOperario" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los operarios</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-tipo">Tipo de trabajo</span></div>
-        <input type="text" id="mgFTipo" list="mgFTipoList" placeholder="Todos los tipos" oninput="applyMgFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="mgFTipoList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="mgFTipo" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los tipos</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-compania">Compañía</span></div>
-        <input type="text" id="mgFCompania" list="mgFCompaniaList" placeholder="Todas las compañías" oninput="applyMgFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="mgFCompaniaList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="mgFCompania" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todas las compañías</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
       <div style="margin-bottom:4px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="mg-flt-lbl-periodo">Período</span></div>
@@ -1741,7 +1768,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         </button>
       </div>
     </div>
-    <div id="rdBody" style="overflow-y:auto;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain"></div>
+    <div id="rdBody" style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain"></div>
     <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
         <i class="ti ti-upload" style="font-size:16px"></i> <span id="rdShareBtnLbl">Compartir</span>
@@ -1757,7 +1784,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
 <div class="mg-modal-overlay fullbleed" id="mgDetailModal" onclick="if(event.target===this)closeManagerDetail()">
   <div class="mg-modal" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
     <!-- Скроллируемый контент -->
-    <div style="overflow-y:auto;flex:1;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
+    <div style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
         <div style="min-width:0">
           <div class="mg-modal-title" id="mgdTitle">—</div>
@@ -1825,41 +1852,56 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       <!-- Клиент -->
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-lbl-cliente">Cliente</span></div>
-        <input type="text" id="adFCliente" list="adFClienteList" placeholder="Todos los clientes" oninput="applyAdminFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="adFClienteList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="adFCliente" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los clientes</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
 
       <!-- Obra -->
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-lbl-obra">Obra</span></div>
-        <input type="text" id="adFObra" list="adFObraList" placeholder="Todas las obras" oninput="applyAdminFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="adFObraList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="adFObra" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todas las obras</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
 
       <!-- Rабочий -->
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-lbl-operario">Operario</span></div>
-        <input type="text" id="adFOperario" list="adFOperarioList" placeholder="Todos los operarios" oninput="applyAdminFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="adFOperarioList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="adFOperario" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los operarios</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
 
       <!-- Тип работы -->
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-lbl-tipo">Tipo de trabajo</span></div>
-        <input type="text" id="adFTipo" list="adFTipoList" placeholder="Todos los tipos" oninput="applyAdminFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="adFTipoList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="adFTipo" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todos los tipos</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
 
       <!-- Компания -->
       <div style="margin-bottom:10px">
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-lbl-compania">Compañía</span></div>
-        <input type="text" id="adFCompania" list="adFCompaniaList" placeholder="Todas las compañías" oninput="applyAdminFilters()"
-          style="width:100%;padding:8px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000;outline:none">
-        <datalist id="adFCompaniaList"></datalist>
+        <div class="mode-list-row" style="padding:0">
+          <select class="rselect" id="adFCompania" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
+            <option value="">Todas las compañías</option>
+          </select>
+          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
       </div>
 
       <!-- Интервал дат -->
@@ -2275,11 +2317,11 @@ function applyLang() {
 
   // Admin search & filters
   setPh('adSearch',       t('search_ph'));
-  setPh('adFCliente',     t('flt_clientes'));
-  setPh('adFObra',        t('flt_obras'));
-  setPh('adFOperario',    t('flt_operarios'));
-  setPh('adFTipo',        t('flt_tipos'));
-  setPh('adFCompania',    t('flt_companias'));
+  // Los campos de Cliente/Obra/Operario/Tipo/Compañía ya no son
+  // <input placeholder>, son <select> (ver buildAdminDatalistOptions) —
+  // su texto "Todos los..." vive en la primera <option>, que se
+  // reconstruye aquí para que el cambio de idioma también la alcance.
+  if (typeof buildAdminDatalistOptions === 'function') buildAdminDatalistOptions();
 
   // Filter reset button
   var resetBtn = document.querySelector('[onclick="resetAdminFilters()"]');
@@ -2287,11 +2329,7 @@ function applyLang() {
 
   // Manager search & filters (mismo patrón que admin)
   setPh('mgSearch',      t('search_ph'));
-  setPh('mgFCliente',    t('flt_clientes'));
-  setPh('mgFObra',       t('flt_obras'));
-  setPh('mgFOperario',   t('flt_operarios'));
-  setPh('mgFTipo',       t('flt_tipos'));
-  setPh('mgFCompania',   t('flt_companias'));
+  if (typeof buildMgDatalistOptions === 'function') buildMgDatalistOptions();
   setEl('mg-flt-lbl-cliente',  t('lbl_cliente'));
   setEl('mg-flt-lbl-obra',     t('lbl_obra'));
   setEl('mg-flt-lbl-operario', t('lbl_operario'));
@@ -3055,6 +3093,12 @@ var erPhotosMatSelected = [];
 // un solo control de fotos, en el mismo estilo que ya usa el resto de la app.
 var erExistingPhotosObra = [];
 var erExistingPhotosMat = [];
+// Fotos YA subidas marcadas para borrar, pendientes de confirmar con
+// "Guardar"/"Reenviar" — ver el comentario de erRemoveExistingPhoto más
+// abajo (antes esto se borraba de Drive al instante, sin pasar por
+// Cancelar/Guardar como el resto del formulario).
+var erPhotosToDeleteObra = [];
+var erPhotosToDeleteMat = [];
 
 function erHandlePhotoSelect(input, group) {
   var files = Array.from(input.files || []);
@@ -3110,35 +3154,52 @@ function erRemovePhoto(group, idx) {
   checkErDirty();
 }
 
-// Borra una foto YA subida — a diferencia de erRemovePhoto (que solo quita
-// del array local algo que aún no se había guardado), esto llama al
-// servidor para borrarla de verdad de Drive. Optimista: desaparece de la
-// vista al instante, y si el borrado real falla se vuelve a mostrar (no
-// fingimos un éxito que no ocurrió).
+// BUG CORREGIDO (2026-07-21, "si borro una foto y luego pulso Cancelar,
+// la foto ya está borrada de verdad de todos modos"): esto antes llamaba
+// al servidor para borrar de Drive AL INSTANTE, al tocar la "x" — el
+// único campo de todo el formulario de edición que no era un borrador
+// (todo lo demás, incluidas las fotos NUEVAS vía erRemovePhoto, solo
+// vive en memoria hasta pulsar Guardar/Reenviar, y Cancelar lo descarta
+// sin más). Ahora quitar una foto ya subida solo la oculta y la encola
+// en erPhotosToDeleteObra/Mat — el borrado real en Drive no ocurre aquí,
+// ocurre en erCommitPhotoDeletions(), llamada solo tras un resubmit con
+// éxito (ver submitEditReport). Así Cancelar de verdad revierte esto
+// (erFetchExistingPhotos vuelve a traer la lista real de Drive la
+// próxima vez que se abra el editor, foto incluida) y checkErDirty() ya
+// detecta esto como un cambio real (ver getErFormValues).
 function erRemoveExistingPhoto(group, idx) {
   var arr = group === 'obra' ? erExistingPhotosObra : erExistingPhotosMat;
+  var pending = group === 'obra' ? erPhotosToDeleteObra : erPhotosToDeleteMat;
   var url = arr[idx];
   if (!url || !erCurrentReport) return;
   arr.splice(idx, 1);
+  pending.push(url);
   erRenderThumbs(group);
-  fetch(WEBAPP_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action:'deletePhoto', codigo: currentPin, id: erCurrentReport.ID, fileUrl: url })
-  })
-    .then(function(r){ return r.json(); })
-    .then(function(res){
-      if (!res || res.status !== 'ok') {
-        arr.splice(idx, 0, url);
-        erRenderThumbs(group);
-        showToast(t('toast_error_borrar_foto'), true);
-      }
+  checkErDirty();
+}
+
+// Ejecuta de verdad, en Drive, las bajas encoladas por erRemoveExistingPhoto
+// — se llama solo tras confirmar que el resubmit del informe (los datos de
+// texto) se guardó con éxito, nunca antes: si el resubmit falla, las fotos
+// que el usuario "quitó" en pantalla siguen intactas en Drive, coherente
+// con que la edición entera no llegó a aplicarse. Cada borrado se avisa
+// por separado si falla (no bloquea a los demás ni al resto del flujo).
+function erCommitPhotoDeletions() {
+  var toDelete = erPhotosToDeleteObra.concat(erPhotosToDeleteMat);
+  if (!toDelete.length || !erCurrentReport) return;
+  var reportId = erCurrentReport.ID;
+  toDelete.forEach(function(url){
+    fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'deletePhoto', codigo: currentPin, id: reportId, fileUrl: url })
     })
-    .catch(function(){
-      arr.splice(idx, 0, url);
-      erRenderThumbs(group);
-      showToast(t('toast_error_borrar_foto'), true);
-    });
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if (!res || res.status !== 'ok') showToast(t('toast_error_borrar_foto'), true);
+      })
+      .catch(function(){ showToast(t('toast_error_borrar_foto'), true); });
+  });
 }
 
 // Trae las fotos YA subidas del informe (listando la carpeta de Drive de
@@ -3728,7 +3789,9 @@ function getErFormValues() {
     materiales: document.getElementById('erMateriales').value,
     precio: document.getElementById('erPrecio').value,
     fotosObra: erPhotosObraSelected.length,
-    fotosMat: erPhotosMatSelected.length
+    fotosMat: erPhotosMatSelected.length,
+    fotosObraBorradas: erPhotosToDeleteObra.length,
+    fotosMatBorradas: erPhotosToDeleteMat.length
   };
 }
 
@@ -3790,6 +3853,8 @@ function fillEditReportModal(report) {
 
   erPhotosObraSelected = [];
   erPhotosMatSelected = [];
+  erPhotosToDeleteObra = [];
+  erPhotosToDeleteMat = [];
   erFetchExistingPhotos(report);
 
   var saveBtn = document.getElementById('erSaveBtn');
@@ -3808,6 +3873,8 @@ function closeEditReportModal() {
   erCurrentReport = null;
   erPhotosObraSelected = [];
   erPhotosMatSelected = [];
+  erPhotosToDeleteObra = [];
+  erPhotosToDeleteMat = [];
   erExistingPhotosObra = [];
   erExistingPhotosMat = [];
   erOriginalSnapshot = null;
@@ -3932,6 +3999,10 @@ function submitEditReport() {
       if (erPhotosObraSelected.length || erPhotosMatSelected.length) {
         uploadPhotosWithRetry(idForPhotos, fechaForPhotos, operarioForPhotos, erPhotosObraSelected, erPhotosMatSelected, 2);
       }
+      // Las fotos ya subidas que el usuario quitó con la "x" solo se borran
+      // de Drive AHORA, tras confirmar que el resubmit sí se guardó (ver
+      // el comentario de erRemoveExistingPhoto/erCommitPhotoDeletions).
+      erCommitPhotoDeletions();
 
       // Actualización optimista INMEDIATA: parcheamos localmente el
       // informe en caché con el nuevo estado (pending, sin comentario,
@@ -4847,25 +4918,36 @@ var mgFilteredReportsCache = [];
 var mgFilteredHistorialCache = [];
 var mgFilterPanelOpen = false;
 
+// BUG CORREGIDO (2026-07-21, "los desplegables de filtros no funcionan"):
+// esto era <input list="..."> + <datalist>, que iOS Safari/WKWebView NO
+// soporta en absoluto (nunca muestra el desplegable de sugerencias, en
+// ningún iOS) — así que en el dispositivo real estos campos eran simples
+// cajas de texto sin ninguna lista visible. Ahora son <select> reales
+// (mismo control nativo que ya usa la pantalla "Nuevo informe"), así que
+// abren el picker nativo de iOS de verdad. Conserva el valor seleccionado
+// entre refrescos de datos si sigue existiendo en las opciones nuevas.
 function buildMgDatalistOptions() {
   var maps = {
-    mgFClienteList:  function(r){ return r.CLIENTE; },
-    mgFObraList:     function(r){ return r.OBRA; },
-    mgFOperarioList: function(r){ return r.OPERARIO; },
-    mgFTipoList:     function(r){ return r['TIPO DE TRABAJO']; },
-    mgFCompaniaList: function(r){ return r['COMPAÑÍA']; }
+    mgFCliente:  { get: function(r){ return r.CLIENTE; }, key: 'flt_clientes' },
+    mgFObra:     { get: function(r){ return r.OBRA; }, key: 'flt_obras' },
+    mgFOperario: { get: function(r){ return r.OPERARIO; }, key: 'flt_operarios' },
+    mgFTipo:     { get: function(r){ return r['TIPO DE TRABAJO']; }, key: 'flt_tipos' },
+    mgFCompania: { get: function(r){ return r['COMPAÑÍA']; }, key: 'flt_companias' }
   };
   var source = mgReportsCache.concat(mgHistorialCache);
-  Object.keys(maps).forEach(function(dlId){
-    var dl = document.getElementById(dlId);
-    if (!dl) return;
+  Object.keys(maps).forEach(function(selId){
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+    var current = sel.value;
     var vals = [];
     source.forEach(function(r){
-      var v = maps[dlId](r);
+      var v = maps[selId].get(r);
       if (v && vals.indexOf(v) === -1) vals.push(v);
     });
     vals.sort();
-    dl.innerHTML = vals.map(function(v){ return '<option value="'+v+'">'; }).join('');
+    sel.innerHTML = '<option value="">' + t(maps[selId].key) + '</option>' +
+      vals.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+    if (current && vals.indexOf(current) !== -1) sel.value = current;
   });
 }
 
@@ -5039,24 +5121,29 @@ function loadAdminInforme() {
 }
 
 /* Заполняем datalist-подсказки уникальными значениями из реальных данных */
+// Ver el comentario de buildMgDatalistOptions (mismo motivo, mismo fix:
+// <select> real en vez de <input list>+<datalist>, que iOS no soporta).
 function buildAdminDatalistOptions() {
   var maps = {
-    adFClienteList:  function(r){ return r.CLIENTE; },
-    adFObraList:     function(r){ return r.OBRA; },
-    adFOperarioList: function(r){ return r.OPERARIO; },
-    adFTipoList:     function(r){ return r['TIPO DE TRABAJO']; },
-    adFCompaniaList: function(r){ return r['COMPAÑÍA']; }
+    adFCliente:  { get: function(r){ return r.CLIENTE; }, key: 'flt_clientes' },
+    adFObra:     { get: function(r){ return r.OBRA; }, key: 'flt_obras' },
+    adFOperario: { get: function(r){ return r.OPERARIO; }, key: 'flt_operarios' },
+    adFTipo:     { get: function(r){ return r['TIPO DE TRABAJO']; }, key: 'flt_tipos' },
+    adFCompania: { get: function(r){ return r['COMPAÑÍA']; }, key: 'flt_companias' }
   };
-  Object.keys(maps).forEach(function(dlId){
-    var dl = document.getElementById(dlId);
-    if (!dl) return;
+  Object.keys(maps).forEach(function(selId){
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+    var current = sel.value;
     var vals = [];
     adAllRecords.forEach(function(r){
-      var v = maps[dlId](r);
+      var v = maps[selId].get(r);
       if (v && vals.indexOf(v) === -1) vals.push(v);
     });
     vals.sort();
-    dl.innerHTML = vals.map(function(v){ return '<option value="'+v+'">'; }).join('');
+    sel.innerHTML = '<option value="">' + t(maps[selId].key) + '</option>' +
+      vals.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+    if (current && vals.indexOf(current) !== -1) sel.value = current;
   });
 }
 
