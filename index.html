@@ -395,13 +395,6 @@ body{height:100dvh}
    rompiendo el estilo uniforme de etiqueta compacta usado en el resto de
    la app (mismo patrón que .tarow .sub-label). */
 .s-label{font-size:11px;font-weight:600;color:#737687;text-transform:uppercase;letter-spacing:.5px}
-/* Select de "modo edición" (Cliente/Obra/Tipo/Compañía) — misma caja
-   blanca con borde que el resto de campos de este formulario, con una
-   flecha propia porque -webkit-appearance:none quita la nativa. */
-.er-select{width:100%;padding:10px 34px 10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;-webkit-appearance:none;appearance:none;color:#1b1b1d;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239a9ca8' stroke-width='2.5' stroke-linecap='round'><polyline points='6 9 12 15 18 9'/></svg>");
-  background-repeat:no-repeat;background-position:right 10px center;background-size:16px}
-.er-select:invalid{color:#8e8e93}
 .rta{width:100%;border:none;outline:none;background:#f4f4f7;border-radius:18px;padding:14px 16px;margin-top:2px;font-size:14px;font-weight:500;color:#1b1b1d;font-family:inherit;resize:none;min-height:70px;line-height:1.6;transition:background .15s}
 .rta:focus{background:#eaeefc}
 .rta::placeholder{color:#a7a9b4}
@@ -773,24 +766,31 @@ body.pin-mode{overflow:hidden}
    el botón de eliminar tiene su propio border-radius a juego con el de
    la tarjeta (ver .swipe-delete-action), así que no hay ninguna esquina
    cuadrada que ocultar sin necesidad de overflow:hidden. */
-.swipe-wrap{position:relative;margin:0 16px 10px;border-radius:20px;background:#fff}
-.swipe-wrap.r12{border-radius:12px;margin:0 16px 8px}
+.swipe-wrap{position:relative;margin:0 16px 10px}
+.swipe-wrap.r12{margin:0 16px 8px}
 .swipe-wrap>.mi-card,.swipe-wrap>.mg-card,.swipe-wrap>.ad-card{margin:0;position:relative;z-index:1;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
-/* BUG CORREGIDO ("la tarjeta se ve mal dibujada" — el fondo blanco del
-   wrap de más arriba no era la causa real): border-radius en una caja
-   deja sus 4 esquinas SIN pintar (las recorta en diagonal) — la propia
-   tarjeta, al tener sus esquinas redondeadas, deja justo esas esquinas
-   "agujereadas" por diseño, revelando lo que haya pintado detrás en ese
-   hueco. Sin este radio a juego en el botón rojo, ese hueco enseñaba el
-   rectángulo recto del botón (confirmado con elementFromPoint: a 1-2px
-   de la esquina, el punto pertenece al botón, no a la tarjeta) aunque la
-   tarjeta cubriera el resto entero. Con el mismo radio en sus dos
-   esquinas del lado del borde del wrap, el hueco de la tarjeta cae sobre
-   un hueco idéntico del botón, y lo único que queda debajo es el fondo
-   blanco liso del wrap — invisible sobre la tarjeta blanca. */
-.swipe-delete-action{position:absolute;top:0;right:0;bottom:0;width:84px;background:#ff3b30;border:none;border-radius:0 20px 20px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
-.swipe-wrap.r12 .swipe-delete-action{border-radius:0 12px 12px 0}
-.swipe-delete-action i{font-size:22px}
+/* Acciones de swipe (2026-07-21): chip flotante, separado de la
+   tarjeta por un margen horizontal — pero del MISMO alto que la
+   tarjeta (top:0;bottom:0, no top/bottom:8px como en el primer intento:
+   con margen vertical propio quedaba 16px más bajo que .mi-card, un
+   desajuste de tamaño visible en cuanto ambos se ven a la vez). Radio
+   igualado al de la tarjeta (20px, antes 18px) y misma fórmula de
+   sombra que .mi-card (0 4px 20px, alpha .06) — mismo radio + mismo
+   alto + misma sombra = se lee como una tarjeta más, no como un botón
+   de tamaño distinto pegado al lado. Icono/etiqueta agrandados (36px/
+   12px, antes 34px/11px) para llenar mejor el chip ahora más alto.
+   .swipe-edit-action es el espejo horizontal exacto de
+   .swipe-delete-action (mismo ancho, mismo inset, mismos tamaños) —
+   solo cambia el lado (left vs right) y el color (azul=constructivo,
+   rojo=destructivo). */
+.swipe-delete-action{position:absolute;top:0;bottom:0;right:8px;width:68px;background:#fdecea;border:none;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
+.swipe-delete-action .swipe-ic{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.swipe-delete-action i{font-size:17px;color:#ff3b30}
+.swipe-delete-action .swipe-lbl{font-size:12px;font-weight:700;color:#c62b21}
+.swipe-edit-action{position:absolute;top:0;bottom:0;left:8px;width:68px;background:#eaf1fd;border:none;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-family:inherit;cursor:pointer;touch-action:manipulation;padding:0}
+.swipe-edit-action .swipe-ic{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+.swipe-edit-action i{font-size:17px;color:#0049c5}
+.swipe-edit-action .swipe-lbl{font-size:12px;font-weight:700;color:#0049c5}
 .ad-month-header{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;cursor:pointer;touch-action:manipulation}
 .ad-month-header:active{opacity:.7}
 .ad-month-body{margin-bottom:2px}
@@ -812,14 +812,46 @@ body.pin-mode{overflow:hidden}
 .det-group-icon i{font-size:15px}
 .det-group-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .rd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.rd-field{background:#f7f7f8;border-radius:14px;padding:11px 13px}
-.rd-field b{display:block;color:#9a9a9e;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.3px;margin-bottom:3px}
-.rd-field span{color:#111;font-weight:600;font-size:13px}
-.rd-field-full{background:#f7f7f8;border-radius:14px;padding:12px 13px;margin-bottom:8px}
-.rd-text{background:#f7f7f8;border-radius:14px;padding:12px 13px;font-size:13px;color:#111;line-height:1.5;margin-bottom:8px}
+/* Campo "ficha" (2026-07-21, nuevo estilo aprobado para todos los
+   informes "abiertos" — detalle de operario/manager/admin/historial,
+   los cuatro pasan por buildDetailHtml, así que un solo cambio aquí
+   los cubre todos): antes la etiqueta era gris pequeña y el valor
+   negro sin más énfasis (ver git history) — ahora la etiqueta usa el
+   azul de marca (#0049c5, el mismo que ya usa el resto de la app) y
+   el valor va centrado y más grande, para que un dato puntual
+   (Operario, Tipo, Compañía...) se lea de un vistazo como una "ficha".
+   El texto largo (Trabajos realizados/Materiales, ver .rd-text) sigue
+   con su propio estilo de párrafo sin cambios — mezclar ambos
+   lenguajes visuales sería confuso: azul+centrado para datos cortos,
+   gris+alineado a la izquierda para descripciones. */
+.rd-field{background:#f4f4f7;border-radius:16px;padding:13px 12px;text-align:center;margin-bottom:8px}
+.rd-field b{display:block;color:#0049c5;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.4px;margin-bottom:5px}
+.rd-field span{display:block;color:#000;font-weight:700;font-size:17px;letter-spacing:-.2px;line-height:1.25}
+/* Variante "hero" — el único número protagonista de cada tarjeta
+   (horas trabajadas, coste de materiales): mismo lenguaje azul/negro
+   de arriba, valor bastante más grande y con cifras tabulares (evita
+   que el ancho salte al cambiar de dígitos). */
+.rd-field-lg{background:#f4f4f7;border-radius:16px;padding:16px 12px;text-align:center;margin-bottom:8px}
+.rd-field-lg b{display:block;color:#0049c5;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.4px;margin-bottom:6px}
+.rd-field-lg span{display:block;color:#000;font-weight:700;font-size:30px;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.rd-field-lg small{display:block;font-size:11px;font-weight:600;color:#8e8e93;margin-top:4px}
+.rd-field-full{background:#f4f4f7;border-radius:14px;padding:12px 13px;margin-bottom:8px}
+.rd-text{background:#f4f4f7;border-radius:14px;padding:12px 13px;font-size:13px;color:#111;line-height:1.5;margin-bottom:8px}
 .rd-text b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#9a9a9e;margin-bottom:4px;font-weight:700}
 .rd-photo-link{display:flex;align-items:center;justify-content:center;gap:6px;background:#f4f4f7;border:none;border-radius:999px;padding:12px;font-size:13px;font-weight:700;color:#0049c5;text-decoration:none;margin-top:6px;width:100%;font-family:inherit;cursor:pointer;touch-action:manipulation}
 .rd-photo-link svg,.rd-photo-link i{width:15px;height:15px;font-size:15px;stroke:#0049c5;fill:none;stroke-width:2;stroke-linecap:round;color:#0049c5}
+/* Botón "Compartir" primario (2026-07-21): en la ficha propia del
+   operario (reportDetailModal) Compartir suele ser la ÚNICA acción
+   disponible (un informe aprobado no muestra Editar/Eliminar) — antes
+   usaba el mismo gris de un botón "Cancelar" secundario, perdido junto
+   al resto de la pantalla. Ahora es el azul sólido de marca, mismo
+   patrón de sombra que ya usan .mg-btn-approve/.btn-new (una sola CTA
+   primaria por pantalla). NO se aplica al Compartir de mgDetailModal
+   (manager/admin): ahí Aprobar/Rechazar ya son la acción primaria de
+   esa pantalla, y darle este mismo azul a Compartir competiría por
+   atención — se queda con su gris secundario a propósito. */
+.rd-share-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:#0049c5;color:#fff;border:none;border-radius:999px;padding:14px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;box-shadow:0 10px 20px -8px rgba(0,73,197,.5)}
+.rd-share-btn:active{opacity:.88}
 
 /* GALERÍA DE FOTOS — miniaturas */
 .pg-thumb{flex-shrink:0;width:44px;height:44px;border-radius:8px;overflow:hidden;cursor:pointer;touch-action:manipulation;border:2px solid transparent;opacity:.55;transition:opacity .1s,border-color .1s}
@@ -1186,7 +1218,10 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <button class="ct" id="erCtClN" onclick="erSetClienteMode('new')"><span id="er-ctcln-lbl">Nuevo</span></button>
         </div>
       </div>
-      <select id="erClienteSel" class="er-select" onchange="checkErDirty()"></select>
+      <div class="mode-list-row" id="erClienteSelRow">
+        <select id="erClienteSel" class="rselect" onchange="checkErDirty()"></select>
+        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+      </div>
       <input type="text" id="erClienteNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
@@ -1196,14 +1231,20 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <button class="ct" id="erCtObN" onclick="erSetObraMode('new')"><span id="er-ctobn-lbl">Nueva</span></button>
         </div>
       </div>
-      <select id="erObraSel" class="er-select" onchange="checkErDirty()"></select>
+      <div class="mode-list-row" id="erObraSelRow">
+        <select id="erObraSel" class="rselect" onchange="checkErDirty()"></select>
+        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+      </div>
       <input type="text" id="erObraNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblFecha">Fecha</div>
       <input type="date" id="erFecha" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblAyudante">Ayudante</div>
-      <select id="erAyudante" class="er-select" onchange="checkErDirty()"></select>
+      <div class="mode-list-row">
+        <select id="erAyudante" class="rselect" onchange="checkErDirty()"></select>
+        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+      </div>
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblVehiculo">Vehículo</div>
       <input type="text" id="erVehiculo" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
@@ -1215,7 +1256,10 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <button class="ct" id="erCtTN" onclick="erSetTipoMode('new')"><span id="er-cttn-lbl">Otro</span></button>
         </div>
       </div>
-      <select id="erTipoSel" class="er-select" onchange="checkErDirty()"></select>
+      <div class="mode-list-row" id="erTipoSelRow">
+        <select id="erTipoSel" class="rselect" onchange="checkErDirty()"></select>
+        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+      </div>
       <input type="text" id="erTipoNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblHoras">Horas trabajadas</div>
@@ -1247,7 +1291,10 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <button class="ct" id="erCtCN" onclick="erSetCompMode('new')"><span id="er-ctcn-lbl">Nueva</span></button>
         </div>
       </div>
-      <select id="erCompaniaSel" class="er-select" onchange="checkErDirty()"></select>
+      <div class="mode-list-row" id="erCompaniaSelRow">
+        <select id="erCompaniaSel" class="rselect" onchange="checkErDirty()"></select>
+        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+      </div>
       <input type="text" id="erCompaniaNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
       <div class="s-label" style="padding:14px 0 6px" id="erLblMateriales">Materiales utilizados</div>
@@ -1641,7 +1688,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="mgFCliente" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los clientes</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
       <div style="margin-bottom:10px">
@@ -1650,7 +1697,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="mgFObra" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todas las obras</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
       <div style="margin-bottom:10px">
@@ -1659,7 +1706,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="mgFOperario" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los operarios</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
       <div style="margin-bottom:10px">
@@ -1668,7 +1715,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="mgFTipo" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los tipos</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
       <div style="margin-bottom:10px">
@@ -1677,7 +1724,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="mgFCompania" onchange="applyMgFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todas las compañías</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
       <div style="margin-bottom:4px">
@@ -1770,7 +1817,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     </div>
     <div id="rdBody" style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:14px 18px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain"></div>
     <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
-      <button class="mg-modal-cancel" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareReportDetailFromModal()">
+      <button class="rd-share-btn" onclick="shareReportDetailFromModal()">
         <i class="ti ti-upload" style="font-size:16px"></i> <span id="rdShareBtnLbl">Compartir</span>
       </button>
       <button class="mg-btn-delete" id="rdDeleteBtn" style="display:none" onclick="deleteReportFromOperario()">
@@ -1856,7 +1903,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="adFCliente" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los clientes</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
 
@@ -1867,7 +1914,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="adFObra" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todas las obras</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
 
@@ -1878,7 +1925,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="adFOperario" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los operarios</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
 
@@ -1889,7 +1936,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="adFTipo" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todos los tipos</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
 
@@ -1900,7 +1947,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <select class="rselect" id="adFCompania" onchange="applyAdminFilters()" style="padding:9px 38px 9px 14px;font-size:13px">
             <option value="">Todas las compañías</option>
           </select>
-          <span class="rchev" style="width:22px;height:22px;right:6px"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+          <span class="rchev" style="width:22px;height:22px;right:6px;top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
       </div>
 
@@ -2072,7 +2119,7 @@ var LANGS = {
     install_step_ios1:'Toca el botón Compartir', install_step_ios2:'Selecciona "Añadir a pantalla de inicio"', install_step_ios3:'Toca "Añadir" y listo',
     install_step_and1:'Toca el menú ⋮ del navegador', install_step_and2:'Selecciona "Instalar app" o "Añadir a pantalla de inicio"',
     lw_continue:'Continuar',
-    btn_eliminar_informe:'Eliminar informe', confirm_eliminar:'¿Eliminar este informe? Esta acción no se puede deshacer.', swipe_eliminar:'Eliminar',
+    btn_eliminar_informe:'Eliminar informe', confirm_eliminar:'¿Eliminar este informe? Esta acción no se puede deshacer.', swipe_eliminar:'Eliminar', swipe_editar:'Editar',
     confirm_cerrar_sin_guardar:'¿Deseas cerrar sin guardar los cambios?',
     toast_eliminado:'Informe eliminado', toast_eliminar_error:'No se pudo eliminar el informe',
   },
@@ -2124,7 +2171,7 @@ var LANGS = {
     install_step_ios1:'Нажмите кнопку «Поделиться»', install_step_ios2:'Выберите «На экран «Домой»»', install_step_ios3:'Нажмите «Добавить» — готово',
     install_step_and1:'Откройте меню ⋮ браузера', install_step_and2:'Выберите «Установить приложение» или «Добавить на главный экран»',
     lw_continue:'Продолжить',
-    btn_eliminar_informe:'Удалить отчёт', confirm_eliminar:'Удалить этот отчёт? Действие необратимо.', swipe_eliminar:'Удалить',
+    btn_eliminar_informe:'Удалить отчёт', confirm_eliminar:'Удалить этот отчёт? Действие необратимо.', swipe_eliminar:'Удалить', swipe_editar:'Изменить',
     confirm_cerrar_sin_guardar:'Закрыть без сохранения изменений?',
     toast_eliminado:'Отчёт удалён', toast_eliminar_error:'Не удалось удалить отчёт',
   },
@@ -2176,7 +2223,7 @@ var LANGS = {
     install_step_ios1:'Tap the Share button', install_step_ios2:'Select "Add to Home Screen"', install_step_ios3:'Tap "Add" — done',
     install_step_and1:'Open the browser’s ⋮ menu', install_step_and2:'Select "Install app" or "Add to Home Screen"',
     lw_continue:'Continue',
-    btn_eliminar_informe:'Delete report', confirm_eliminar:'Delete this report? This action cannot be undone.', swipe_eliminar:'Delete',
+    btn_eliminar_informe:'Delete report', confirm_eliminar:'Delete this report? This action cannot be undone.', swipe_eliminar:'Delete', swipe_editar:'Edit',
     confirm_cerrar_sin_guardar:'Close without saving your changes?',
     toast_eliminado:'Report deleted', toast_eliminar_error:'Could not delete the report',
   }
@@ -2294,7 +2341,8 @@ function applyLang() {
   setEl('confirmDeleteSub',       t('confirm_eliminar'));
   setEl('confirmDeleteCancelBtn', t('btn_cancelar'));
   setEl('confirmDeleteYesBtn',    t('swipe_eliminar'));
-  document.querySelectorAll('.swipe-delete-action span').forEach(function(b){ b.textContent = t('swipe_eliminar'); });
+  document.querySelectorAll('.swipe-delete-action .swipe-lbl').forEach(function(b){ b.textContent = t('swipe_eliminar'); });
+  document.querySelectorAll('.swipe-edit-action .swipe-lbl').forEach(function(b){ b.textContent = t('swipe_editar'); });
 
   // Detail modal buttons
   document.querySelectorAll('.mg-btn-approve').forEach(function(b){ b.textContent = t('btn_aprobar'); });
@@ -3551,10 +3599,26 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
     g.records.forEach(function(r){
       var statusLabel = r.STATUS === 'pending' ? t('status_pending') : (r.STATUS === 'approved' ? t('status_approved') : t('status_rejected'));
       var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
-      var swipeable = r.STATUS === 'pending';
+      // BUG CORREGIDO / pedido (2026-07-21): antes solo "pending" era
+      // swipeable (para el borrado) — un informe "rejected" también se
+      // puede editar/reenviar (ver resubmitRecord en Code_v5.gs, acepta
+      // pending Y rejected), pero solo tenía el botón fijo
+      // "Editar y reenviar" de más abajo, sin gesto rápido. Ahora ambos
+      // estados entran en swipe-wrap para poder deslizar a la DERECHA y
+      // revelar "Editar" (azul, swipe-edit-action) — el swipe a la
+      // IZQUIERDA (borrar, rojo) sigue existiendo solo para "pending",
+      // igual que antes, porque solo esos se pueden borrar (ver
+      // deleteRecord en Code_v5.gs). El botón fijo "Editar y reenviar"
+      // de la tarjeta rechazada se queda tal cual (ver más abajo) — el
+      // swipe es un atajo adicional, no un reemplazo (nunca depender
+      // solo de un gesto para una acción importante).
+      var swipeable = r.STATUS === 'pending' || r.STATUS === 'rejected';
       if (swipeable) {
         html += '<div class="swipe-wrap" data-id="'+r.ID+'">';
-        html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMine(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+        html += '<button type="button" class="swipe-edit-action" onclick="event.stopPropagation();closeSwipeDelete();openEditReport(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-pencil"></i></span><span class="swipe-lbl">'+t('swipe_editar')+'</span></button>';
+        if (r.STATUS === 'pending') {
+          html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMine(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
+        }
       }
       var isNew = seen.indexOf(seenKey(r)) === -1;
       html += '<div class="mi-card st-'+r.STATUS+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openReportDetail(\''+r.ID+'\')">';
@@ -3720,7 +3784,7 @@ function erSetClienteMode(m) {
   erClienteMode = m;
   document.getElementById('erCtClL').classList.toggle('on', m==='list');
   document.getElementById('erCtClN').classList.toggle('on', m!=='list');
-  document.getElementById('erClienteSel').style.display = m==='list' ? 'block' : 'none';
+  document.getElementById('erClienteSelRow').style.display = m==='list' ? 'flex' : 'none';
   document.getElementById('erClienteNew').style.display = m==='new' ? 'block' : 'none';
   if (m==='list') document.getElementById('erClienteNew').value='';
   else document.getElementById('erClienteSel').selectedIndex = 0;
@@ -3730,7 +3794,7 @@ function erSetObraMode(m) {
   erObraMode = m;
   document.getElementById('erCtObL').classList.toggle('on', m==='list');
   document.getElementById('erCtObN').classList.toggle('on', m!=='list');
-  document.getElementById('erObraSel').style.display = m==='list' ? 'block' : 'none';
+  document.getElementById('erObraSelRow').style.display = m==='list' ? 'flex' : 'none';
   document.getElementById('erObraNew').style.display = m==='new' ? 'block' : 'none';
   if (m==='list') document.getElementById('erObraNew').value='';
   else document.getElementById('erObraSel').selectedIndex = 0;
@@ -3740,7 +3804,7 @@ function erSetTipoMode(m) {
   erTipoMode = m;
   document.getElementById('erCtTL').classList.toggle('on', m==='list');
   document.getElementById('erCtTN').classList.toggle('on', m!=='list');
-  document.getElementById('erTipoSel').style.display = m==='list' ? 'block' : 'none';
+  document.getElementById('erTipoSelRow').style.display = m==='list' ? 'flex' : 'none';
   document.getElementById('erTipoNew').style.display = m==='new' ? 'block' : 'none';
   if (m==='list') document.getElementById('erTipoNew').value='';
   else document.getElementById('erTipoSel').selectedIndex = 0;
@@ -3750,7 +3814,7 @@ function erSetCompMode(m) {
   erCompMode = m;
   document.getElementById('erCtCL').classList.toggle('on', m==='list');
   document.getElementById('erCtCN').classList.toggle('on', m!=='list');
-  document.getElementById('erCompaniaSel').style.display = m==='list' ? 'block' : 'none';
+  document.getElementById('erCompaniaSelRow').style.display = m==='list' ? 'flex' : 'none';
   document.getElementById('erCompaniaNew').style.display = m==='new' ? 'block' : 'none';
   if (m==='list') document.getElementById('erCompaniaNew').value='';
   else document.getElementById('erCompaniaSel').selectedIndex = 0;
@@ -4287,7 +4351,7 @@ function renderMgPendingList(reports) {
     // La cola de Pendientes solo contiene informes pending por definición
     // — todas sus tarjetas son swipeables, sin necesidad de comprobar STATUS.
     var html = '<div class="swipe-wrap" data-id="'+r.ID+'">';
-    html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMg(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+    html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMg(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
     html += '<div class="mg-card'+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
     // Строка 1: дата слева, NUEVO справа
     html += '<div class="mg-head">';
@@ -4356,10 +4420,10 @@ function buildDetailHtml(r, showTotal) {
       html += '</div>';
     }
     if (horas > 0) {
-      html += '<div class="rd-field-full" style="text-align:center;padding:12px">';
-      html += '<b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:6px">'+t('lbl_horas_trabajadas')+'</b>';
-      html += '<span style="font-size:28px;font-weight:700;color:#000;letter-spacing:-.5px">'+horas+' h</span>';
-      if (showTotal) html += '<span style="display:block;font-size:11px;color:#8e8e93;margin-top:4px">'+PRECIO_HORA+' €/h</span>';
+      html += '<div class="rd-field-lg">';
+      html += '<b>'+t('lbl_horas_trabajadas')+'</b>';
+      html += '<span>'+horas+' h</span>';
+      if (showTotal) html += '<small>'+PRECIO_HORA+' €/h</small>';
       html += '</div>';
     }
     if (trabajos) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('sub_trabajos')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+trabajos+'</span></div>';
@@ -4377,12 +4441,12 @@ function buildDetailHtml(r, showTotal) {
   if (hasMateriales) {
     html += '<div class="det-group">';
     html += '<div class="det-group-title"><span class="det-group-icon ic-materiales"><i class="ti ti-package"></i></span>' + t('grp_materiales') + '</div>';
-    if (compania) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:2px">'+t('lbl_compania')+'</b><span style="font-size:14px;font-weight:500;color:#000">'+compania+'</span></div>';
+    if (compania) html += '<div class="rd-field"><b>'+t('lbl_compania')+'</b><span>'+compania+'</span></div>';
     if (materiales) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('lbl_descripcion')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+materiales+'</span></div>';
     if (precio > 0) {
-      html += '<div class="rd-field-full" style="text-align:center;padding:12px">';
-      html += '<b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:6px">'+t('lbl_coste_materiales')+'</b>';
-      html += '<span style="font-size:28px;font-weight:700;color:#000;letter-spacing:-.5px">'+precio.toFixed(2)+' €</span>';
+      html += '<div class="rd-field-lg">';
+      html += '<b>'+t('lbl_coste_materiales')+'</b>';
+      html += '<span>'+precio.toFixed(2)+' €</span>';
       html += '</div>';
     }
     if (fotosMat) html += '<button type="button" class="rd-photo-link" onclick="openPhotoGallery(this)" data-photos=\''+encodeURIComponent(fotosMat)+'\'>'+svgCam+t('lbl_fotos_materiales')+'</button>';
@@ -4582,23 +4646,30 @@ function requestSwipeDeleteAdmin(id) {
   });
 }
 
-/* ════════ SWIPE-TO-DELETE (estilo Telegram) ════════
+/* ════════ SWIPE-TO-DELETE / SWIPE-TO-EDIT (estilo Telegram) ════════
  * Delegado en document una sola vez — cubre las listas re-renderizadas
  * (innerHTML) de las 3 pantallas sin tener que re-enganchar listeners en
- * cada render. Solo actúa sobre .swipe-wrap (solo se envuelven así las
- * tarjetas con STATUS==='pending', ver buildMiGroupedHtml/
- * renderManagerQueue/renderAdminJournal). Un solo dedo: si el gesto es
- * más horizontal que vertical se bloquea como swipe (preventDefault, no
- * scrollea la lista); si es más vertical se deja pasar sin tocar nada. */
+ * cada render. Solo actúa sobre .swipe-wrap (tarjetas "pending"/
+ * "rejected", ver buildMiGroupedHtml/renderManagerQueue/renderAdminJournal).
+ * Un solo dedo: si el gesto es más horizontal que vertical se bloquea
+ * como swipe (preventDefault, no scrollea la lista); si es más vertical
+ * se deja pasar sin tocar nada.
+ * 2026-07-21: generalizado de "solo izquierda→borrar" a bidireccional —
+ * izquierda revela .swipe-delete-action (rojo) si la tarjeta lo tiene,
+ * derecha revela .swipe-edit-action (azul) si lo tiene; cada tarjeta
+ * declara en su propio HTML qué acciones existen (una tarjeta puede
+ * tener solo una de las dos, o ambas), así que el límite de arrastre en
+ * cada dirección se calcula por tarjeta, no es un ±84 fijo. */
 (function () {
-  var DELETE_W = 84;
+  var ACTION_W = 84;
   var startX = 0, startY = 0, baseX = 0, dragging = null, locked = null, openEl = null;
+  var hasDelete = false, hasEdit = false;
 
   function closeSwipeDelete() {
     if (openEl) {
       var card = openEl.querySelector('.mi-card,.mg-card,.ad-card');
       if (card) card.style.transform = '';
-      openEl.classList.remove('swipe-open');
+      openEl.classList.remove('swipe-open-left', 'swipe-open-right');
       openEl = null;
     }
   }
@@ -4610,9 +4681,11 @@ function requestSwipeDeleteAdmin(id) {
     dragging = wrap;
     locked = null;
     if (!wrap) return;
+    hasDelete = !!wrap.querySelector('.swipe-delete-action');
+    hasEdit = !!wrap.querySelector('.swipe-edit-action');
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    baseX = wrap.classList.contains('swipe-open') ? -DELETE_W : 0;
+    baseX = wrap.classList.contains('swipe-open-left') ? -ACTION_W : (wrap.classList.contains('swipe-open-right') ? ACTION_W : 0);
     var card = wrap.querySelector('.mi-card,.mg-card,.ad-card');
     if (card) card.style.transition = 'none';
   }, { passive: true });
@@ -4626,7 +4699,9 @@ function requestSwipeDeleteAdmin(id) {
     }
     if (locked === 'x') {
       e.preventDefault();
-      var next = Math.max(-DELETE_W, Math.min(0, baseX + dx));
+      var min = hasDelete ? -ACTION_W : 0;
+      var max = hasEdit ? ACTION_W : 0;
+      var next = Math.max(min, Math.min(max, baseX + dx));
       var card = dragging.querySelector('.mi-card,.mg-card,.ad-card');
       if (card) card.style.transform = 'translateX(' + next + 'px)';
       dragging.dataset.dragX = next;
@@ -4639,13 +4714,19 @@ function requestSwipeDeleteAdmin(id) {
     if (card) card.style.transition = '';
     if (locked === 'x') {
       var next = parseFloat(dragging.dataset.dragX || '0');
-      if (next < -DELETE_W / 2) {
-        if (card) card.style.transform = 'translateX(-' + DELETE_W + 'px)';
-        dragging.classList.add('swipe-open');
+      if (hasDelete && next < -ACTION_W / 2) {
+        if (card) card.style.transform = 'translateX(-' + ACTION_W + 'px)';
+        dragging.classList.add('swipe-open-left');
+        dragging.classList.remove('swipe-open-right');
+        openEl = dragging;
+      } else if (hasEdit && next > ACTION_W / 2) {
+        if (card) card.style.transform = 'translateX(' + ACTION_W + 'px)';
+        dragging.classList.add('swipe-open-right');
+        dragging.classList.remove('swipe-open-left');
         openEl = dragging;
       } else {
         if (card) card.style.transform = '';
-        dragging.classList.remove('swipe-open');
+        dragging.classList.remove('swipe-open-left', 'swipe-open-right');
         if (openEl === dragging) openEl = null;
       }
     }
@@ -4658,7 +4739,7 @@ function requestSwipeDeleteAdmin(id) {
   // que en Telegram, el primer toque fuera solo cierra.
   document.addEventListener('click', function (e) {
     if (!openEl) return;
-    if (e.target.closest('.swipe-delete-action')) return;
+    if (e.target.closest('.swipe-delete-action') || e.target.closest('.swipe-edit-action')) return;
     if (e.target.closest('.swipe-wrap') === openEl) {
       e.preventDefault();
       e.stopPropagation();
@@ -5328,7 +5409,7 @@ function renderAdminJournal() {
       var swipeable = st === 'pending';
       if (swipeable) {
         html += '<div class="swipe-wrap r12" data-id="'+r.ID+'">';
-        html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><i class="ti ti-trash"></i><span>'+t('swipe_eliminar')+'</span></button>';
+        html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
       }
       html += '<div class="ad-card st-'+st+shadowCls+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
