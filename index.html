@@ -603,8 +603,17 @@ body.pin-mode{overflow:hidden}
 .mi-badge.st-approved{background:#e5f9ec;color:#34c759}
 .mi-obra{font-size:18px;font-weight:700;color:#000;margin-bottom:2px;letter-spacing:-.2px}
 .mi-sub{font-size:11px;color:#8e8e93;margin-bottom:8px}
-.mi-comment{background:#fff0f0;border-radius:8px;padding:9px 12px;font-size:12px;color:#ff3b30;margin-bottom:10px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.mi-comment b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px;color:#ff3b30;font-weight:700}
+/* Pedido (2026-07-21, "hacer el comentario del manager más acentuado y
+   visible"): antes 8px de radio (mucho menos que el resto de la app,
+   14-20px) y sin borde/sombra/icono — se perdía entre el resto de
+   cajas grises de la tarjeta pese a ser información importante
+   (motivo de rechazo). Ahora radio a juego con el resto (16px), borde
+   y sombra propios en rojo (mismo tono que el texto, muy sutiles) e
+   icono de alerta junto a la etiqueta — se lee como un aviso, no como
+   un campo más. */
+.mi-comment{background:#fff0f0;border:1px solid rgba(255,59,48,.22);border-radius:16px;padding:12px 14px;font-size:13px;color:#8a271d;margin-bottom:10px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;box-shadow:0 4px 14px rgba(255,59,48,.1)}
+.mi-comment b{display:flex;align-items:center;gap:5px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;color:#ff3b30;font-weight:800}
+.mi-comment b i{font-size:13px}
 /* Vista completa (modales de detalle): el comentario del manager no debe
    truncarse a 2 líneas — esa limitación solo tiene sentido como preview
    en las tarjetas de lista (.mi-comment sin .full, ver renderMyReports). */
@@ -796,6 +805,19 @@ body.pin-mode{overflow:hidden}
 .ad-month-body{margin-bottom:2px}
 .ad-flt-btn{padding:5px 12px;border-radius:20px;border:none;background:#f2f2f7;font-family:inherit;font-size:12px;font-weight:500;color:#636366;cursor:pointer;touch-action:manipulation}
 .ad-flt-btn.active{background:#0049c5;color:#fff}
+/* Pedido: los botones de estado del filtro de admin (Pendiente/Aprobado/
+   Rechazado) se veían todos iguales (mismo gris, sin relación visual con
+   el color que ESE mismo estado ya tiene en toda la app — ver
+   .ad-status-badge.st-*, mismos colores reutilizados aquí). Ahora cada
+   uno lleva su propio tinte incluso sin seleccionar (para reconocerlo
+   de un vistazo) y pasa a color sólido al activarse — "Todos" se queda
+   neutro (gris/azul genérico), no representa un estado real. */
+.ad-flt-btn.st-pending{background:#e5f0ff;color:#0049c5}
+.ad-flt-btn.st-pending.active{background:#0049c5;color:#fff}
+.ad-flt-btn.st-approved{background:#e5f9ec;color:#34c759}
+.ad-flt-btn.st-approved.active{background:#34c759;color:#fff}
+.ad-flt-btn.st-rejected{background:#fff0f0;color:#ff3b30}
+.ad-flt-btn.st-rejected.active{background:#ff3b30;color:#fff}
 .mi-seg{display:flex;gap:4px;background:#f4f4f7;border-radius:999px;padding:4px;margin:0 16px 14px}
 .mi-seg-btn{flex:1;padding:9px 0;border:none;border-radius:999px;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:#737687;cursor:pointer;touch-action:manipulation;transition:background .15s,color .15s}
 .mi-seg-btn.active{background:#0049c5;color:#fff;box-shadow:0 2px 6px rgba(0,73,197,.35)}
@@ -1195,124 +1217,148 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         <div class="mg-modal-title" id="erTitle" style="margin-bottom:0">Editar informe</div>
         <div class="mg-modal-sub" id="erSub" style="margin-bottom:0">—</div>
       </div>
-      <button type="button" onclick="erRequestClose()" aria-label="Cerrar" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
-        <i class="ti ti-x" style="font-size:17px;color:#000"></i>
+      <button type="button" onclick="erRequestClose()" aria-label="Cerrar" style="flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+        <i class="ti ti-x" style="font-size:19px;color:#000"></i>
       </button>
     </div>
-    <div style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:16px 18px 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
+    <div style="overflow-y:auto;overflow-x:hidden;touch-action:pan-y;flex:1;padding:16px 0 8px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain">
 
-      <div class="mi-comment full" style="margin:12px 0" id="erCommentBlock"><b id="erCommentLabel">Comentario del manager</b><span id="erComment"></span></div>
+      <div class="mi-comment full" style="margin:0 16px 16px" id="erCommentBlock"><b id="erCommentLabel"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Comentario del manager</b><span id="erComment"></span></div>
 
-      <!-- Pedido: en modo edición los campos con lista (Cliente/Obra/Tipo/
-           Compañía) deben comportarse EXACTAMENTE como en la pantalla
-           "Nuevo informe" — desplegable con opciones + alternativa "Nuevo"
-           para escribir un valor libre — y no una simple caja de texto
-           como eran antes. Mismo patrón (mode-toggle + select + input),
-           con IDs propios "er*" (no pueden repetir los del formulario
-           "Nuevo" — dos elementos no pueden compartir id en el DOM) y su
-           propio juego de funciones erSet*Mode()/getEr*() más abajo. -->
-      <div class="s-label" style="padding:8px 0 6px;display:flex;align-items:center;justify-content:space-between">
-        <span id="erLblCliente">Cliente</span>
-        <div class="mode-toggle">
-          <button class="ct on" id="erCtClL" onclick="erSetClienteMode('list')"><span id="er-ctcll-lbl">Lista</span></button>
-          <button class="ct" id="erCtClN" onclick="erSetClienteMode('new')"><span id="er-ctcln-lbl">Nuevo</span></button>
+      <!-- Pedido (2026-07-21, "todos los campos en el mismo estilo del
+           sistema, anchos alineados, secciones separadas por sombra"):
+           antes era una lista plana de campos sueltos, cada uno con su
+           propia caja blanca bordeada — sin relación visual con las
+           tarjetas .card con sombra que ya usa "Nuevo informe" para
+           agrupar por sección. Ahora reutiliza EXACTAMENTE las mismas 4
+           secciones/tarjetas que esa pantalla (Identificación/Personal/
+           Trabajo/Materiales, mismas claves de traducción grp_*, solo con
+           id's "er-sl-*" propios porque un id no puede repetirse en el
+           DOM). BUG CORREGIDO de paso: los <select> ya tenían el pill
+           gris (ver sesión anterior) pero .mode-list-row conservaba su
+           padding lateral propio (14px) mientras los demás campos no
+           tenían ninguno — dos anchos efectivos distintos dentro del
+           mismo formulario. Aquí se anula ese padding (mismo truco que
+           ya se usa en los filtros) para que TODOS los campos midan
+           exactamente el ancho útil de la tarjeta, sin excepción. Los
+           campos de texto libre (Nuevo/Vehículo/Fecha/Precio) pasan de
+           caja blanca con borde a .mode-text-input (mismo pill gris que
+           ya usa "Nuevo informe" para su equivalente) y los textarea a
+           .rta — mismas clases reales, no una imitación aparte. -->
+      <div class="slabel" style="padding:0 16px 8px"><span id="er-sl-ident">Identificación</span></div>
+      <div class="card card-no-divider" style="padding:4px 16px 16px">
+        <div class="s-label" style="padding:8px 0 6px;display:flex;align-items:center;justify-content:space-between">
+          <span id="erLblCliente">Cliente</span>
+          <div class="mode-toggle">
+            <button class="ct on" id="erCtClL" onclick="erSetClienteMode('list')"><span id="er-ctcll-lbl">Lista</span></button>
+            <button class="ct" id="erCtClN" onclick="erSetClienteMode('new')"><span id="er-ctcln-lbl">Nuevo</span></button>
+          </div>
+        </div>
+        <div class="mode-list-row" id="erClienteSelRow" style="padding:0">
+          <select id="erClienteSel" class="rselect" onchange="checkErDirty()"></select>
+          <span class="rchev" style="top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
+        <input type="text" id="erClienteNew" class="mode-text-input" style="display:none" oninput="checkErDirty()">
+
+        <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
+          <span id="erLblObra">Obra</span>
+          <div class="mode-toggle">
+            <button class="ct on" id="erCtObL" onclick="erSetObraMode('list')"><span id="er-ctobl-lbl">Lista</span></button>
+            <button class="ct" id="erCtObN" onclick="erSetObraMode('new')"><span id="er-ctobn-lbl">Nueva</span></button>
+          </div>
+        </div>
+        <div class="mode-list-row" id="erObraSelRow" style="padding:0">
+          <select id="erObraSel" class="rselect" onchange="checkErDirty()"></select>
+          <span class="rchev" style="top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
+        <input type="text" id="erObraNew" class="mode-text-input" style="display:none" oninput="checkErDirty()">
+
+        <div class="s-label" style="padding:14px 0 6px" id="erLblFecha">Fecha</div>
+        <input type="date" id="erFecha" class="mode-text-input">
+      </div>
+
+      <div class="slabel" style="padding:18px 16px 8px"><span id="er-sl-personal">Personal</span></div>
+      <div class="card card-no-divider" style="padding:4px 16px 16px">
+        <div class="s-label" style="padding:8px 0 6px" id="erLblAyudante">Ayudante</div>
+        <div class="mode-list-row" style="padding:0">
+          <select id="erAyudante" class="rselect" onchange="checkErDirty()"></select>
+          <span class="rchev" style="top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
+
+        <div class="s-label" style="padding:14px 0 6px" id="erLblVehiculo">Vehículo</div>
+        <input type="text" id="erVehiculo" class="mode-text-input">
+      </div>
+
+      <div class="slabel" style="padding:18px 16px 8px"><span id="er-sl-trabajo">Trabajo</span></div>
+      <div class="card card-no-divider" style="padding:4px 16px 16px">
+        <div class="s-label" style="padding:8px 0 6px;display:flex;align-items:center;justify-content:space-between">
+          <span id="erLblTipo">Tipo de trabajo</span>
+          <div class="mode-toggle">
+            <button class="ct on" id="erCtTL" onclick="erSetTipoMode('list')"><span id="er-cttl-lbl">Lista</span></button>
+            <button class="ct" id="erCtTN" onclick="erSetTipoMode('new')"><span id="er-cttn-lbl">Otro</span></button>
+          </div>
+        </div>
+        <div class="mode-list-row" id="erTipoSelRow" style="padding:0">
+          <select id="erTipoSel" class="rselect" onchange="checkErDirty()"></select>
+          <span class="rchev" style="top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
+        </div>
+        <input type="text" id="erTipoNew" class="mode-text-input" style="display:none" oninput="checkErDirty()">
+
+        <div class="s-label" style="padding:14px 0 6px" id="erLblHoras">Horas trabajadas</div>
+        <div style="display:flex;align-items:center;gap:14px;background:#f4f4f7;border-radius:999px;padding:8px 14px">
+          <div class="step-btn" onclick="erChangeHoras(-1)">−</div>
+          <div style="flex:1;text-align:center;font-size:18px;font-weight:600" id="erHorasVal">0</div>
+          <div class="step-btn" onclick="erChangeHoras(1)">+</div>
+        </div>
+
+        <div class="s-label" style="padding:14px 0 6px" id="erLblTrabajos">Trabajos realizados</div>
+        <textarea id="erTrabajos" class="rta" rows="3"></textarea>
+
+        <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
+          <div class="photo-row-head">
+            <span class="rlabel" id="erLblFotoObra">Fotos de obra</span>
+            <label class="photo-input-btn" id="erAddBtnObra">
+              <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
+              Añadir
+              <input type="file" accept="image/*" multiple style="display:none" id="erInputPhotosObra" onchange="erHandlePhotoSelect(this,'obra')">
+            </label>
+          </div>
+          <div class="photo-thumbs" id="erThumbsObra"></div>
         </div>
       </div>
-      <div class="mode-list-row" id="erClienteSelRow">
-        <select id="erClienteSel" class="rselect" onchange="checkErDirty()"></select>
-        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
-      </div>
-      <input type="text" id="erClienteNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
 
-      <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
-        <span id="erLblObra">Obra</span>
-        <div class="mode-toggle">
-          <button class="ct on" id="erCtObL" onclick="erSetObraMode('list')"><span id="er-ctobl-lbl">Lista</span></button>
-          <button class="ct" id="erCtObN" onclick="erSetObraMode('new')"><span id="er-ctobn-lbl">Nueva</span></button>
+      <div class="slabel" style="padding:18px 16px 8px"><span id="er-sl-materiales">Materiales</span></div>
+      <div class="card card-no-divider" style="padding:4px 16px 16px">
+        <div class="s-label" style="padding:8px 0 6px;display:flex;align-items:center;justify-content:space-between">
+          <span id="erLblCompania">Compañía (materiales)</span>
+          <div class="mode-toggle">
+            <button class="ct on" id="erCtCL" onclick="erSetCompMode('list')"><span id="er-ctcl-lbl">Lista</span></button>
+            <button class="ct" id="erCtCN" onclick="erSetCompMode('new')"><span id="er-ctcn-lbl">Nueva</span></button>
+          </div>
         </div>
-      </div>
-      <div class="mode-list-row" id="erObraSelRow">
-        <select id="erObraSel" class="rselect" onchange="checkErDirty()"></select>
-        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
-      </div>
-      <input type="text" id="erObraNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
-
-      <div class="s-label" style="padding:14px 0 6px" id="erLblFecha">Fecha</div>
-      <input type="date" id="erFecha" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
-
-      <div class="s-label" style="padding:14px 0 6px" id="erLblAyudante">Ayudante</div>
-      <div class="mode-list-row">
-        <select id="erAyudante" class="rselect" onchange="checkErDirty()"></select>
-        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
-      </div>
-
-      <div class="s-label" style="padding:14px 0 6px" id="erLblVehiculo">Vehículo</div>
-      <input type="text" id="erVehiculo" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
-
-      <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
-        <span id="erLblTipo">Tipo de trabajo</span>
-        <div class="mode-toggle">
-          <button class="ct on" id="erCtTL" onclick="erSetTipoMode('list')"><span id="er-cttl-lbl">Lista</span></button>
-          <button class="ct" id="erCtTN" onclick="erSetTipoMode('new')"><span id="er-cttn-lbl">Otro</span></button>
+        <div class="mode-list-row" id="erCompaniaSelRow" style="padding:0">
+          <select id="erCompaniaSel" class="rselect" onchange="checkErDirty()"></select>
+          <span class="rchev" style="top:50%"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
         </div>
-      </div>
-      <div class="mode-list-row" id="erTipoSelRow">
-        <select id="erTipoSel" class="rselect" onchange="checkErDirty()"></select>
-        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
-      </div>
-      <input type="text" id="erTipoNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
+        <input type="text" id="erCompaniaNew" class="mode-text-input" style="display:none" oninput="checkErDirty()">
 
-      <div class="s-label" style="padding:14px 0 6px" id="erLblHoras">Horas trabajadas</div>
-      <div style="display:flex;align-items:center;gap:14px;background:#fff;border:.5px solid #d1d1d6;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.07);padding:8px 14px">
-        <div class="step-btn" onclick="erChangeHoras(-1)">−</div>
-        <div style="flex:1;text-align:center;font-size:18px;font-weight:600" id="erHorasVal">0</div>
-        <div class="step-btn" onclick="erChangeHoras(1)">+</div>
-      </div>
+        <div class="s-label" style="padding:14px 0 6px" id="erLblMateriales">Materiales utilizados</div>
+        <textarea id="erMateriales" class="rta" rows="2"></textarea>
 
-      <div class="s-label" style="padding:14px 0 6px" id="erLblTrabajos">Trabajos realizados</div>
-      <textarea id="erTrabajos" rows="3" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;resize:none"></textarea>
+        <div class="s-label" style="padding:14px 0 6px" id="erLblPrecio">Precio materiales (€)</div>
+        <input type="number" id="erPrecio" step="0.01" class="mode-text-input">
 
-      <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
-        <div class="photo-row-head">
-          <span class="rlabel" id="erLblFotoObra">Fotos de obra</span>
-          <label class="photo-input-btn" id="erAddBtnObra">
-            <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
-            Añadir
-            <input type="file" accept="image/*" multiple style="display:none" id="erInputPhotosObra" onchange="erHandlePhotoSelect(this,'obra')">
-          </label>
+        <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
+          <div class="photo-row-head">
+            <span class="rlabel" id="erLblFotoMat">Materiales / recibo</span>
+            <label class="photo-input-btn" id="erAddBtnMat">
+              <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
+              Añadir
+              <input type="file" accept="image/*" multiple style="display:none" id="erInputPhotosMat" onchange="erHandlePhotoSelect(this,'materiales')">
+            </label>
+          </div>
+          <div class="photo-thumbs" id="erThumbsMat"></div>
         </div>
-        <div class="photo-thumbs" id="erThumbsObra"></div>
-      </div>
-
-      <div class="s-label" style="padding:14px 0 6px;display:flex;align-items:center;justify-content:space-between">
-        <span id="erLblCompania">Compañía (materiales)</span>
-        <div class="mode-toggle">
-          <button class="ct on" id="erCtCL" onclick="erSetCompMode('list')"><span id="er-ctcl-lbl">Lista</span></button>
-          <button class="ct" id="erCtCN" onclick="erSetCompMode('new')"><span id="er-ctcn-lbl">Nueva</span></button>
-        </div>
-      </div>
-      <div class="mode-list-row" id="erCompaniaSelRow">
-        <select id="erCompaniaSel" class="rselect" onchange="checkErDirty()"></select>
-        <span class="rchev"><svg viewBox="0 0 8 14"><polyline points="1,1 7,7 1,13"/></svg></span>
-      </div>
-      <input type="text" id="erCompaniaNew" style="display:none;width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit" oninput="checkErDirty()">
-
-      <div class="s-label" style="padding:14px 0 6px" id="erLblMateriales">Materiales utilizados</div>
-      <textarea id="erMateriales" rows="2" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit;resize:none"></textarea>
-
-      <div class="s-label" style="padding:14px 0 6px" id="erLblPrecio">Precio materiales (€)</div>
-      <input type="number" id="erPrecio" step="0.01" style="width:100%;padding:10px 12px;border:.5px solid #d1d1d6;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07);font-size:15px;font-family:inherit">
-
-      <div class="photo-row" style="margin:14px 0 0;padding:14px;background:#f9f9fb;border-radius:14px">
-        <div class="photo-row-head">
-          <span class="rlabel" id="erLblFotoMat">Materiales / recibo</span>
-          <label class="photo-input-btn" id="erAddBtnMat">
-            <svg viewBox="0 0 24 24"><path d="M5 7H3a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2l-2-3H7L5 7z"/><circle cx="10" cy="13" r="3"/></svg>
-            Añadir
-            <input type="file" accept="image/*" multiple style="display:none" id="erInputPhotosMat" onchange="erHandlePhotoSelect(this,'materiales')">
-          </label>
-        </div>
-        <div class="photo-thumbs" id="erThumbsMat"></div>
       </div>
 
       <div style="height:12px"></div>
@@ -1802,16 +1848,15 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         <div class="mg-modal-sub" id="rdSub">—</div>
       </div>
       <div style="flex-shrink:0;display:flex;align-items:center;gap:8px">
-        <!-- Pedido: mientras el informe está "pending" (esperando revisión),
-             el operario puede corregirlo sin tener que esperar un rechazo.
-             Mismo formulario y misma acción de guardado que ya existía para
-             reenviar un informe rechazado (ver openEditReport/fillEditReportModal/
-             submitEditReport) — aquí solo se añade la entrada visual. -->
-        <button type="button" id="rdEditBtn" onclick="editReportFromDetail()" aria-label="Editar" style="display:none;flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#e6f0fe;border:none;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
-          <i class="ti ti-pencil" style="font-size:15px;color:#0049c5"></i>
-        </button>
-        <button type="button" onclick="closeReportDetail()" aria-label="Cerrar" style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
-          <i class="ti ti-x" style="font-size:16px;color:#000"></i>
+        <!-- BUG CORREGIDO (2026-07-21, "editar/eliminar duplicados"): esta
+             ficha tenía su propio lápiz de editar y botón "Eliminar
+             informe", ambos solo visibles con STATUS pending — exactamente
+             la misma cobertura que ya da el swipe de la tarjeta en la
+             lista (ver swipe-edit-action/swipe-delete-action en
+             buildMiGroupedHtml), así que eran 100% redundantes. Se quitan
+             de aquí — editar/eliminar viven solo en el swipe ahora. -->
+        <button type="button" onclick="closeReportDetail()" aria-label="Cerrar" style="flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+          <i class="ti ti-x" style="font-size:19px;color:#000"></i>
         </button>
       </div>
     </div>
@@ -1819,9 +1864,6 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     <div style="padding:10px 18px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid #e5e5ea;background:#fff;flex-shrink:0">
       <button class="rd-share-btn" onclick="shareReportDetailFromModal()">
         <i class="ti ti-upload" style="font-size:16px"></i> <span id="rdShareBtnLbl">Compartir</span>
-      </button>
-      <button class="mg-btn-delete" id="rdDeleteBtn" style="display:none" onclick="deleteReportFromOperario()">
-        <i class="ti ti-trash" style="font-size:15px"></i> <span id="rdDeleteBtnLbl">Eliminar informe</span>
       </button>
     </div>
   </div>
@@ -1837,8 +1879,8 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           <div class="mg-modal-title" id="mgdTitle">—</div>
           <div class="mg-modal-sub" id="mgdSub">—</div>
         </div>
-        <button type="button" onclick="closeManagerDetail()" aria-label="Cerrar" style="flex-shrink:0;width:30px;height:30px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
-          <i class="ti ti-x" style="font-size:16px;color:#000"></i>
+        <button type="button" onclick="closeManagerDetail()" aria-label="Cerrar" style="flex-shrink:0;width:40px;height:40px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation">
+          <i class="ti ti-x" style="font-size:19px;color:#000"></i>
         </button>
       </div>
       <div id="mgdBody" style="margin:14px 0"></div>
@@ -1890,9 +1932,9 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#8e8e93;margin-bottom:5px"><span id="flt-estado-lbl">Estado</span></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="ad-flt-btn active" data-ftype="status" data-val="" onclick="setFilterBtn(this,'status')" id="flt-st-all">Todos</button>
-          <button class="ad-flt-btn" data-ftype="status" data-val="pending" onclick="setFilterBtn(this,'status')" id="flt-st-pending">Pendiente</button>
-          <button class="ad-flt-btn" data-ftype="status" data-val="approved" onclick="setFilterBtn(this,'status')" id="flt-st-approved">Aprobado</button>
-          <button class="ad-flt-btn" data-ftype="status" data-val="rejected" onclick="setFilterBtn(this,'status')" id="flt-st-rejected">Rechazado</button>
+          <button class="ad-flt-btn st-pending" data-ftype="status" data-val="pending" onclick="setFilterBtn(this,'status')" id="flt-st-pending">Pendiente</button>
+          <button class="ad-flt-btn st-approved" data-ftype="status" data-val="approved" onclick="setFilterBtn(this,'status')" id="flt-st-approved">Aprobado</button>
+          <button class="ad-flt-btn st-rejected" data-ftype="status" data-val="rejected" onclick="setFilterBtn(this,'status')" id="flt-st-rejected">Rechazado</button>
         </div>
       </div>
 
@@ -2268,6 +2310,10 @@ function applyLang() {
   setEl('sl-personal',   t('grp_personal'));
   setEl('sl-trabajo',    t('grp_trabajo'));
   setEl('sl-materiales', t('grp_materiales'));
+  setEl('er-sl-ident',      t('grp_ident'));
+  setEl('er-sl-personal',   t('grp_personal'));
+  setEl('er-sl-trabajo',    t('grp_trabajo'));
+  setEl('er-sl-materiales', t('grp_materiales'));
 
   // Form labels — rlabel spans
   setEl('lbl-cliente',   t('lbl_cliente'));
@@ -2299,7 +2345,6 @@ function applyLang() {
   setEl('erLblPrecio',    t('lbl_precio_mat'));
   setEl('erLblFotoObra',  t('lbl_foto_obra'));
   setEl('erLblFotoMat',   t('lbl_fotos_materiales'));
-  setEl('rdDeleteBtnLbl', t('btn_eliminar_informe'));
   setEl('mgDeleteBtnLbl', t('btn_eliminar_informe'));
 
   // Sub-labels
@@ -3630,7 +3675,7 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
       html += '<div style="font-size:20px;font-weight:700;color:#000;letter-spacing:-.3px;margin-bottom:3px">'+r.ID+'</div>';
       html += '<div style="font-size:12px;color:#8e8e93">'+r.CLIENTE+' · '+r.OBRA+'</div>';
       if (showRejectComment && r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
-        html += '<div class="mi-comment" style="margin-top:8px"><b>'+t('lbl_comentario')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
+        html += '<div class="mi-comment" style="margin-top:8px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
         html += '<button class="mi-edit-btn" style="margin-top:8px" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">'+t('btn_editar_reenviar')+'</button>';
       }
       html += '</div>';
@@ -3711,40 +3756,16 @@ function openReportDetail(id) {
 
   var html = buildDetailHtml(r, false); // рабочий не видит Total
   if (r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
-    html += '<div class="mi-comment full" style="margin-top:10px"><b>'+t('lbl_comentario_manager')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
+    html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario_manager')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
   }
 
   document.getElementById('rdBody').innerHTML = html;
-  // Pedido: solo se puede eliminar mientras el informe está "en
-  // revisión" (pending) — ni aprobado ni ya rechazado (ver deleteRecord
-  // en Code_v5.gs, que valida esto también del lado del servidor).
-  document.getElementById('rdDeleteBtn').style.display = (r.STATUS === 'pending') ? 'flex' : 'none';
-  // Pedido: poder corregir un informe MIENTRAS sigue pendiente de revisión
-  // (antes solo se podía editar tras un rechazo). Mismo criterio de
-  // permiso que resubmitRecord() en Code_v5.gs, que ahora también acepta
-  // 'pending' además de 'rejected' — ver ese archivo.
-  document.getElementById('rdEditBtn').style.display = (r.STATUS === 'pending') ? 'flex' : 'none';
   document.getElementById('reportDetailModal').classList.add('show');
 }
 
 function closeReportDetail() {
   document.getElementById('reportDetailModal').classList.remove('show');
   rdCurrentId = null;
-}
-
-// Pedido: al cancelar la edición (o guardar con éxito) hay que VOLVER a la
-// ficha del informe, no cerrarlo todo hasta la lista — guardamos aquí qué
-// informe reabrir. Solo se rellena cuando se entra a editar DESDE la
-// ficha de detalle; si se entra desde el botón "Editar y reenviar" de la
-// lista (informe rechazado), queda en null y erCloseAndReturn() simplemente
-// cierra sin intentar reabrir nada — mismo comportamiento que antes ahí.
-var erReturnToReportId = null;
-
-function editReportFromDetail() {
-  if (!rdCurrentId) return;
-  erReturnToReportId = rdCurrentId;
-  closeReportDetail();
-  openEditReport(erReturnToReportId);
 }
 
 var erCurrentReport = null;
@@ -3944,16 +3965,14 @@ function closeEditReportModal() {
   erOriginalSnapshot = null;
 }
 
-// Cierra el editor y, si se había entrado desde la ficha de un informe
-// (ver erReturnToReportId), la vuelve a abrir — así "cancelar" o "guardar"
-// llevan de vuelta a la información del informe, no hasta la lista.
+// BUG CORREGIDO (2026-07-21): esto reabría la ficha de detalle tras
+// cerrar el editor SI se había entrado a editar desde ahí — ya no es
+// posible (se quitó el lápiz de editar de la ficha, ver
+// reportDetailModal: ahora solo se entra a editar desde la lista, por
+// swipe o por "Editar y reenviar"), así que se simplifica a un cierre
+// directo.
 function erCloseAndReturn() {
-  var returnId = erReturnToReportId;
   closeEditReportModal();
-  if (returnId) {
-    erReturnToReportId = null;
-    openReportDetail(returnId);
-  }
 }
 
 // Pedido: si hay cambios sin guardar, cerrar (con la "x" o "Cancelar")
@@ -4491,10 +4510,14 @@ function openManagerDetail(id) {
   // aparecer SIN los botones Aprobar/Rechazar.
   var actionsMg = document.querySelector('#mgDetailModal .mg-actions');
   if (actionsMg) actionsMg.style.display = '';
-  // Pedido: el manager SÍ puede borrar, pero solo mientras está en la cola
-  // de Pendientes (esta función solo se usa para eso — nunca para
-  // aprobados/rechazados, que van por openHistorialDetail y ahí se oculta).
-  document.getElementById('mgDeleteBtn').style.display = 'flex';
+  // BUG CORREGIDO / pedido (2026-07-21): el manager SÍ puede borrar
+  // mientras el informe está pending (ver deleteRecord en Code_v5.gs),
+  // pero esta función SOLO se usa para la cola de Pendientes (nunca para
+  // aprobados/rechazados, que van por openHistorialDetail) — es decir,
+  // TODA tarjeta que llega aquí ya tiene swipe-to-delete disponible en la
+  // lista (ver renderManagerQueue, sin excepción de estado). El botón de
+  // aquí era 100% redundante con eso — se oculta siempre.
+  document.getElementById('mgDeleteBtn').style.display = 'none';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
@@ -4600,19 +4623,6 @@ function deleteReportFromMgModal() {
       adFilteredRecords = adFilteredRecords.filter(function(r){ return r.ID !== id; });
       renderAdminJournal();
     }
-  });
-}
-
-// Operario: borra su propio informe (solo pending/rejected, el backend
-// también valida esto por seguridad) desde el modal de detalle.
-function deleteReportFromOperario() {
-  if (!rdCurrentId) return;
-  var id = rdCurrentId;
-  callDeleteReport(id, function() {
-    closeReportDetail();
-    myReportsCache = myReportsCache.filter(function(r){ return r.ID !== id; });
-    renderMyReports(myReportsCache);
-    dataCacheSet('myReports', myReportsCache);
   });
 }
 
@@ -5113,7 +5123,7 @@ function openHistorialDetail(id) {
 
   var html = buildDetailHtml(r, true);
   if (!isApproved && r['COMENTARIO_MANAGER']) {
-    html += '<div class="mi-comment full" style="margin-top:10px"><b>'+t('lbl_comentario_manager')+'</b>'+r['COMENTARIO_MANAGER']+'</div>';
+    html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario_manager')+'</b>'+r['COMENTARIO_MANAGER']+'</div>';
   }
   document.getElementById('mgdBody').innerHTML = html;
 
@@ -5439,7 +5449,7 @@ function renderAdminJournal() {
       }
       if (r.COMENTARIO_MANAGER && String(r.COMENTARIO_MANAGER).trim()) {
         html += '<div class="mi-comment full" style="margin-top:8px;margin-bottom:0">'
-          + '<b>'+t('lbl_comentario')+'</b>'
+          + '<b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'
           + r.COMENTARIO_MANAGER + '</div>';
       }
       html += '</div>';
@@ -5527,7 +5537,7 @@ function openAdminDetail(id) {
   document.getElementById('mgdSub').textContent = r.CLIENTE + ' · ' + r.ID + ' · ' + fecha + ' · ' + statusLabels[st];
   var html = buildDetailHtml(r, true);
   if (r.COMENTARIO_MANAGER && String(r.COMENTARIO_MANAGER).trim()) {
-    html += '<div class="mi-comment full" style="margin-top:10px"><b>'+(st==='rejected'?t('lbl_motivo_rechazo'):t('lbl_comentario_manager'))+'</b>'+r.COMENTARIO_MANAGER+'</div>';
+    html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+(st==='rejected'?t('lbl_motivo_rechazo'):t('lbl_comentario_manager'))+'</b>'+r.COMENTARIO_MANAGER+'</div>';
   }
   if (r.MANAGER_NOMBRE) {
     var mgLabel = st === 'approved' ? 'Aprobó' : (st === 'rejected' ? 'Rechazó' : 'Procesó');
@@ -5543,7 +5553,13 @@ function openAdminDetail(id) {
   document.getElementById('mgdBody').innerHTML = html;
   var actions = document.querySelector('#mgDetailModal .mg-actions');
   if (actions) actions.style.display = 'none';
-  document.getElementById('mgDeleteBtn').style.display = 'flex';
+  // Pedido (2026-07-21): ya existe swipe-to-delete en la lista de admin,
+  // pero SOLO para tarjetas "pending" (ver renderAdminJournal/swipeable)
+  // — un informe aprobado/rechazado no tiene esa opción en la lista, así
+  // que ahí el botón de aquí sigue siendo la ÚNICA vía para borrarlo y
+  // debe quedarse. Para "pending" sí es 100% redundante con el swipe,
+  // así que se oculta.
+  document.getElementById('mgDeleteBtn').style.display = (st === 'pending') ? 'none' : 'flex';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
