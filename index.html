@@ -899,6 +899,22 @@ body.pin-mode{overflow:hidden}
    (no en .mg-modal-overlay/.mg-modal, que no son ellos los que
    scrollean). */
 .mg-modal{width:100%;max-width:480px;background:#fff;border-radius:24px 24px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 20px);box-shadow:0 -4px 24px rgba(0,0,0,.12);transform:translateZ(0);-webkit-transform:translateZ(0);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* Pedido: los pasos del asistente "Crear informe" se veían pegados
+   arriba con todo el resto de la pantalla vacío. Los pasos con
+   contenido corto y de alto fijo (Formato, Período) se centran
+   verticalmente dentro del área disponible; Objetos/Preview NO llevan
+   .rb-step-center porque su contenido puede crecer/necesitar scroll
+   (una lista larga de objetos centrada verticalmente empezaría a media
+   pantalla, forzando un scroll incómodo) — se quedan en flujo normal
+   desde arriba, como cualquier lista scrolleable del resto de la app.
+   min-height:100% necesita que el contenedor scrolleable (el div con
+   overflow-y de #reportBuilderModal, ver inline style) tenga una
+   altura determinada — la tiene, es flex:1 dentro de la columna de
+   altura fija del modal. */
+#rbObjetosList.shake{animation:shakeField .4s}
+.rb-step{display:none}
+.rb-step.show{display:block}
+.rb-step-center.show{display:flex;flex-direction:column;justify-content:center;min-height:100%}
 .mg-modal-title{font-size:17px;font-weight:700;color:#1b1b1d;margin-bottom:3px}
 .mg-modal-sub{font-size:13px;color:#737687;margin-bottom:14px}
 .mg-modal-textarea{width:100%;min-height:80px;border-radius:18px;border:none;background:#f4f4f7;padding:14px 16px;font-size:14px;font-weight:500;font-family:inherit;color:#1b1b1d;resize:none;margin-bottom:8px;transition:box-shadow .15s;outline:none}
@@ -1749,7 +1765,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
      login). -->
 <div class="mg-modal-overlay fullbleed" id="reportBuilderModal">
   <div class="mg-modal mg-modal-full" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
-    <div style="display:flex;align-items:center;padding:14px 16px;flex-shrink:0;border-bottom:.5px solid #eee">
+    <div style="display:flex;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;flex-shrink:0;border-bottom:.5px solid #eee">
       <button type="button" onclick="closeReportBuilder()" aria-label="Cerrar" style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation"><i class="ti ti-x"></i></button>
       <div style="flex:1;text-align:center;font-size:15px;font-weight:700;color:#000" id="rbTitle">Crear informe</div>
       <div style="width:36px;flex-shrink:0;text-align:right;font-size:12px;color:#8e8e93;font-weight:600" id="rbStepIndicator"></div>
@@ -1757,7 +1773,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
 
     <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px">
       <!-- Paso 1: formato -->
-      <div id="rbStepFormato">
+      <div id="rbStepFormato" class="rb-step rb-step-center show">
         <div class="slabel" style="padding:0 0 10px" id="rbLblFormato">Formato del archivo</div>
         <div style="display:flex;gap:10px">
           <div class="auth-role-card" id="rbFormatoPdf" onclick="rbSetFormato('pdf')" style="flex:1">
@@ -1772,7 +1788,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       </div>
 
       <!-- Paso 2: período -->
-      <div id="rbStepPeriodo" style="display:none">
+      <div id="rbStepPeriodo" class="rb-step rb-step-center">
         <div class="slabel" style="padding:0 0 10px" id="rbLblPeriodo">Período del informe</div>
         <div style="display:flex;gap:8px;align-items:center">
           <input type="date" id="rbDesde" onchange="rbOnPeriodoChange()" style="flex:1;padding:12px 14px;border-radius:14px;border:none;background:#f2f2f7;font-family:inherit;font-size:14px;font-weight:600;color:#000">
@@ -1782,13 +1798,13 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       </div>
 
       <!-- Paso 3: objetos -->
-      <div id="rbStepObjetos" style="display:none">
+      <div id="rbStepObjetos" class="rb-step">
         <div class="slabel" style="padding:0 0 10px" id="rbLblObjetos">Objetos a incluir</div>
         <div id="rbObjetosList" style="max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f7f7f8;border-radius:14px;padding:6px"></div>
       </div>
 
       <!-- Paso 4: preview editable -->
-      <div id="rbStepPreview" style="display:none">
+      <div id="rbStepPreview" class="rb-step">
         <div class="slabel" style="padding:0 0 10px" id="rbLblPreview">Resumen del informe</div>
         <div id="rbPreviewTable"></div>
 
@@ -1813,7 +1829,7 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       </div>
 
       <!-- Paso 5: éxito -->
-      <div id="rbStepSuccess" style="display:none;text-align:center;padding-top:40px">
+      <div id="rbStepSuccess" class="rb-step rb-step-center" style="text-align:center">
         <div style="width:72px;height:72px;border-radius:50%;background:#e5f9ec;display:flex;align-items:center;justify-content:center;margin:0 auto 18px"><i class="ti ti-check" style="font-size:34px;color:#34c759"></i></div>
         <div style="font-size:18px;font-weight:700;color:#000;margin-bottom:6px" id="rbSuccessTitle">Informe creado</div>
         <div style="font-size:13px;color:#8e8e93" id="rbSuccessSub">El archivo se guardó en Google Drive</div>
@@ -1821,13 +1837,25 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     </div>
 
     <div style="padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 16px);flex-shrink:0;display:flex;gap:10px" id="rbFooterSteps">
-      <button type="button" class="mg-modal-cancel" style="flex:1" id="rbBackBtn" onclick="rbBack()">Atrás</button>
-      <button type="button" class="mg-modal-confirm positive" style="flex:2" id="rbNextBtn" onclick="rbNext()">Siguiente</button>
+      <button type="button" class="mg-modal-cancel" id="rbBackBtn" onclick="rbBack()">Atrás</button>
+      <button type="button" class="mg-modal-confirm positive" id="rbNextBtn" onclick="rbNext()">Siguiente</button>
     </div>
     <div style="padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 16px);flex-shrink:0;display:none;gap:10px" id="rbFooterSuccess">
-      <button type="button" class="mg-modal-cancel" style="flex:1" onclick="rbOpenFile()" id="rbBtnVerArchivo">Ver archivo</button>
-      <button type="button" class="mg-modal-confirm positive" style="flex:1" onclick="closeReportBuilder()" id="rbBtnNuevoInforme">Cerrar</button>
+      <button type="button" class="mg-modal-cancel" onclick="rbOpenFile()" id="rbBtnVerArchivo">Ver archivo</button>
+      <button type="button" class="mg-modal-confirm positive" onclick="closeReportBuilder()" id="rbBtnNuevoInforme">Cerrar</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ADMIN — DETALLE AL TOCAR UNA PLAQUITA DE Análisis ═══ -->
+<div class="mg-modal-overlay fullbleed" id="anDrilldownModal" onclick="if(event.target===this)closeAnDrilldown()">
+  <div class="mg-modal mg-modal-full" style="height:100%;max-height:100%;border-radius:0;overflow:hidden;display:flex;flex-direction:column;padding:0">
+    <div style="display:flex;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px;flex-shrink:0;border-bottom:.5px solid #eee">
+      <button type="button" onclick="closeAnDrilldown()" aria-label="Cerrar" style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#f2f2f7;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation"><i class="ti ti-x"></i></button>
+      <div style="flex:1;text-align:center;font-size:15px;font-weight:700;color:#000" id="anDrilldownTitle"></div>
+      <div style="width:36px;flex-shrink:0"></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px" id="anDrilldownBody"></div>
   </div>
 </div>
 
@@ -2799,16 +2827,20 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     <div id="anSummaryTiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 16px"></div>
 
     <div class="slabel" style="padding:4px 16px 8px" id="anSlabelObjetos">Objetos del período</div>
-    <div id="anObjectsList" style="padding:0 14px 10px"></div>
-
-    <div style="padding:4px 14px 6px">
-      <button type="button" class="btn-new" style="width:100%" onclick="openReportBuilder()" id="anCrearInformeBtn">
-        <i class="ti ti-file-plus" aria-hidden="true"></i> Crear informe
-      </button>
+    <div style="padding:0 14px 10px">
+      <div style="position:relative">
+        <i class="ti ti-search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:#8e8e93"></i>
+        <input type="text" id="anObjSearch" oninput="renderAnObjectsList()" placeholder="Buscar objeto o cliente..." style="width:100%;padding:10px 14px 10px 38px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:500;color:#000">
+      </div>
     </div>
+    <div id="anObjectsList" style="padding:0 14px 16px"></div>
 
-    <!-- Selector año+mes original — tablas mensuales por operario/cliente/obra -->
-    <div class="slabel" style="padding:20px 16px 8px" id="anSlabelMensual">Detalle mensual</div>
+    <!-- Detalle mensual — modo "una sola ventana" (pedido explícito):
+         un selector de qué ver (Todos/Por objeto/Por trabajador) en vez
+         de las 4 secciones apiladas (Todo/Por operario/Por cliente/Por
+         obra) que había antes. Las filas siguen siendo meses (formato
+         de la fila TOTAL sin cambios, tal y como se pidió). -->
+    <div class="slabel" style="padding:4px 16px 8px" id="anSlabelMensual">Detalle mensual</div>
     <div style="padding:0 14px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="anYear" onchange="loadAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
       </select>
@@ -2817,6 +2849,15 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
       <select id="anMonthTo" onchange="loadAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
       </select>
+    </div>
+
+    <div class="mode-toggle" id="anModeToggle" style="margin:10px 14px 0;width:calc(100% - 28px)">
+      <button type="button" class="ct on" id="anModeTodos" onclick="setAnMode('todos')" style="flex:1"><span id="anModeTodosLbl">Todos</span></button>
+      <button type="button" class="ct" id="anModeObjeto" onclick="setAnMode('objeto')" style="flex:1"><span id="anModeObjetoLbl">Por objeto</span></button>
+      <button type="button" class="ct" id="anModeTrabajador" onclick="setAnMode('trabajador')" style="flex:1"><span id="anModeTrabajadorLbl">Por trabajador</span></button>
+    </div>
+    <div id="anModeSelectWrap" style="display:none;padding:8px 14px 0">
+      <select id="anModeSelect" onchange="renderAnalisis()" style="width:100%;padding:9px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none"></select>
     </div>
 
     <div id="anContent" style="padding:10px 0 20px"></div>
@@ -2965,10 +3006,11 @@ var LANGS = {
     flt_tipos:'Todos los tipos', flt_companias:'Todas las compañías',
     flt_label_estado:'Estado', flt_todos:'Todos', flt_resetear:'Resetear filtros', flt_sin_resultados:'Sin resultados para estos filtros',
     no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
-    lbl_materiales:'Materiales', lbl_trabajo:'Trabajo', lbl_total_objetos:'Total de todos los objetos',
-    an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_ver:'Ver', an_ocultar:'Ocultar',
+    lbl_materiales:'Materiales', lbl_trabajo:'Trabajo', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
+    an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_informes_count:'Informes', an_ver:'Ver', an_ocultar:'Ocultar',
+    an_todos:'Todos', an_por_objeto:'Por objeto', an_por_trabajador:'Por trabajador', an_mes:'Mes', an_turnos:'Informes', an_horas:'Horas', an_sin_datos:'No hay datos aprobados en el período seleccionado', an_buscar_placeholder:'Buscar objeto o cliente...',
     rb_title:'Crear informe', rb_step_formato:'Formato del archivo', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
-    rb_step_periodo:'Período del informe', rb_step_objetos:'Objetos a incluir', rb_objetos_empty:'No hay objetos con datos en este período',
+    rb_step_periodo:'Período del informe', rb_step_objetos:'Objetos a incluir', rb_objetos_empty:'No hay objetos con datos en este período', rb_objetos_requerido:'Elige al menos un objeto para continuar',
     rb_step_preview:'Resumen del informe', rb_pct_materiales:'Recargo materiales', rb_pct_trabajo:'Recargo trabajo',
     rb_precio_hora_override:'Precio/hora (todo el período)', rb_valor_original:'Original',
     rb_col_obra:'Obra', rb_col_dias:'Días', rb_col_horas:'Horas', rb_col_materiales:'Materiales', rb_col_trabajo:'Trabajo', rb_col_total:'Total', rb_row_total:'TOTAL',
@@ -3075,10 +3117,11 @@ var LANGS = {
     flt_tipos:'Все типы', flt_companias:'Все компании',
     flt_label_estado:'Статус', flt_todos:'Все', flt_resetear:'Сбросить фильтры', flt_sin_resultados:'Ничего не найдено по этим фильтрам',
     no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
-    lbl_materiales:'Материалы', lbl_trabajo:'Работа', lbl_total_objetos:'Итого по всем объектам',
-    an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_ver:'Смотреть', an_ocultar:'Скрыть',
+    lbl_materiales:'Материалы', lbl_trabajo:'Работа', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
+    an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_informes_count:'Отчётов', an_ver:'Смотреть', an_ocultar:'Скрыть',
+    an_todos:'Все', an_por_objeto:'По объекту', an_por_trabajador:'По рабочему', an_mes:'Месяц', an_turnos:'Отчётов', an_horas:'Часов', an_sin_datos:'Нет согласованных данных за выбранный период', an_buscar_placeholder:'Поиск объекта или клиента...',
     rb_title:'Создать отчёт', rb_step_formato:'Формат файла', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
-    rb_step_periodo:'Период отчёта', rb_step_objetos:'Объекты для отчёта', rb_objetos_empty:'Нет данных по объектам за этот период',
+    rb_step_periodo:'Период отчёта', rb_step_objetos:'Объекты для отчёта', rb_objetos_empty:'Нет данных по объектам за этот период', rb_objetos_requerido:'Выберите хотя бы один объект, чтобы продолжить',
     rb_step_preview:'Сводка отчёта', rb_pct_materiales:'Наценка на материалы', rb_pct_trabajo:'Наценка на работу',
     rb_precio_hora_override:'Цена/час (весь период)', rb_valor_original:'Исходно',
     rb_col_obra:'Объект', rb_col_dias:'Дни', rb_col_horas:'Часы', rb_col_materiales:'Материалы', rb_col_trabajo:'Работа', rb_col_total:'Итого', rb_row_total:'ИТОГО',
@@ -3185,10 +3228,11 @@ var LANGS = {
     flt_tipos:'All types', flt_companias:'All companies',
     flt_label_estado:'Status', flt_todos:'All', flt_resetear:'Reset filters', flt_sin_resultados:'No results for these filters',
     no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
-    lbl_materiales:'Materials', lbl_trabajo:'Labor', lbl_total_objetos:'Total for all objects',
-    an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_ver:'View', an_ocultar:'Hide',
+    lbl_materiales:'Materials', lbl_trabajo:'Labor', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
+    an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_informes_count:'Reports', an_ver:'View', an_ocultar:'Hide',
+    an_todos:'All', an_por_objeto:'By object', an_por_trabajador:'By worker', an_mes:'Month', an_turnos:'Reports', an_horas:'Hours', an_sin_datos:'No approved data in the selected period', an_buscar_placeholder:'Search object or client...',
     rb_title:'Create report', rb_step_formato:'File format', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
-    rb_step_periodo:'Report period', rb_step_objetos:'Objects to include', rb_objetos_empty:'No data for any object in this period',
+    rb_step_periodo:'Report period', rb_step_objetos:'Objects to include', rb_objetos_empty:'No data for any object in this period', rb_objetos_requerido:'Pick at least one object to continue',
     rb_step_preview:'Report summary', rb_pct_materiales:'Materials markup', rb_pct_trabajo:'Labor markup',
     rb_precio_hora_override:'Rate/hour (whole period)', rb_valor_original:'Original',
     rb_col_obra:'Site', rb_col_dias:'Days', rb_col_horas:'Hours', rb_col_materiales:'Materials', rb_col_trabajo:'Labor', rb_col_total:'Total', rb_row_total:'TOTAL',
@@ -3326,6 +3370,10 @@ function applyLang() {
   setEl('anSlabelResumen', t('an_resumen_periodo'));
   setEl('anSlabelObjetos', t('rb_step_objetos'));
   setEl('anSlabelMensual', t('an_detalle_mensual'));
+  setEl('anModeTodosLbl', t('an_todos'));
+  setEl('anModeObjetoLbl', t('an_por_objeto'));
+  setEl('anModeTrabajadorLbl', t('an_por_trabajador'));
+  setPh('anObjSearch', t('an_buscar_placeholder'));
   setEl('anSlabelGenerados', t('an_informes_generados'));
   setEl('anToggleGeneradosLbl', t('an_ver'));
   var anCrearBtn = document.getElementById('anCrearInformeBtn');
@@ -5148,7 +5196,7 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
   list.forEach(function(r) {
     var d = r.FECHA ? new Date(r.FECHA) : new Date(r.TIMESTAMP||0);
     var key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
-    var label = MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+    var label = getMonthNames()[d.getMonth()] + ' ' + d.getFullYear();
     if (!groups[key]) { groups[key] = { label: label, records: [], year: d.getFullYear(), month: d.getMonth() }; groupOrder.push(key); }
     groups[key].records.push(r);
   });
@@ -6048,7 +6096,6 @@ var mgDetailId = null;
 
 /* ── Универсальная функция построения деталей отчёта (только заполненные поля) ── */
 function buildDetailHtml(r, showTotal) {
-  var PRECIO_HORA = 28;
   var html = '';
   var svgCam = '<i class="ti ti-camera" style="font-size:15px;color:#0049c5;margin-right:5px"></i>';
 
@@ -6077,7 +6124,16 @@ function buildDetailHtml(r, showTotal) {
       html += '<div class="rd-field-lg">';
       html += '<b>'+t('lbl_horas_trabajadas')+'</b>';
       html += '<span>'+horas+' h</span>';
-      if (showTotal) html += '<small>'+PRECIO_HORA+' €/h</small>';
+      // Bug corregido: antes mostraba un "28 €/h" fijo en el código,
+      // nunca reflejaba la tarifa real ni un cambio hecho a mano en la
+      // celda PRECIO_HORA de INFORME. Se deriva de los propios campos
+      // del registro (TOTAL−PRECIO)/HORAS — funciona igual venga el
+      // registro de PARTE o de INFORME, sin depender de que exista la
+      // columna PRECIO_HORA (que solo existe en INFORME).
+      if (showTotal && r.TOTAL) {
+        var effRate = (((parseFloat(r.TOTAL)||0) - (parseFloat(r['PRECIO (EUR)'])||0)) / horas);
+        if (effRate > 0) html += '<small>'+effRate.toFixed(2)+' €/h</small>';
+      }
       html += '</div>';
     }
     if (trabajos) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('sub_trabajos')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+trabajos+'</span></div>';
@@ -6479,6 +6535,12 @@ function updateAdminRecordStatus(id, status, comentario) {
     if (comentario !== undefined) r.COMENTARIO_MANAGER = comentario;
   }
   renderAdminJournal();
+  // Pedido: la Análisis se recalcula justo al aprobar/rechazar (aprobar
+  // es lo que copia la fila a INFORME, la fuente de la que lee Análisis
+  // — sin esto, los datos solo se refrescaban al volver a entrar en la
+  // pestaña). anInitialized descarta la llamada si Análisis nunca se
+  // abrió en esta sesión (los selectores de fecha aún no existen).
+  if (anInitialized) { loadAnalisis(); loadAnalyticsDynamic(); }
 }
 
 function openRejectModal(id) {
@@ -6636,7 +6698,7 @@ function renderMgHistorialGrouped(reports) {
   reports.forEach(function(r) {
     var d = r.FECHA ? new Date(r.FECHA) : new Date(r.TIMESTAMP||0);
     var key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
-    var label = MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+    var label = getMonthNames()[d.getMonth()] + ' ' + d.getFullYear();
     if (!groups[key]) { groups[key] = { label: label, records: [], year: d.getFullYear(), month: d.getMonth() }; groupOrder.push(key); }
     groups[key].records.push(r);
   });
@@ -7064,7 +7126,7 @@ function renderAdminJournal() {
   adFilteredRecords.forEach(function(r) {
     var d = r.FECHA ? new Date(r.FECHA) : new Date(r.TIMESTAMP||0);
     var key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2,'0');
-    var label = MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+    var label = getMonthNames()[d.getMonth()] + ' ' + d.getFullYear();
     if (!groups[key]) { groups[key] = { label: label, key: key, records: [], year: d.getFullYear(), month: d.getMonth() }; groupOrder.push(key); }
     groups[key].records.push(r);
   });
@@ -7302,7 +7364,19 @@ function switchAdTab(tab) {
 var anInformeCache = [];
 var anInitialized = false;
 
+// Pedido: revisar la traducción de textos de admin en todas partes — los
+// nombres de mes estaban fijos en español (cabeceras de grupo del
+// Diario en las 3 vistas, selects de Análisis, tabla mensual), sin
+// pasar por t(). MONTH_NAMES sigue existiendo (mismo nombre, todavía en
+// español) por si algo lo referencia directamente en el futuro, pero
+// todo el código ya usa getMonthNames() en su lugar.
 var MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var MONTH_NAMES_BY_LANG = {
+  es: MONTH_NAMES,
+  ru: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+  en: ['January','February','March','April','May','June','July','August','September','October','November','December']
+};
+function getMonthNames() { return MONTH_NAMES_BY_LANG[currentLang] || MONTH_NAMES_BY_LANG.es; }
 
 function initAnalisis() {
   // Заполняем селекторы года и месяцев один раз
@@ -7320,7 +7394,7 @@ function initAnalisis() {
 
     var fromSel = document.getElementById('anMonthFrom');
     var toSel = document.getElementById('anMonthTo');
-    MONTH_NAMES.forEach(function(name, i) {
+    getMonthNames().forEach(function(name, i) {
       var o1 = document.createElement('option'); o1.value = i+1; o1.textContent = name; fromSel.appendChild(o1);
       var o2 = document.createElement('option'); o2.value = i+1; o2.textContent = name; toSel.appendChild(o2);
     });
@@ -7363,7 +7437,7 @@ function loadAnalyticsDynamic() {
   ]).then(function(results) {
     var summary = results[0], breakdown = results[1];
     if (summary && summary.status === 'ok') renderAnSummaryTiles(summary);
-    if (breakdown && breakdown.status === 'ok') renderAnObjectsList(breakdown);
+    if (breakdown && breakdown.status === 'ok') { anObjectsCache = breakdown.objetos || []; renderAnObjectsList(); }
   }).catch(function() {
     document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>';
   });
@@ -7375,46 +7449,158 @@ function anTileSkeletons() {
   }).join('');
 }
 
+// Pedido: la plaquita Total se quita de aquí (ya está el total en el
+// bloque de Objetos, era redundante) y se sustituye por un contador de
+// informes aprobados en el período — grid 2x2 limpio de 4 plaquitas
+// iguales. Trabajadores/Materiales/Trabajo son tocables y abren de
+// dónde sale ese número (getAnalyticsDrilldown); Informes no lo es, no
+// tiene un desglose propio distinto del de Trabajo.
 function renderAnSummaryTiles(s) {
   var tiles = [
-    { icon:'ti-users', label:'Trabajadores', value: s.trabajadores, isMoney:false },
-    { icon:'ti-package', label:'Materiales', value: s.materiales, isMoney:true },
-    { icon:'ti-tools', label:'Trabajo', value: s.trabajo, isMoney:true },
-    { icon:'ti-sum', label:'Total', value: s.total, isMoney:true, accent:true }
+    { icon:'ti-users', label:t('lbl_trabajadores'), value: s.trabajadores, isMoney:false, tipo:'trabajadores' },
+    { icon:'ti-package', label:t('lbl_materiales'), value: s.materiales, isMoney:true, tipo:'materiales' },
+    { icon:'ti-tools', label:t('lbl_trabajo'), value: s.trabajo, isMoney:true, tipo:'trabajo' },
+    { icon:'ti-file-check', label:t('an_informes_count'), value: s.informes, isMoney:false, tipo:null }
   ];
-  document.getElementById('anSummaryTiles').innerHTML = tiles.map(function(tl) {
+  var html = tiles.map(function(tl) {
     var valStr = tl.isMoney ? (tl.value||0).toFixed(2) + ' €' : String(tl.value||0);
-    return '<div class="card" style="margin:0;padding:14px">' +
-      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><i class="ti ' + tl.icon + '" style="font-size:15px;color:#8e8e93"></i><span style="font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px">' + tl.label + '</span></div>' +
-      '<div style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:' + (tl.accent ? '#0049c5' : '#000') + '">' + valStr + '</div>' +
+    var clickAttr = tl.tipo ? ' onclick="openAnDrilldown(\'' + tl.tipo + '\')" role="button" tabindex="0"' : '';
+    return '<div class="card" style="margin:0;padding:14px' + (tl.tipo ? ';cursor:pointer' : '') + '"' + clickAttr + '>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
+        '<div style="display:flex;align-items:center;gap:6px"><i class="ti ' + tl.icon + '" style="font-size:15px;color:#8e8e93"></i><span style="font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px">' + tl.label + '</span></div>' +
+        (tl.tipo ? '<i class="ti ti-chevron-right" style="font-size:13px;color:#c7c7cc"></i>' : '') +
+      '</div>' +
+      '<div style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:#000">' + valStr + '</div>' +
       '</div>';
   }).join('');
+  document.getElementById('anSummaryTiles').innerHTML = html;
 }
 
-function renderAnObjectsList(b) {
-  var wrap = document.getElementById('anObjectsList');
-  if (!b.objetos || !b.objetos.length) { wrap.innerHTML = '<div class="mi-empty">—</div>'; return; }
-  var html = '<div class="card" style="margin:0">';
-  html += b.objetos.map(function(o, i) {
-    return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
-      '<div class="rbadge"><i class="ti ti-building"></i></div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.obra) + '</div>' +
-        '<div style="font-size:11.5px;color:#8e8e93;margin-bottom:6px">' + escapeHtml(o.cliente) + '</div>' +
-        '<div style="display:flex;gap:14px;font-size:12px;color:#636366">' +
-          '<span>' + t('lbl_materiales') + ': <b style="color:#000">' + o.materiales.toFixed(2) + ' €</b></span>' +
-          '<span>' + t('lbl_trabajo') + ': <b style="color:#000">' + o.trabajo.toFixed(2) + ' €</b></span>' +
+/* ── Detalle al tocar una plaquita (Trabajadores/Materiales/Trabajo) ── */
+function openAnDrilldown(tipo) {
+  var titles = { trabajadores: t('lbl_trabajadores'), materiales: t('lbl_materiales'), trabajo: t('lbl_trabajo') };
+  document.getElementById('anDrilldownTitle').textContent = titles[tipo] || '';
+  document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
+  document.getElementById('anDrilldownModal').classList.add('show');
+
+  var desde = document.getElementById('anDateFrom').value;
+  var hasta = document.getElementById('anDateTo').value;
+  fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&codigo=' + encodeURIComponent(currentPin) +
+    '&tipo=' + encodeURIComponent(tipo) + '&desde=' + encodeURIComponent(desde) + '&hasta=' + encodeURIComponent(hasta) + '&t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(result) {
+      if (!result || result.status !== 'ok') { document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>'; return; }
+      renderAnDrilldown(tipo, result.items || []);
+    })
+    .catch(function() { document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>'; });
+}
+
+function closeAnDrilldown() {
+  document.getElementById('anDrilldownModal').classList.remove('show');
+}
+
+function renderAnDrilldown(tipo, items) {
+  var wrap = document.getElementById('anDrilldownBody');
+  if (!items.length) { wrap.innerHTML = '<div class="mi-empty">' + t('an_sin_datos') + '</div>'; return; }
+
+  if (tipo === 'trabajadores') {
+    wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
+      return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
+        '<div class="rbadge"><i class="ti ti-user"></i></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.operario) + '</div>' +
+          '<div style="font-size:11.5px;color:#8e8e93;margin-bottom:6px">' + o.informes + ' ' + t('an_turnos').toLowerCase() + ' · ' + o.horas + ' ' + t('an_horas').toLowerCase() + '</div>' +
+          '<div style="display:flex;gap:14px;font-size:12px;color:#636366">' +
+            '<span>' + t('lbl_materiales') + ': <b style="color:#000">' + o.materiales.toFixed(2) + ' €</b></span>' +
+            '<span>' + t('lbl_trabajo') + ': <b style="color:#000">' + o.trabajo.toFixed(2) + ' €</b></span>' +
+          '</div>' +
         '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
+      '</div>';
+    }).join('') + '</div>';
+    return;
+  }
+
+  if (tipo === 'materiales') {
+    wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
+      return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
+        '<div class="rbadge"><i class="ti ti-package"></i></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.compania || o.obra) + '</div>' +
+          '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.cliente) + ' · ' + escapeHtml(o.obra) + '</div>' +
+        '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.precio.toFixed(2) + ' €</div>' +
+      '</div>';
+    }).join('') + '</div>';
+    return;
+  }
+
+  // 'trabajo' — lista de informes contados en el período
+  wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
+    return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
+      '<div class="rbadge"><i class="ti ti-file-text"></i></div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.id) + ' · ' + escapeHtml(o.obra) + '</div>' +
+        '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.operario) + ' · ' + o.horas + ' h</div>' +
       '</div>' +
       '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
     '</div>';
-  }).join('');
-  html += '</div>';
-  html += '<div class="card" style="margin:10px 0 0;padding:14px;background:#0049c5">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center">' +
+  }).join('') + '</div>';
+}
+
+// Pedido: filtro de búsqueda por objeto/cliente sobre el desglose ya
+// traído del servidor — no hace falta un nuevo endpoint, basta con
+// filtrar en el cliente el mismo array que ya devuelve
+// getObjectsBreakdown para el rango de fechas activo (el propio rango
+// de fechas de más arriba ya hace de filtro de "período").
+var anObjectsCache = [];
+function renderAnObjectsList() {
+  var wrap = document.getElementById('anObjectsList');
+  var q = (document.getElementById('anObjSearch').value || '').trim().toLowerCase();
+  var objetos = anObjectsCache;
+  if (q) {
+    objetos = objetos.filter(function(o) {
+      return (o.obra || '').toLowerCase().indexOf(q) > -1 || (o.cliente || '').toLowerCase().indexOf(q) > -1;
+    });
+  }
+  var html = '';
+  if (objetos.length) {
+    html += '<div class="card" style="margin:0">';
+    html += objetos.map(function(o, i) {
+      return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
+        '<div class="rbadge"><i class="ti ti-building"></i></div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.obra) + '</div>' +
+          '<div style="font-size:11.5px;color:#8e8e93;margin-bottom:6px">' + escapeHtml(o.cliente) + '</div>' +
+          '<div style="display:flex;gap:14px;font-size:12px;color:#636366">' +
+            '<span>' + t('lbl_materiales') + ': <b style="color:#000">' + o.materiales.toFixed(2) + ' €</b></span>' +
+            '<span>' + t('lbl_trabajo') + ': <b style="color:#000">' + o.trabajo.toFixed(2) + ' €</b></span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
+      '</div>';
+    }).join('');
+    html += '</div>';
+  } else {
+    html += '<div class="mi-empty" style="margin-bottom:10px">—</div>';
+  }
+  // El total se recalcula sobre el subconjunto FILTRADO — si se busca
+  // "ORIGINAL" la suma que se ve es la de ORIGINAL, no la de todo el
+  // período (pedido explícito: "si necesito datos solo de original, en
+  // el filtro lo elijo... así con el resto"). Pedido también: el total
+  // y el botón "Crear informe" deben ser UN solo bloque visual, no dos
+  // tarjetas separadas — se funden aquí en una sola .card con dos
+  // franjas apiladas (azul = total, verde = acción).
+  var grandTotal = objetos.reduce(function(acc, o){ return acc + o.total; }, 0);
+  html += '<div class="card" style="margin:10px 0 0;padding:0;overflow:hidden">' +
+    '<div style="padding:14px;background:#0049c5;display:flex;justify-content:space-between;align-items:center">' +
     '<span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px">' + t('lbl_total_objetos') + '</span>' +
-    '<span style="font-size:18px;font-weight:800;color:#fff">' + b.grandTotal.total.toFixed(2) + ' €</span>' +
-    '</div></div>';
+    '<span style="font-size:18px;font-weight:800;color:#fff">' + grandTotal.toFixed(2) + ' €</span>' +
+    '</div>' +
+    '<button type="button" onclick="openReportBuilder()" id="anCrearInformeBtn" style="width:100%;padding:14px;border:none;background:linear-gradient(160deg,#1c8a49,#22b862);color:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px">' +
+    '<i class="ti ti-file-plus" aria-hidden="true"></i> ' + t('rb_title') +
+    '</button>' +
+    '</div>';
   wrap.innerHTML = html;
 }
 
@@ -7529,7 +7715,7 @@ function rbSetFormato(f) {
 
 function rbRenderStep() {
   ['rbStepFormato','rbStepPeriodo','rbStepObjetos','rbStepPreview','rbStepSuccess'].forEach(function(id, idx) {
-    document.getElementById(id).style.display = (idx + 1 === rbStep) ? 'block' : 'none';
+    document.getElementById(id).classList.toggle('show', idx + 1 === rbStep);
   });
   document.getElementById('rbStepIndicator').textContent = (rbStep <= rbTotalSteps) ? (rbStep + '/' + rbTotalSteps) : '';
   document.getElementById('rbBackBtn').style.visibility = (rbStep === 1) ? 'hidden' : 'visible';
@@ -7548,6 +7734,13 @@ function rbBack() {
 }
 
 function rbNext() {
+  // Pedido: no dejar avanzar del paso "Objetos" sin elegir al menos uno.
+  if (rbStep === 3 && !Object.keys(rbSelectedObjetos).length) {
+    var wrap = document.getElementById('rbObjetosList');
+    wrap.classList.remove('shake'); void wrap.offsetWidth; wrap.classList.add('shake');
+    showToast(t('rb_objetos_requerido'), true);
+    return;
+  }
   if (rbStep < rbTotalSteps) { rbStep++; rbRenderStep(); return; }
   rbGenerate();
 }
@@ -7731,6 +7924,25 @@ function loadAnalisis() {
     });
 }
 
+// r.FECHA llega del backend como fecha serializada (string ISO, casi
+// siempre con hora 00:00:00 en el huso de la propia hoja) — hacer
+// new Date(val).getMonth()/getFullYear() la reinterpreta en el huso
+// LOCAL del navegador, una segunda conversión de huso horario encima de
+// la que ya aplicó Apps Script al leer la celda; cerca de medianoche
+// eso puede desplazar la fecha al día/mes anterior o siguiente (mismo
+// tipo de bug ya corregido en el backend para los filtros desde/hasta,
+// ver dateKey() en Code_v5.gs). Aquí se lee el calendario directamente
+// de los primeros 10 caracteres de la cadena ISO, sin reconstruir un
+// Date, para no sumar una tercera reinterpretación de huso horario.
+function isoDateParts(val) {
+  if (!val) return null;
+  var m = String(val).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return { year: parseInt(m[1], 10), month: parseInt(m[2], 10) };
+  var d = new Date(val); // fallback si no vino en formato ISO
+  if (isNaN(d.getTime())) return null;
+  return { year: d.getFullYear(), month: d.getMonth() + 1 };
+}
+
 function getAnFilter() {
   var year = parseInt(document.getElementById('anYear').value);
   var mFrom = parseInt(document.getElementById('anMonthFrom').value);
@@ -7740,10 +7952,9 @@ function getAnFilter() {
 
 function filterAnRecords(records, f) {
   return records.filter(function(r) {
-    if (!r.FECHA) return false;
-    var d = new Date(r.FECHA);
-    var y = d.getFullYear(), m = d.getMonth() + 1;
-    return y === f.year && m >= f.mFrom && m <= f.mTo;
+    var parts = isoDateParts(r.FECHA);
+    if (!parts) return false;
+    return parts.year === f.year && parts.month >= f.mFrom && parts.month <= f.mTo;
   });
 }
 
@@ -7752,19 +7963,22 @@ function calcStats(records) {
   var horas = records.reduce(function(s,r){ return s + (parseFloat(r.HORAS)||0); }, 0);
   var materiales = records.reduce(function(s,r){ return s + (parseFloat(r['PRECIO (EUR)'])||0); }, 0);
   var total = records.reduce(function(s,r){ return s + (parseFloat(r.TOTAL)||0); }, 0);
-  return { turnos: turnos, horas: horas, materiales: materiales, total: total };
+  // Trabajo (dinero de mano de obra) = Total − Materiales, misma
+  // derivación que se usa en el resto de la app (ver renderAnObjectsList/
+  // getAnalyticsSummary) — no una copia de la fórmula HORAS×tarifa.
+  return { turnos: turnos, horas: horas, materiales: materiales, trabajo: total - materiales, total: total };
 }
 
 function calcByMonth(records, f) {
   var months = {};
   for (var m = f.mFrom; m <= f.mTo; m++) months[m] = [];
   records.forEach(function(r) {
-    var m = new Date(r.FECHA).getMonth() + 1;
-    if (months[m]) months[m].push(r);
+    var parts = isoDateParts(r.FECHA);
+    if (parts && months[parts.month]) months[parts.month].push(r);
   });
   return Object.keys(months).map(function(m) {
     var st = calcStats(months[m]);
-    return { mes: MONTH_NAMES[m-1], turnos: st.turnos, horas: st.horas, materiales: st.materiales, total: st.total };
+    return { mes: getMonthNames()[m-1], turnos: st.turnos, horas: st.horas, trabajo: st.trabajo, materiales: st.materiales, total: st.total };
   });
 }
 
@@ -7774,17 +7988,19 @@ function getUnique(records, field) {
   return vals.sort();
 }
 
-function anTable(rows, grouped) {
+// Pedido: "сколько отчетов подано/сколько часов/сколько денег за
+// работу/на какую сумму материала/и тотал" — 5 columnas de datos
+// (antes faltaba Trabajo €). Formato de la fila TOTAL sin cambios,
+// tal y como se pidió explícitamente.
+function anTable(rows) {
   var html = '<div style="overflow-x:auto;margin:0 14px 6px;border-radius:14px;overflow:hidden;border:.5px solid #e5e5ea;box-shadow:0 2px 10px rgba(0,0,0,.07)">';
   html += '<table style="width:100%;border-collapse:collapse;background:#fff;font-family:inherit">';
   html += '<thead><tr style="background:#f2f2f7">';
-  html += '<th style="padding:9px 10px;text-align:left;font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">'+(grouped?'Mes':'Mes')+'</th>';
-  html += '<th style="padding:9px 8px;text-align:right;font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">Turnos</th>';
-  html += '<th style="padding:9px 8px;text-align:right;font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">Horas</th>';
-  html += '<th style="padding:9px 8px;text-align:right;font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">Mat. €</th>';
-  html += '<th style="padding:9px 10px;text-align:right;font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">Total €</th>';
+  [t('an_mes'), t('an_turnos'), t('an_horas'), t('lbl_trabajo'), t('lbl_materiales'), t('rb_col_total')].forEach(function(h, i) {
+    html += '<th style="padding:9px ' + (i===0?'10px':'8px') + ';text-align:' + (i===0?'left':'right') + ';font-size:10.5px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:0.4px">' + h + '</th>';
+  });
   html += '</tr></thead><tbody>';
-  var totalTurnos=0, totalHoras=0, totalMat=0, totalTotal=0;
+  var totalTurnos=0, totalHoras=0, totalTrabajo=0, totalMat=0, totalTotal=0;
   rows.forEach(function(row, i) {
     var bg = i%2===0 ? 'transparent' : '#f9f9fb';
     var bold = (row.turnos > 0) ? 'font-weight:600' : 'opacity:0.5';
@@ -7792,81 +8008,67 @@ function anTable(rows, grouped) {
     html += '<td style="padding:8px 10px;font-size:13px;'+bold+';color:#000">'+row.mes+'</td>';
     html += '<td style="padding:8px 8px;text-align:right;font-size:13px;'+bold+';color:#000">'+row.turnos+'</td>';
     html += '<td style="padding:8px 8px;text-align:right;font-size:13px;'+bold+';color:#000">'+row.horas+'</td>';
+    html += '<td style="padding:8px 8px;text-align:right;font-size:13px;'+bold+';color:#000">'+(row.trabajo > 0 ? row.trabajo.toFixed(2) : '0.00')+'</td>';
     html += '<td style="padding:8px 8px;text-align:right;font-size:13px;'+bold+';color:#000">'+(row.materiales > 0 ? row.materiales.toFixed(2) : '0.00')+'</td>';
     html += '<td style="padding:8px 10px;text-align:right;font-size:13px;'+bold+';color:#000">'+(row.total > 0 ? row.total.toFixed(2) : '0.00')+'</td>';
     html += '</tr>';
-    totalTurnos += row.turnos; totalHoras += row.horas; totalMat += row.materiales; totalTotal += row.total;
+    totalTurnos += row.turnos; totalHoras += row.horas; totalTrabajo += row.trabajo; totalMat += row.materiales; totalTotal += row.total;
   });
-  // Итого
   html += '<tr style="background:#e5f0ff;border-top:1.5px solid rgba(0,73,197,.2)">';
-  html += '<td style="padding:9px 10px;font-size:13px;font-weight:700;color:#000">TOTAL</td>';
+  html += '<td style="padding:9px 10px;font-size:13px;font-weight:700;color:#000">'+t('rb_row_total')+'</td>';
   html += '<td style="padding:9px 8px;text-align:right;font-size:13px;font-weight:700;color:#000">'+totalTurnos+'</td>';
   html += '<td style="padding:9px 8px;text-align:right;font-size:13px;font-weight:700;color:#000">'+totalHoras+'</td>';
+  html += '<td style="padding:9px 8px;text-align:right;font-size:13px;font-weight:700;color:#000">'+totalTrabajo.toFixed(2)+'</td>';
   html += '<td style="padding:9px 8px;text-align:right;font-size:13px;font-weight:700;color:#000">'+totalMat.toFixed(2)+'</td>';
   html += '<td style="padding:9px 10px;text-align:right;font-size:14px;font-weight:700;color:#000">'+totalTotal.toFixed(2)+'</td>';
   html += '</tr></tbody></table></div>';
   return html;
 }
 
-function anSection(title, rows, selectId, options, onchange) {
-  var html = '<div style="margin-bottom:18px">';
-  html += '<div style="display:flex;align-items:center;gap:8px;padding:0 14px;margin-bottom:8px">';
-  html += '<span style="font-size:14px;font-weight:700;color:#000">'+title+'</span>';
-  if (selectId) {
-    html += '<select id="'+selectId+'" onchange="'+onchange+'" style="flex:1;padding:6px 10px;border-radius:10px;border:none;background:#f2f2f7;font-family:inherit;font-size:12px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none">';
-    options.forEach(function(o){ html += '<option>'+o+'</option>'; });
-    html += '</select>';
-  }
-  html += '</div>';
-  html += rows;
-  html += '</div>';
-  return html;
+// Pedido: "esto debe ser UNA sola ventana en la que elijo qué ver —
+// estadística por objeto/trabajador/todos a la vez" — reemplaza las 4
+// secciones apiladas (Todo/Por operario/Por cliente/Por obra) por un
+// único selector (.mode-toggle, mismo patrón que Permisos de
+// acceso/Lista-Nueva) + un desplegable secundario que solo aparece
+// cuando hace falta elegir UN objeto/trabajador concreto.
+var anMode = 'todos'; // 'todos' | 'objeto' | 'trabajador'
+function setAnMode(mode) {
+  anMode = mode;
+  document.getElementById('anModeTodos').classList.toggle('on', mode === 'todos');
+  document.getElementById('anModeObjeto').classList.toggle('on', mode === 'objeto');
+  document.getElementById('anModeTrabajador').classList.toggle('on', mode === 'trabajador');
+  document.getElementById('anModeSelectWrap').style.display = (mode === 'todos') ? 'none' : 'block';
+  renderAnalisis();
+}
+
+function populateAnModeSelect(items) {
+  var sel = document.getElementById('anModeSelect');
+  var prev = sel.value;
+  sel.innerHTML = items.map(function(o){ return '<option'+(o===prev?' selected':'')+'>'+escapeHtml(o)+'</option>'; }).join('');
+  if (!sel.value && items.length) sel.value = items[0];
 }
 
 function renderAnalisis() {
   var f = getAnFilter();
   var filtered = filterAnRecords(anInformeCache, f);
-  var html = '';
+  var rows;
 
-  // 1. TODO — общая
-  var allRows = calcByMonth(filtered, f);
-  html += anSection('Todo', anTable(allRows), null, [], '');
+  if (anMode === 'objeto') {
+    var obras = getUnique(filtered, 'OBRA');
+    populateAnModeSelect(obras);
+    var selObra = document.getElementById('anModeSelect').value;
+    rows = selObra ? calcByMonth(filtered.filter(function(r){ return r.OBRA === selObra; }), f) : [];
+  } else if (anMode === 'trabajador') {
+    var operarios = getUnique(filtered, 'OPERARIO');
+    populateAnModeSelect(operarios);
+    var selOp = document.getElementById('anModeSelect').value;
+    rows = selOp ? calcByMonth(filtered.filter(function(r){ return r.OPERARIO === selOp; }), f) : [];
+  } else {
+    rows = calcByMonth(filtered, f);
+  }
 
-  // 2. Por operario
-  var operarios = getUnique(filtered, 'OPERARIO');
-  var opRows = operarios.length
-    ? calcByMonth(filtered.filter(function(r){ return r.OPERARIO === (document.getElementById('anSelOp') ? document.getElementById('anSelOp').value : operarios[0]); }), f)
-    : [];
-  html += anSection('Por operario', anTable(opRows), 'anSelOp', operarios, 're_renderAnalisisOp()');
-
-  // 3. Por cliente
-  var clientes = getUnique(filtered, 'CLIENTE');
-  var clRows = clientes.length
-    ? calcByMonth(filtered.filter(function(r){ return r.CLIENTE === (document.getElementById('anSelCl') ? document.getElementById('anSelCl').value : clientes[0]); }), f)
-    : [];
-  html += anSection('Por cliente', anTable(clRows), 'anSelCl', clientes, 're_renderAnalisisCl()');
-
-  // 4. Por obra
-  var obras = getUnique(filtered, 'OBRA');
-  var obRows = obras.length
-    ? calcByMonth(filtered.filter(function(r){ return r.OBRA === (document.getElementById('anSelOb') ? document.getElementById('anSelOb').value : obras[0]); }), f)
-    : [];
-  html += anSection('Por obra', anTable(obRows), 'anSelOb', obras, 're_renderAnalisisOb()');
-
-  document.getElementById('anContent').innerHTML = html || '<div class="mi-empty">No hay datos aprobados en el período seleccionado</div>';
+  document.getElementById('anContent').innerHTML = (rows && rows.length) ? anTable(rows) : '<div class="mi-empty">' + t('an_sin_datos') + '</div>';
 }
-
-// Перерисовка только нужной секции при смене выбора
-function re_renderAnalisisOp() {
-  var f = getAnFilter();
-  var filtered = filterAnRecords(anInformeCache, f);
-  var val = document.getElementById('anSelOp').value;
-  var rows = calcByMonth(filtered.filter(function(r){ return r.OPERARIO === val; }), f);
-  // Заменяем только таблицу этой секции — проще перерисовать всё
-  renderAnalisis();
-}
-function re_renderAnalisisCl() { renderAnalisis(); }
-function re_renderAnalisisOb() { renderAnalisis(); }
 
 function initAdminScreen() {
   return loadAdminData();
@@ -9690,7 +9892,7 @@ document.addEventListener('visibilitychange', function() {
   var modalIds = [
     'reportDetailModal', 'mgDetailModal', 'editReportModal',
     'mgRejectModal', 'notifFullModal', 'photoGalleryModal', 'confirmDeleteModal',
-    'editSavedModal', 'adUserModal', 'genericConfirmModal'
+    'editSavedModal', 'adUserModal', 'genericConfirmModal', 'reportBuilderModal', 'anDrilldownModal'
   ];
   // BUG CORREGIDO ("al confirmar borrar, Cancelar/Eliminar quedan tapados
   // por el tabbar inferior"): mgRejectModal/confirmDeleteModal son
