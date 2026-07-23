@@ -997,8 +997,8 @@ body.pin-mode{overflow:hidden}
 
 /* ── Panel Usuarios (admin) ── */
 .adu-card{background:#fff;border:.5px solid #e5e5ea;border-radius:12px;padding:14px 14px;margin-bottom:8px;box-shadow:0 2px 10px rgba(0,0,0,.07);cursor:pointer;touch-action:manipulation}
-.adu-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
-.adu-name{font-size:14.5px;font-weight:700;color:#000}
+.adu-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:2px}
+.adu-name{font-size:20px;font-weight:700;color:#000;letter-spacing:-.3px;margin-bottom:5px}
 .adu-meta{font-size:12.5px;color:#8e8e93;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .adu-meta i{font-size:13px}
 .adu-empty{text-align:center;padding:60px 20px;color:#8e8e93;font-size:13.5px}
@@ -1621,57 +1621,92 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       <div id="adUmViewWrap" style="display:none"></div>
 
       <div id="adUmFieldsWrap">
-        <div class="auth-field" style="max-width:none">
-          <label id="adUmEmailLbl">Email</label>
-          <div class="auth-input-wrap">
-            <i class="ti ti-mail"></i>
-            <input type="email" id="adUmEmailInput" autocomplete="off">
+        <!-- Mismo lenguaje visual que la pantalla "Nuevo informe" (.slabel +
+             .card blanca con sombra + .row/.rbadge/.rinput) — pedido
+             explícito para que Ver y Editar (y el resto de la app) usen
+             la misma paleta, en vez de los componentes planos de las
+             pantallas de auth (.auth-field/.auth-input-wrap) que se
+             usaban aquí antes. -->
+        <div class="slabel" style="padding:4px 0 8px" id="adUmSlabelNombre">Nombre</div>
+        <div class="card" style="margin:0 0 16px">
+          <div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">
+            <div class="rbadge" style="margin-top:3px"><i class="ti ti-user"></i></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:3px" id="adUmNombreLbl">Nombre</div>
+              <input type="text" id="adUmNombreInput" autocomplete="off" style="width:100%;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:#1b1b1d;text-align:left;padding:0">
+            </div>
+          </div>
+          <div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">
+            <div class="rbadge" style="margin-top:3px"><i class="ti ti-user"></i></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:3px" id="adUmApellidoLbl">Apellido</div>
+              <input type="text" id="adUmApellidoInput" autocomplete="off" style="width:100%;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:#1b1b1d;text-align:left;padding:0">
+            </div>
           </div>
         </div>
-        <div class="auth-field" style="max-width:none">
-          <label id="adUmTelLbl">Teléfono</label>
-          <div class="auth-input-wrap">
-            <i class="ti ti-phone"></i>
-            <input type="tel" id="adUmTelInput" autocomplete="off">
+
+        <div class="slabel" style="padding:4px 0 8px" id="adUmSlabelContacto">Contacto</div>
+        <div class="card" style="margin:0 0 16px">
+          <div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">
+            <div class="rbadge" style="margin-top:3px"><i class="ti ti-mail"></i></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:3px" id="adUmEmailLbl">Email</div>
+              <input type="email" id="adUmEmailInput" autocomplete="off" style="width:100%;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:#1b1b1d;text-align:left;padding:0">
+            </div>
+          </div>
+          <div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">
+            <div class="rbadge" style="margin-top:3px"><i class="ti ti-phone"></i></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;color:#8e8e93;font-weight:600;margin-bottom:3px" id="adUmTelLbl">Teléfono</div>
+              <input type="tel" id="adUmTelInput" autocomplete="off" style="width:100%;border:none;outline:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;color:#1b1b1d;text-align:left;padding:0">
+            </div>
           </div>
         </div>
 
         <div class="adu-meta-chip" id="adUmAuthMethodChip" style="display:none"><i class="ti ti-shield-check"></i><span id="adUmAuthMethodText"></span></div>
 
-        <div class="adu-section-lbl" id="adUmRolLbl">Rol</div>
-        <div class="auth-role-row" style="max-width:none;margin-bottom:16px">
-          <div class="auth-role-card" id="adUmRoleOperario" onclick="setAdUmRole('operario')">
-            <div class="arc-top"><i class="ti ti-user"></i><div class="arc-radio"></div></div>
-            <div class="arc-title" id="adUmRoleOperarioTitle">OPERARIO</div>
-          </div>
-          <div class="auth-role-card" id="adUmRoleManager" onclick="setAdUmRole('manager')">
-            <div class="arc-top"><i class="ti ti-briefcase"></i><div class="arc-radio"></div></div>
-            <div class="arc-title" id="adUmRoleManagerTitle">MANAGER</div>
-          </div>
-          <div class="auth-role-card" id="adUmRoleAdmin" onclick="setAdUmRole('admin')">
-            <div class="arc-top"><i class="ti ti-shield"></i><div class="arc-radio"></div></div>
-            <div class="arc-title" id="adUmRoleAdminTitle">ADMIN</div>
+        <div class="slabel" style="padding:4px 0 8px" id="adUmRolLbl">Rol</div>
+        <div class="card" style="margin:0 0 16px;padding:14px">
+          <div class="auth-role-row" style="max-width:none;margin-bottom:0">
+            <div class="auth-role-card" id="adUmRoleOperario" onclick="setAdUmRole('operario')">
+              <div class="arc-top"><i class="ti ti-user"></i><div class="arc-radio"></div></div>
+              <div class="arc-title" id="adUmRoleOperarioTitle">OPERARIO</div>
+            </div>
+            <div class="auth-role-card" id="adUmRoleManager" onclick="setAdUmRole('manager')">
+              <div class="arc-top"><i class="ti ti-briefcase"></i><div class="arc-radio"></div></div>
+              <div class="arc-title" id="adUmRoleManagerTitle">MANAGER</div>
+            </div>
+            <div class="auth-role-card" id="adUmRoleAdmin" onclick="setAdUmRole('admin')">
+              <div class="arc-top"><i class="ti ti-shield"></i><div class="arc-radio"></div></div>
+              <div class="arc-title" id="adUmRoleAdminTitle">ADMIN</div>
+            </div>
           </div>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <span class="adu-section-lbl" id="adUmObjLbl" style="margin:0">Permisos de acceso</span>
+        <div class="slabel" style="padding:4px 0 8px;display:flex;align-items:center;justify-content:space-between">
+          <span id="adUmObjLbl">Permisos de acceso</span>
           <label class="auth-checkbox" style="font-size:12px"><input type="checkbox" id="adUmAllAccess" onchange="onAdUmAllAccessChange()"><span id="adUmAllAccessLbl">Acceso total</span></label>
         </div>
-        <div id="adUmObjList" style="max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f7f7f8;border-radius:14px;padding:6px;margin-bottom:16px"></div>
-
-        <div class="auth-field" style="max-width:none">
-          <label id="adUmCodeLbl">Código rápido</label>
-          <div class="auth-input-wrap">
-            <i class="ti ti-key"></i>
-            <input type="text" id="adUmCode" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-            <button type="button" class="auth-eye" onclick="generateAdUmCode()" title="Generar"><i class="ti ti-dice-5"></i></button>
+        <div class="card" style="margin:0 0 16px;padding:12px">
+          <div class="mode-toggle" id="adUmPermToggle" style="margin:0 0 8px;width:100%">
+            <button type="button" class="ct on" id="adUmPermTabClientes" onclick="setAdUmPermTab('clientes')" style="flex:1"><span id="adUmPermTabClientesLbl">Clientes</span></button>
+            <button type="button" class="ct" id="adUmPermTabObjetos" onclick="setAdUmPermTab('objetos')" style="flex:1"><span id="adUmPermTabObjetosLbl">Objetos</span></button>
           </div>
+          <div id="adUmObjList" style="max-height:260px;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f7f7f8;border-radius:14px;padding:6px"></div>
         </div>
 
-        <div id="adUmStatusRow" style="display:none;align-items:center;justify-content:space-between;background:#f7f7f8;border-radius:14px;padding:12px 14px;margin-bottom:14px">
-          <span style="font-size:13px;font-weight:600;color:#000" id="adUmActiveLbl">Cuenta activa</span>
-          <label class="auth-checkbox"><input type="checkbox" id="adUmActiveToggle" onchange="onAdUmActiveToggle()"></label>
+        <div class="card" style="margin:0 0 16px">
+          <div class="row">
+            <div class="rbadge"><i class="ti ti-key"></i></div>
+            <span class="rlabel" id="adUmCodeLbl">Código rápido</span>
+            <input class="rinput" type="text" id="adUmCode" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="max-width:120px">
+            <button type="button" onclick="generateAdUmCode()" title="Generar" style="background:none;border:none;color:#0049c5;font-size:17px;padding:4px;margin-left:8px;cursor:pointer;touch-action:manipulation;flex-shrink:0"><i class="ti ti-dice-5"></i></button>
+          </div>
+          <div class="row" id="adUmStatusRow" style="display:none">
+            <div class="rbadge"><i class="ti ti-power"></i></div>
+            <span class="rlabel" id="adUmActiveLbl">Cuenta activa</span>
+            <label class="auth-checkbox" style="margin-left:auto"><input type="checkbox" id="adUmActiveToggle" onchange="onAdUmActiveToggle()"></label>
+          </div>
         </div>
       </div>
 
@@ -3092,11 +3127,15 @@ function applyLang() {
   setEl('adUsF-all', t('flt_todos')); setEl('adUsF-pending', t('adu_filter_pending'));
   setEl('adUsF-active', t('adu_filter_active')); setEl('adUsF-rejected', t('adu_filter_rejected'));
   setEl('adUsF-suspended', t('adu_filter_suspended'));
+  setEl('adUmSlabelNombre', t('auth_reg_nombre'));
+  setEl('adUmNombreLbl', t('auth_reg_nombre')); setEl('adUmApellidoLbl', t('auth_reg_apellido'));
   setEl('adUmEmailLbl', t('auth_email_lbl')); setEl('adUmTelLbl', t('auth_reg_telefono'));
+  setEl('adUmSlabelContacto', t('adu_group_contacto'));
   setEl('adUmRolLbl', t('auth_reg_rol'));
   setEl('adUmRoleOperarioTitle', t('auth_reg_rol_operario')); setEl('adUmRoleManagerTitle', t('auth_reg_rol_manager'));
   setEl('adUmRoleAdminTitle', t('adu_role_admin'));
   setEl('adUmObjLbl', t('adu_obj_lbl')); setEl('adUmAllAccessLbl', t('adu_all_access'));
+  setEl('adUmPermTabClientesLbl', t('adu_perm_clientes')); setEl('adUmPermTabObjetosLbl', t('adu_perm_objetos'));
   setEl('adUmCodeLbl', t('adu_code_lbl')); setEl('adUmActiveLbl', t('adu_active_lbl'));
   if (adUmCurrentUser) renderAdUmActions(); // los botones del footer se generan con innerHTML+t(), hay que regenerarlos al cambiar idioma
 
@@ -5590,6 +5629,7 @@ function initOperarioScreen() {
 
 /* ════════ MANAGER: SOLICITUDES ════════ */
 var mgRejectingId = null;
+var mgRejectWasManager = true;
 var mgSyncInterval = null;
 
 var mgReportsCache = [];
@@ -5908,16 +5948,23 @@ function closeManagerDetail() {
   mgDetailId = null;
 }
 
+// Compartido por manager (cola de Pendientes) y admin (diario) — mismo
+// patrón dual-id que deleteReportFromMgModal(): mgDetailId solo se rellena
+// desde openManagerDetail, así que si no está seteado el detalle vino de
+// openAdminDetail (adDetailCurrentId). wasManager decide qué caché/lista
+// actualizar al terminar (ver approveReport/confirmReject).
 function approveFromDetail() {
-  if (!mgDetailId) return;
-  var id = mgDetailId; // сохраняем ДО закрытия, т.к. closeManagerDetail обнуляет mgDetailId
+  var id = mgDetailId || adDetailCurrentId;
+  if (!id) return;
+  var wasManager = !!mgDetailId; // сохраняем ДО закрытия, т.к. closeManagerDetail обнуляет mgDetailId
   closeManagerDetail();
-  approveReport(id);
+  approveReport(id, wasManager);
 }
 
 function rejectFromDetail() {
-  if (!mgDetailId) return;
-  var id = mgDetailId;
+  var id = mgDetailId || adDetailCurrentId;
+  if (!id) return;
+  mgRejectWasManager = !!mgDetailId;
   closeManagerDetail();
   openRejectModal(id);
 }
@@ -6159,7 +6206,8 @@ function requestSwipeDeleteAdmin(id) {
   }, true);
 })();
 
-function approveReport(id) {
+function approveReport(id, wasManager) {
+  if (wasManager === undefined) wasManager = true; // llamador antiguo (cola de pendientes) — comportamiento sin cambios
   var card = document.querySelector('.mg-card[data-id="'+id+'"]');
   if (card) card.style.opacity = '0.5';
 
@@ -6172,7 +6220,8 @@ function approveReport(id) {
   .then(function(result){
     if (result && result.status === 'ok') {
       showToast('Informe '+id+' aprobado');
-      removeCardFromQueue(id);
+      if (wasManager) { removeCardFromQueue(id); }
+      else { updateAdminRecordStatus(id, 'approved'); }
     } else {
       if (card) card.style.opacity = '1';
       showToast(result && result.message ? result.message : 'Error al aprobar', true);
@@ -6182,6 +6231,23 @@ function approveReport(id) {
     if (card) card.style.opacity = '1';
     showToast('Error de conexión', true);
   });
+}
+
+// Admin ve TODOS los estados en su diario (a diferencia de la cola de
+// manager, que solo lista pending) — así que tras aprobar/rechazar desde
+// ahí el informe no desaparece de la lista, solo cambia de estado in situ.
+// adAllRecords/adFilteredRecords comparten las mismas referencias de
+// objeto (adFilteredRecords sale de un .filter() sobre adAllRecords), así
+// que mutar el registro encontrado en adAllRecords ya alcanza a ambos.
+function updateAdminRecordStatus(id, status, comentario) {
+  var r = adAllRecords.find(function(x){ return x.ID === id; });
+  if (r) {
+    r.STATUS = status;
+    r.MANAGER_NOMBRE = (currentUser && currentUser.nombre) || '';
+    r.FECHA_DECISION = new Date().toISOString();
+    if (comentario !== undefined) r.COMENTARIO_MANAGER = comentario;
+  }
+  renderAdminJournal();
 }
 
 function openRejectModal(id) {
@@ -6223,6 +6289,7 @@ function confirmReject() {
   var comentario = document.getElementById('mgRejectComment').value.trim();
   if (!comentario || !mgRejectingId) return;
   var id = mgRejectingId;
+  var wasManager = mgRejectWasManager;
 
   document.getElementById('mgRejectConfirm').disabled = true;
   document.getElementById('mgRejectConfirm').textContent = 'Enviando...';
@@ -6238,7 +6305,8 @@ function confirmReject() {
     closeRejectModal();
     if (result && result.status === 'ok') {
       showToast('Informe '+id+' rechazado');
-      removeCardFromQueue(id);
+      if (wasManager) { removeCardFromQueue(id); }
+      else { updateAdminRecordStatus(id, 'rejected', comentario); }
     } else {
       showToast(result && result.message ? result.message : 'Error al rechazar', true);
     }
@@ -6938,8 +7006,13 @@ function openAdminDetail(id) {
     html += '</div>';
   }
   document.getElementById('mgdBody').innerHTML = html;
+  // Pedido: el admin también puede aprobar/rechazar (antes solo podía
+  // borrar) — mismos botones que usa manager, visibles solo mientras el
+  // informe sigue pending (igual que la cola de manager: una vez decidido
+  // no hay "deshacer" desde aquí). approveFromDetail()/rejectFromDetail()
+  // resuelven el id vía mgDetailId||adDetailCurrentId (ver esas funciones).
   var actions = document.querySelector('#mgDetailModal .mg-actions');
-  if (actions) actions.style.display = 'none';
+  if (actions) actions.style.display = (st === 'pending') ? '' : 'none';
   // Pedido (2026-07-21): ya existe swipe-to-delete en la lista de admin,
   // pero SOLO para tarjetas "pending" (ver renderAdminJournal/swipeable)
   // — un informe aprobado/rechazado no tiene esa opción en la lista, así
@@ -7209,16 +7282,33 @@ var AD_STATUS_CLASS = {
 };
 var AD_ROLE_LABEL_KEYS = { operario: 'greet_worker', manager: 'greet_manager', admin: 'greet_admin' };
 
+// Mismo patrón "stale-while-revalidate" que loadMyReports()/dataCacheGet —
+// pedido explícito tras probar en dispositivo real: cada vez que se
+// cambiaba a la pestaña Usuarios se borraba la lista entera y se mostraba
+// "Cargando..." de nuevo, aunque los mismos datos ya se hubieran visto
+// segundos antes. Ahora se pinta el último dato conocido al instante y se
+// refresca en silencio en segundo plano.
 function loadAdminUsers() {
-  document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('loading') + '</div>';
+  var cached = dataCacheGet('adUsers');
+  if (cached) {
+    adUsersAll = cached;
+    renderAdminUsers();
+  } else {
+    document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('loading') + '</div>';
+  }
   fetch(WEBAPP_URL + '?action=adminListUsers&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result) {
-      if (result && result.status === 'ok') { adUsersAll = result.users || []; renderAdminUsers(); }
-      else document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('auth_err_generic') + '</div>';
+      if (result && result.status === 'ok') {
+        adUsersAll = result.users || [];
+        dataCacheSet('adUsers', adUsersAll);
+        renderAdminUsers();
+      } else if (!cached) {
+        document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('auth_err_generic') + '</div>';
+      }
     })
     .catch(function() {
-      document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('auth_err_network') + '</div>';
+      if (!cached) document.getElementById('adUsersList').innerHTML = '<div class="adu-empty">' + t('auth_err_network') + '</div>';
     });
 }
 
@@ -7259,10 +7349,10 @@ function renderAdminUsers() {
       '<button type="button" class="swipe-edit-action" onclick="event.stopPropagation();closeSwipeDelete();openAdUserModalByCodigo(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-pencil"></i></span><span class="swipe-lbl">' + t('swipe_editar') + '</span></button>' +
       '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdUser(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">' + t('swipe_eliminar') + '</span></button>' +
       '<div class="adu-card" data-id="' + safeCodigo + '" onclick="openAdUserModalByCodigo(\'' + safeCodigo + '\')">' +
-      '<div class="adu-card-top"><span class="adu-name">' + escapeHtml(displayName) + '</span>' +
+      '<div class="adu-card-top"><span style="font-size:12px;color:#8e8e93;font-weight:600">' + escapeHtml(roleLbl) + '</span>' +
       '<span class="ad-status-badge ' + statusCls + '">' + escapeHtml(statusLbl) + '</span></div>' +
+      '<div class="adu-name">' + escapeHtml(displayName) + '</div>' +
       '<div class="adu-meta"><i class="ti ti-mail"></i>' + escapeHtml(u.email || '—') + '</div>' +
-      '<div class="adu-meta"><i class="ti ti-id-badge-2"></i>' + escapeHtml(roleLbl) + '</div>' +
       '</div></div>';
   }).join('');
 }
@@ -7292,6 +7382,9 @@ function openAdUserModal(user) {
   adUmCurrentUser = user;
   adUmSelectedObjs = {};
   adUmOriginalSnapshot = null;
+  adUmPermTab = 'clientes';
+  document.getElementById('adUmPermTabClientes').classList.add('on');
+  document.getElementById('adUmPermTabObjetos').classList.remove('on');
   clearAuthError('adUmError');
 
   setEl('adUmName', ((user.nombre || '') + ' ' + (user.apellido || '')).trim() || user.email || user.codigo);
@@ -7300,6 +7393,8 @@ function openAdUserModal(user) {
   badge.className = 'ad-status-badge ' + (AD_STATUS_CLASS[user.status] || 'st-suspended');
   badge.textContent = t(AD_STATUS_LABEL_KEYS[user.status] || 'adu_status_suspended');
 
+  document.getElementById('adUmNombreInput').value = user.nombre || '';
+  document.getElementById('adUmApellidoInput').value = user.apellido || '';
   document.getElementById('adUmEmailInput').value = user.email || '';
   document.getElementById('adUmTelInput').value = user.telefono || '';
   document.getElementById('adUmCode').value = user.codigo || '';
@@ -7512,18 +7607,33 @@ function setAdUmRole(role) {
 
 function onAdUmAllAccessChange() { renderAdUmObjList(); checkAdUmDirty(); }
 
-/* Два раздела con los mismos pares cliente:obra (ver getClienteObraPairs)
- * — "Clientes" es un atajo que marca/desmarca TODOS los objetos de ese
- * cliente de golpe, "Objetos" permite acceso puntual a uno solo. No son
- * permisos distintos: el string final (buildAdUmObrasString) sigue siendo
- * la misma lista plana de pares cliente:obra en ambos casos. */
+/* Dos "ventanas" separadas (pedido explícito: no una lista larga con dos
+ * secciones, sino un toggle tipo Lista/Nuevo — mismo patrón .mode-toggle/
+ * .ct que el resto de la app) con los mismos pares cliente:obra (ver
+ * getClienteObraPairs). "Clientes" es un atajo que marca/desmarca TODOS
+ * los objetos de ese cliente de golpe, "Objetos" permite acceso puntual a
+ * uno solo. No son permisos distintos: el string final
+ * (buildAdUmObrasString) sigue siendo la misma lista plana de pares
+ * cliente:obra en ambos casos. El scroll interno de #adUmObjList (mismo
+ * contenedor de siempre, max-height:260px) se conserva tal cual. */
+var adUmPermTab = 'clientes';
+function setAdUmPermTab(tab) {
+  adUmPermTab = tab;
+  document.getElementById('adUmPermTabClientes').classList.toggle('on', tab === 'clientes');
+  document.getElementById('adUmPermTabObjetos').classList.toggle('on', tab === 'objetos');
+  renderAdUmObjList();
+}
+
 function renderAdUmObjList() {
   var allAccess = document.getElementById('adUmAllAccess').checked;
   var wrap = document.getElementById('adUmObjList');
+  var toggle = document.getElementById('adUmPermToggle');
   if (allAccess) {
+    toggle.style.display = 'none';
     wrap.innerHTML = '<div style="padding:14px;text-align:center;font-size:12.5px;color:#8e8e93">' + t('adu_all_access_note') + '</div>';
     return;
   }
+  toggle.style.display = 'flex';
   wrap.innerHTML = '<div style="padding:14px;text-align:center;font-size:12.5px;color:#8e8e93">' + t('loading') + '</div>';
   ensureClienteObraPairs().then(function(pairs) {
     if (document.getElementById('adUmAllAccess').checked) return; // pudo cambiar mientras cargaba
@@ -7534,28 +7644,26 @@ function renderAdUmObjList() {
       if (!byClient[p.cliente]) { byClient[p.cliente] = []; order.push(p.cliente); }
       byClient[p.cliente].push(p.obra);
     });
-    var clientesHtml = order.map(function(cliente) {
-      var objs = byClient[cliente];
-      var allChecked = objs.every(function(o){ return adUmSelectedObjs[cliente + '::' + o]; });
-      return '<label class="adu-perm-obj top">' +
-        '<input type="checkbox" ' + (allChecked ? 'checked' : '') + ' onchange="toggleAdUmClient(\'' + cliente.replace(/'/g, "\\'") + '\', this.checked)">' +
-        '<span>' + escapeHtml(cliente) + '</span></label>';
-    }).join('');
-    var objetosHtml = order.map(function(cliente) {
-      var objRows = byClient[cliente].map(function(obra) {
-        var key = cliente + '::' + obra;
-        var checked = adUmSelectedObjs[key] ? 'checked' : '';
-        return '<label class="adu-perm-obj">' +
-          '<input type="checkbox" ' + checked + ' onchange="toggleAdUmObj(\'' + key.replace(/'/g, "\\'") + '\', this.checked)">' +
-          '<span>' + escapeHtml(obra) + '</span></label>';
+    if (adUmPermTab === 'clientes') {
+      wrap.innerHTML = order.map(function(cliente) {
+        var objs = byClient[cliente];
+        var allChecked = objs.every(function(o){ return adUmSelectedObjs[cliente + '::' + o]; });
+        return '<label class="adu-perm-obj top">' +
+          '<input type="checkbox" ' + (allChecked ? 'checked' : '') + ' onchange="toggleAdUmClient(\'' + cliente.replace(/'/g, "\\'") + '\', this.checked)">' +
+          '<span>' + escapeHtml(cliente) + '</span></label>';
       }).join('');
-      return '<div class="adu-perm-group"><div class="adu-perm-client"><i class="ti ti-building"></i>' + escapeHtml(cliente) + '</div>' + objRows + '</div>';
-    }).join('');
-    wrap.innerHTML =
-      '<div class="adu-section-lbl" style="margin:2px 0 4px 4px">' + t('adu_perm_clientes') + '</div>' +
-      clientesHtml +
-      '<div class="adu-section-lbl" style="margin:14px 0 4px 4px">' + t('adu_perm_objetos') + '</div>' +
-      objetosHtml;
+    } else {
+      wrap.innerHTML = order.map(function(cliente) {
+        var objRows = byClient[cliente].map(function(obra) {
+          var key = cliente + '::' + obra;
+          var checked = adUmSelectedObjs[key] ? 'checked' : '';
+          return '<label class="adu-perm-obj">' +
+            '<input type="checkbox" ' + checked + ' onchange="toggleAdUmObj(\'' + key.replace(/'/g, "\\'") + '\', this.checked)">' +
+            '<span>' + escapeHtml(obra) + '</span></label>';
+        }).join('');
+        return '<div class="adu-perm-group"><div class="adu-perm-client"><i class="ti ti-building"></i>' + escapeHtml(cliente) + '</div>' + objRows + '</div>';
+      }).join('');
+    }
   });
 }
 
@@ -7595,6 +7703,8 @@ var adUmOriginalSnapshot = null;
 function getAdUmFormValues() {
   var hasStatusToggle = document.getElementById('adUmStatusRow').style.display !== 'none';
   return {
+    nombre: document.getElementById('adUmNombreInput').value.trim(),
+    apellido: document.getElementById('adUmApellidoInput').value.trim(),
     email: document.getElementById('adUmEmailInput').value.trim(),
     tel: document.getElementById('adUmTelInput').value.trim(),
     rol: adUmSelectedRole,
@@ -7686,6 +7796,8 @@ function saveAdUserChanges() {
   var newCodigo = document.getElementById('adUmCode').value.trim();
   var payload = {
     rol: adUmSelectedRole, obras: buildAdUmObrasString(), newCodigo: newCodigo,
+    nombre: document.getElementById('adUmNombreInput').value.trim(),
+    apellido: document.getElementById('adUmApellidoInput').value.trim(),
     email: document.getElementById('adUmEmailInput').value.trim(),
     telefono: document.getElementById('adUmTelInput').value.trim()
   };
