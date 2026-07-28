@@ -773,7 +773,7 @@ body.pin-mode{overflow:hidden}
    explícita para no tener dos lenguajes de color distintos. */
 .card-shadow-new{box-shadow:0 4px 18px rgba(0,73,197,.30) !important}
 
-.mi-card{background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.mi-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
 .mi-card:active{background:#f9f9f9}
 .mi-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
 .mi-id{font-size:11px;font-weight:600;color:#8e8e93}
@@ -800,8 +800,10 @@ body.pin-mode{overflow:hidden}
 .mi-comment b i{font-size:13px}
 /* Vista completa (modales de detalle): el comentario del manager no debe
    truncarse a 2 líneas — esa limitación solo tiene sentido como preview
-   en las tarjetas de lista (.mi-comment sin .full, ver renderMyReports). */
-.mi-comment.full{display:block;-webkit-line-clamp:unset;overflow:visible}
+   en las tarjetas de lista (.mi-comment sin .full, ver renderMyReports).
+   Pedido 2026-07-28: más legible aquí — texto un poco más grande y con
+   más aire que el preview de la tarjeta. */
+.mi-comment.full{display:block;-webkit-line-clamp:unset;overflow:visible;font-size:14.5px;line-height:1.6;padding:14px 16px}
 .mi-edit-btn{width:100%;background:#0049c5;color:#fff;border:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-family:inherit;cursor:pointer;touch-action:manipulation;margin-top:auto !important}
 .mi-empty{padding:48px 24px;text-align:center;color:#8e8e93;font-size:14px}
 
@@ -917,7 +919,7 @@ body.pin-mode{overflow:hidden}
 .rb-step-center.show{display:flex;flex-direction:column;justify-content:center;min-height:100%}
 .mg-modal-title{font-size:17px;font-weight:700;color:#1b1b1d;margin-bottom:3px}
 .mg-modal-sub{font-size:13px;color:#737687;margin-bottom:14px}
-.mg-modal-textarea{width:100%;min-height:80px;border-radius:18px;border:none;background:#f4f4f7;padding:14px 16px;font-size:14px;font-weight:500;font-family:inherit;color:#1b1b1d;resize:none;margin-bottom:8px;transition:box-shadow .15s;outline:none}
+.mg-modal-textarea{width:100%;min-height:160px;border-radius:18px;border:none;background:#f4f4f7;padding:14px 16px;font-size:15.5px;line-height:1.55;font-weight:500;font-family:inherit;color:#1b1b1d;resize:none;margin-bottom:8px;transition:box-shadow .15s;outline:none}
 .mg-modal-textarea.err{box-shadow:0 0 0 2px #ff3b30}
 .mg-reject-hint{font-size:12px;color:#ff3b30;margin-bottom:12px;opacity:0;max-height:0;overflow:hidden;transition:opacity .2s}
 .mg-reject-hint.show{opacity:1;max-height:20px;margin-bottom:12px}
@@ -2691,9 +2693,6 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
         <button class="mg-btn mg-btn-reject" onclick="rejectFromDetail()">Rechazar</button>
         <button class="mg-btn mg-btn-approve" onclick="approveFromDetail()">Aprobar</button>
       </div>
-      <button class="mg-btn-delete" id="mgDeleteBtn" style="display:none" onclick="deleteReportFromMgModal()">
-        <i class="ti ti-trash" style="font-size:15px"></i> <span id="mgDeleteBtnLbl">Eliminar informe</span>
-      </button>
     </div>
   </div>
 </div>
@@ -2869,9 +2868,15 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     <!-- Top del período — opcional/plegable, colapsado por defecto (pedido
          explícito). Se calcula a partir de datos que ya se piden para
          otras partes de la pantalla (objetos/drilldown), sin endpoint nuevo. -->
-    <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
-      <span id="anSlabelTop">Top del período</span>
-      <span class="auth-link-sm" onclick="toggleAnTop()" id="anTopToggleLbl" style="font-size:12px">Ver</span>
+    <!-- Pedido 2026-07-28: fila entera clicable (no solo el texto "Ver")
+         y más alta — objetivo táctil más cómodo, mismo patrón para los
+         3 desplegables de esta pantalla (Top/Detalle mensual/Generados). -->
+    <div onclick="toggleAnTop()" style="margin:4px 14px 8px;padding:13px 14px;background:#f7f7f8;border-radius:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;touch-action:manipulation">
+      <span id="anSlabelTop" style="font-size:13px;font-weight:700;color:#000">Top del período</span>
+      <span style="display:flex;align-items:center;gap:4px;color:#0049c5;font-size:12.5px;font-weight:700">
+        <span id="anTopToggleLbl">Ver</span>
+        <i class="ti ti-chevron-down" id="anTopToggleIcon" style="font-size:13px;transition:transform .2s" aria-hidden="true"></i>
+      </span>
     </div>
     <div id="anTopWrap" style="display:none;padding:0 0 16px">
       <div id="anTopContent"></div>
@@ -2881,9 +2886,12 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
          Todos/Por objeto/Por trabajador), pero ahora plegado por defecto
          detrás de un Ver/Ocultar — pedido explícito: no se toca su lógica,
          solo se envuelve. -->
-    <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
-      <span id="anSlabelMensual">Detalle mensual</span>
-      <span class="auth-link-sm" onclick="toggleAnMensual()" id="anMensualToggleLbl" style="font-size:12px">Ver</span>
+    <div onclick="toggleAnMensual()" style="margin:4px 14px 8px;padding:13px 14px;background:#f7f7f8;border-radius:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;touch-action:manipulation">
+      <span id="anSlabelMensual" style="font-size:13px;font-weight:700;color:#000">Detalle mensual</span>
+      <span style="display:flex;align-items:center;gap:4px;color:#0049c5;font-size:12.5px;font-weight:700">
+        <span id="anMensualToggleLbl">Ver</span>
+        <i class="ti ti-chevron-down" id="anMensualToggleIcon" style="font-size:13px;transition:transform .2s" aria-hidden="true"></i>
+      </span>
     </div>
     <div id="anMensualWrap" style="display:none">
       <div style="padding:0 14px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -2908,9 +2916,12 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       <div id="anContent" style="padding:10px 0 20px"></div>
     </div>
 
-    <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
-      <span id="anSlabelGenerados">Informes generados</span>
-      <span class="auth-link-sm" onclick="toggleGeneratedReportsList()" id="anToggleGeneradosLbl" style="font-size:12px">Ver</span>
+    <div onclick="toggleGeneratedReportsList()" style="margin:4px 14px 8px;padding:13px 14px;background:#f7f7f8;border-radius:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;touch-action:manipulation">
+      <span id="anSlabelGenerados" style="font-size:13px;font-weight:700;color:#000">Informes generados</span>
+      <span style="display:flex;align-items:center;gap:4px;color:#0049c5;font-size:12.5px;font-weight:700">
+        <span id="anToggleGeneradosLbl">Ver</span>
+        <i class="ti ti-chevron-down" id="anToggleGeneradosIcon" style="font-size:13px;transition:transform .2s" aria-hidden="true"></i>
+      </span>
     </div>
     <div id="anGeneratedReportsWrap" style="display:none;padding:0 14px 20px">
       <div id="anGeneratedReportsList"></div>
@@ -3223,7 +3234,7 @@ var LANGS = {
     lbl_tipo_trabajo:'Tipo de trabajo', lbl_horas_trabajadas:'Horas trabajadas',
     lbl_compania_mat:'Compañía (materiales)', lbl_precio_mat:'Precio materiales (€)',
     lbl_descripcion:'Descripción', lbl_coste_materiales:'Coste materiales',
-    lbl_fotos_materiales:'Fotos de materiales', lbl_total_caption:'TOTAL',
+    lbl_fotos_materiales:'Fotos de materiales', lbl_total_caption:'TOTAL', rd_ver_todas_fotos:'Ver todas ({n})',
     msg_sin_datos:'Sin datos adicionales',
     lbl_comentario:'Comentario', lbl_comentario_manager:'Comentario del manager', lbl_motivo_rechazo:'Motivo del rechazo',
     btn_editar_reenviar:'Editar y reenviar',
@@ -3343,7 +3354,7 @@ var LANGS = {
     lbl_tipo_trabajo:'Тип работы', lbl_horas_trabajadas:'Отработанные часы',
     lbl_compania_mat:'Компания (материалы)', lbl_precio_mat:'Цена материалов (€)',
     lbl_descripcion:'Описание', lbl_coste_materiales:'Стоимость материалов',
-    lbl_fotos_materiales:'Фото материалов', lbl_total_caption:'ИТОГО',
+    lbl_fotos_materiales:'Фото материалов', lbl_total_caption:'ИТОГО', rd_ver_todas_fotos:'Смотреть все ({n})',
     msg_sin_datos:'Нет дополнительных данных',
     lbl_comentario:'Комментарий', lbl_comentario_manager:'Комментарий менеджера', lbl_motivo_rechazo:'Причина отказа',
     btn_editar_reenviar:'Исправить и отправить снова',
@@ -3463,7 +3474,7 @@ var LANGS = {
     lbl_tipo_trabajo:'Type of work', lbl_horas_trabajadas:'Hours worked',
     lbl_compania_mat:'Company (materials)', lbl_precio_mat:'Materials price (€)',
     lbl_descripcion:'Description', lbl_coste_materiales:'Materials cost',
-    lbl_fotos_materiales:'Materials photos', lbl_total_caption:'TOTAL',
+    lbl_fotos_materiales:'Materials photos', lbl_total_caption:'TOTAL', rd_ver_todas_fotos:'View all ({n})',
     msg_sin_datos:'No additional data',
     lbl_comentario:'Comment', lbl_comentario_manager:'Manager comment', lbl_motivo_rechazo:'Rejection reason',
     btn_editar_reenviar:'Edit and resend',
@@ -3772,7 +3783,6 @@ function applyLang() {
   setEl('erLblPrecio',    t('lbl_precio_mat'));
   setEl('erLblFotoObra',  t('lbl_foto_obra'));
   setEl('erLblFotoMat',   t('lbl_fotos_materiales'));
-  setEl('mgDeleteBtnLbl', t('btn_eliminar_informe'));
 
   // Sub-labels
   setEl('sub-trabajos',    t('sub_trabajos'));
@@ -5581,6 +5591,7 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
         html += '<div class="mi-comment" style="margin-top:8px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
         html += '<button class="mi-edit-btn" style="margin-top:8px" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">'+t('btn_editar_reenviar')+'</button>';
       }
+      html += cardAttBadgeHtml(r);
       html += '</div>';
       if (swipeable) html += '</div>';
     });
@@ -5756,6 +5767,7 @@ function openReportDetail(id) {
   }
 
   document.getElementById('rdBody').innerHTML = html;
+  initPhotoThumbs(document.getElementById('rdBody'));
   document.getElementById('reportDetailModal').classList.add('show');
 }
 
@@ -6380,6 +6392,7 @@ function renderMgPendingList(reports) {
     html += '<div class="mg-obra">'+r.ID+'</div>';
     // Строка 4: CLIENTE · OBRA
     html += '<div class="mg-cliente">'+r.CLIENTE+' · '+r.OBRA+'</div>';
+    html += cardAttBadgeHtml(r);
     html += '</div>';
     html += '</div>';
     return html;
@@ -6409,9 +6422,22 @@ function scheduleManagerAutoSeen() {
 var mgDetailId = null;
 
 /* ── Универсальная функция построения деталей отчёта (только заполненные поля) ── */
+// Pedido 2026-07-28: indicador de archivos adjuntos en la esquina
+// inferior izquierda de la tarjeta PLEGADA (mi-card/mg-card/ad-card) —
+// cuenta cuántos de los 2 campos de fotos (obra/materiales) tienen algo
+// adjunto. Contar las fotos una a una dentro de cada carpeta de Drive
+// necesitaría una petición de red por tarjeta (caro en listas largas de
+// decenas de informes); esto es instantáneo, usa datos que la fila ya
+// trae. El contenedor de la tarjeta debe tener position:relative (todas
+// lo tienen ya, salvo .mi-card, al que se le añadió aquí).
+function cardAttBadgeHtml(r) {
+  var n = (r['FOTOS DE OBRA'] ? 1 : 0) + (r['FOTO MATERIALES / RECIBO'] ? 1 : 0);
+  if (!n) return '';
+  return '<span style="position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:3px;background:#f2f2f7;color:#636366;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:10px"><i class="ti ti-paperclip" style="font-size:11px" aria-hidden="true"></i>' + n + '</span>';
+}
+
 function buildDetailHtml(r, showTotal, showRate) {
   var html = '';
-  var svgCam = '<i class="ti ti-camera" style="font-size:15px;color:#0049c5;margin-right:5px"></i>';
 
   // ── БЛОК 1: TRABAJO ──
   var trabajoFields = [];
@@ -6455,7 +6481,7 @@ function buildDetailHtml(r, showTotal, showRate) {
       html += '</div>';
     }
     if (trabajos) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('sub_trabajos')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+trabajos+'</span></div>';
-    if (fotosObra) html += '<button type="button" class="rd-photo-link" onclick="openPhotoGallery(this)" data-photos=\''+encodeURIComponent(fotosObra)+'\'>'+svgCam+t('lbl_foto_obra')+'</button>';
+    if (fotosObra) html += buildPhotoThumbsHtml(fotosObra, t('lbl_foto_obra'));
     html += '</div>';
   }
 
@@ -6477,7 +6503,7 @@ function buildDetailHtml(r, showTotal, showRate) {
       html += '<span>'+precio.toFixed(2)+' €</span>';
       html += '</div>';
     }
-    if (fotosMat) html += '<button type="button" class="rd-photo-link" onclick="openPhotoGallery(this)" data-photos=\''+encodeURIComponent(fotosMat)+'\'>'+svgCam+t('lbl_fotos_materiales')+'</button>';
+    if (fotosMat) html += buildPhotoThumbsHtml(fotosMat, t('lbl_fotos_materiales'));
     html += '</div>';
   }
 
@@ -6510,6 +6536,7 @@ function openManagerDetail(id) {
   document.getElementById('mgdTitle').textContent = r.OBRA || '—';
   document.getElementById('mgdSub').textContent = (r.CLIENTE||'') + ' · ' + r.ID + ' · ' + fecha;
   document.getElementById('mgdBody').innerHTML = buildDetailHtml(r, true, false); // manager: Total sí, tarifa €/h no
+  initPhotoThumbs(document.getElementById('mgdBody'));
   // BUG CORREGIDO (latente): antes esta función NUNCA reactivaba
   // .mg-actions por sí misma — dependía por completo de que
   // closeManagerDetail() se hubiera llamado antes para restaurarlo. Si
@@ -6519,20 +6546,11 @@ function openManagerDetail(id) {
   // aparecer SIN los botones Aprobar/Rechazar.
   var actionsMg = document.querySelector('#mgDetailModal .mg-actions');
   if (actionsMg) actionsMg.style.display = '';
-  // BUG CORREGIDO / pedido (2026-07-21): el manager SÍ puede borrar
-  // mientras el informe está pending (ver deleteRecord en Code_v5.gs),
-  // pero esta función SOLO se usa para la cola de Pendientes (nunca para
-  // aprobados/rechazados, que van por openHistorialDetail) — es decir,
-  // TODA tarjeta que llega aquí ya tiene swipe-to-delete disponible en la
-  // lista (ver renderManagerQueue, sin excepción de estado). El botón de
-  // aquí era 100% redundante con eso — se oculta siempre.
-  document.getElementById('mgDeleteBtn').style.display = 'none';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
 function closeManagerDetail() {
   document.getElementById('mgDetailModal').classList.remove('show');
-  document.getElementById('mgDeleteBtn').style.display = 'none';
   // восстанавливаем кнопки решения (могли быть скрыты в режиме Historial)
   var actions = document.querySelector('#mgDetailModal .mg-actions');
   if (actions) actions.style.display = '';
@@ -6540,7 +6558,7 @@ function closeManagerDetail() {
 }
 
 // Compartido por manager (cola de Pendientes) y admin (diario) — mismo
-// patrón dual-id que deleteReportFromMgModal(): mgDetailId solo se rellena
+// patrón dual-id: mgDetailId solo se rellena
 // desde openManagerDetail, así que si no está seteado el detalle vino de
 // openAdminDetail (adDetailCurrentId). wasManager decide qué caché/lista
 // actualizar al terminar (ver approveReport/confirmReject).
@@ -6655,27 +6673,6 @@ function confirmDeleteModalYes() {
     btn.disabled = false;
     closeConfirmDeleteModal();
     showToast(t('toast_eliminar_error'), true);
-  });
-}
-
-// Compartida por manager (desde la cola de Pendientes) y admin (desde el
-// diario) — ambos usan el mismo #mgDetailModal, así que basta con mirar
-// cuál de los dos ids de contexto está activo (igual que shareManagerDetail).
-function deleteReportFromMgModal() {
-  var id = mgDetailId || adDetailCurrentId;
-  if (!id) return;
-  var wasManager = !!mgDetailId;
-  callDeleteReport(id, function() {
-    closeManagerDetail();
-    if (wasManager) {
-      mgReportsCache = mgReportsCache.filter(function(r){ return r.ID !== id; });
-      removeCardFromQueue(id);
-    } else {
-      adAllRecords = adAllRecords.filter(function(r){ return r.ID !== id; });
-      adInformeRecords = adInformeRecords.filter(function(r){ return r.ID !== id; });
-      adFilteredRecords = adFilteredRecords.filter(function(r){ return r.ID !== id; });
-      renderAdminJournal();
-    }
   });
 }
 
@@ -7062,6 +7059,7 @@ function renderMgHistorialGrouped(reports) {
         + '<div class="mg-operario">'+r.OPERARIO+'</div>'
         + '<div class="mg-obra">'+r.ID+'</div>'
         + '<div class="mg-cliente">'+r.CLIENTE+' · '+r.OBRA+'</div>'
+        + cardAttBadgeHtml(r)
         + '</div>';
     });
     html += '</div>';
@@ -7206,11 +7204,11 @@ function openHistorialDetail(id) {
     html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario_manager')+'</b>'+r['COMENTARIO_MANAGER']+'</div>';
   }
   document.getElementById('mgdBody').innerHTML = html;
+  initPhotoThumbs(document.getElementById('mgdBody'));
 
   // В режиме истории — только просмотр, без кнопок решения
   var actions = document.querySelector('#mgDetailModal .mg-actions');
   if (actions) actions.style.display = 'none';
-  document.getElementById('mgDeleteBtn').style.display = 'none';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
@@ -7468,16 +7466,17 @@ function renderAdminJournal() {
     var g = groups[key];
     var isCurMonth = (g.year === curYear && g.month === curMonth);
     var isCollapsed = collapsed[key] !== undefined ? collapsed[key] : !isCurMonth;
-    var newCount = g.records.filter(function(r){ return r.STATUS !== 'approved' && seen.indexOf(seenKey(r)) === -1; }).length;
 
-    // Заголовок группы
+    // Заголовок группы — pedido 2026-07-28: se quita el contador "N NUEVO"
+    // de aquí (arriba a la derecha, junto al filtro) — la app siempre
+    // muestra la información actual y correcta, sin distinguir "visto/no
+    // visto" en Análisis ni aquí.
     html += '<div class="ad-month-header" onclick="toggleAdMonth(\''+key+'\')" data-key="'+key+'">';
     html += '<div style="display:flex;align-items:center;gap:8px">';
     html += '<svg style="width:14px;height:14px;stroke:#8e8e93;fill:none;stroke-width:2.5;stroke-linecap:round;transition:transform .2s;transform:rotate('+(isCollapsed?'-90deg':'0deg')+')" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
     html += '<span style="font-size:13px;font-weight:700;color:#000">'+g.label+'</span>';
     html += '<span style="font-size:11px;color:#8e8e93">'+g.records.length+' reg.</span>';
     html += '</div>';
-    if (newCount > 0) html += '<span style="font-size:10px;font-weight:800;color:#0049c5;letter-spacing:0.3px">'+newCount+' NUEVO'+(newCount>1?'S':'')+'</span>';
     html += '</div>';
 
     // Карточки группы
@@ -7492,7 +7491,12 @@ function renderAdminJournal() {
       if (!statusLabels[st]) st = 'pending';
       var isNew = st !== 'approved' && seen.indexOf(seenKey(r)) === -1;
       var shadowCls = isNew ? ' card-shadow-new' : '';
-      var swipeable = st === 'pending';
+      // Pedido 2026-07-28: quitar el botón "Eliminar informe" del modal de
+      // detalle (redundante con el swipe) — pero antes solo las tarjetas
+      // "pending" tenían swipe-to-delete aquí, así que aprobados/rechazados
+      // se habrían quedado SIN ninguna forma de borrar. Se extiende el
+      // swipe a todos los estados para no perder la función.
+      var swipeable = true;
       if (swipeable) {
         html += '<div class="swipe-wrap r12" data-id="'+r.ID+'">';
         html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
@@ -7524,6 +7528,7 @@ function renderAdminJournal() {
           + '<b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'
           + r.COMENTARIO_MANAGER + '</div>';
       }
+      html += cardAttBadgeHtml(r);
       html += '</div>';
       if (swipeable) html += '</div>';
     });
@@ -7570,15 +7575,23 @@ function renderAdminInforme() {
     listEl.innerHTML = '<div class="mi-empty">No hay informes aprobados aún</div>';
     return;
   }
+  // Pedido 2026-07-28: esta lista nunca tuvo swipe-to-delete (solo el
+  // botón del modal de detalle, ya quitado) — se añade aquí el mismo
+  // patrón swipe-wrap/swipe-delete-action que ya usa renderAdminJournal,
+  // reutilizando requestSwipeDeleteAdmin (ya limpia adInformeRecords).
   listEl.innerHTML = adInformeRecords.map(function(r){
     var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
-    return '<div class="ad-card st-approved" onclick="openAdminInformeDetail(\''+r.ID+'\')">'
+    return '<div class="swipe-wrap r12" data-id="'+r.ID+'">'
+      + '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>'
+      + '<div class="ad-card st-approved" onclick="openAdminInformeDetail(\''+r.ID+'\')">'
       + '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:2px">'+fecha+'</div>'
       + '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:10px">'+(r.OPERARIO||'')+'</div>'
       + '<div style="font-size:22px;font-weight:700;color:#000;letter-spacing:-0.3px;margin-bottom:5px">'+(r.ID||'—')+'</div>'
       + '<div style="font-size:13px;font-weight:600;color:#8e8e93;margin-bottom:8px">'+(r.CLIENTE||'')+'·'+(r.OBRA||'')+'</div>'
       + '<span class="ad-status-badge st-approved">' + t('status_approved') + '</span>'
       + (r.MANAGER_NOMBRE ? '<div class="ad-manager-line approved">Aprobó: '+r.MANAGER_NOMBRE+'</div>' : '')
+      + cardAttBadgeHtml(r)
+      + '</div>'
       + '</div>';
   }).join('');
 }
@@ -7623,6 +7636,7 @@ function openAdminDetail(id) {
     html += '</div>';
   }
   document.getElementById('mgdBody').innerHTML = html;
+  initPhotoThumbs(document.getElementById('mgdBody'));
   // Pedido: el admin también puede aprobar/rechazar (antes solo podía
   // borrar) — mismos botones que usa manager, visibles solo mientras el
   // informe sigue pending (igual que la cola de manager: una vez decidido
@@ -7630,13 +7644,6 @@ function openAdminDetail(id) {
   // resuelven el id vía mgDetailId||adDetailCurrentId (ver esas funciones).
   var actions = document.querySelector('#mgDetailModal .mg-actions');
   if (actions) actions.style.display = (st === 'pending') ? '' : 'none';
-  // Pedido (2026-07-21): ya existe swipe-to-delete en la lista de admin,
-  // pero SOLO para tarjetas "pending" (ver renderAdminJournal/swipeable)
-  // — un informe aprobado/rechazado no tiene esa opción en la lista, así
-  // que ahí el botón de aquí sigue siendo la ÚNICA vía para borrarlo y
-  // debe quedarse. Para "pending" sí es 100% redundante con el swipe,
-  // así que se oculta.
-  document.getElementById('mgDeleteBtn').style.display = (st === 'pending') ? 'none' : 'flex';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
@@ -7657,9 +7664,9 @@ function openAdminInformeDetail(id) {
     html += '</div>';
   }
   document.getElementById('mgdBody').innerHTML = html;
+  initPhotoThumbs(document.getElementById('mgdBody'));
   var actions = document.querySelector('#mgDetailModal .mg-actions');
   if (actions) actions.style.display = 'none';
-  document.getElementById('mgDeleteBtn').style.display = 'flex';
   document.getElementById('mgDetailModal').classList.add('show');
 }
 
@@ -8181,48 +8188,49 @@ var anPeriod = 'mes';
 var AN_PERIODS = ['hoy', 'semana', 'mes', 'anio', 'mesPasado'];
 var AN_PERIOD_LABELS = { hoy: 'an_periodo_hoy', semana: 'an_periodo_semana', mes: 'an_periodo_mes', anio: 'an_periodo_anio', mesPasado: 'an_periodo_mes_pasado' };
 
+// Pedido 2026-07-28 (continuación): los presets ya NO se cortan en "hoy"
+// — son la UNIDAD DE CALENDARIO COMPLETA que contiene al día de hoy
+// ("hoy" solo decide QUÉ semana/mes/año es "el actual", no dónde
+// termina el rango): semana = lunes→domingo completos, mes = día 1→
+// último día completos, año = 1 enero→31 diciembre completos. Días
+// futuros dentro del período simplemente no tendrán informes todavía,
+// no hace falta excluirlos a mano. Esto también simplifica el período
+// ANTERIOR: siempre es la unidad de calendario completa inmediatamente
+// anterior, sin capar por día-del-mes ni nada parecido.
+function anWeekRange(mondayDate) {
+  return { desde: anISO(mondayDate), hasta: anISO(anAddDays(mondayDate, 6)) };
+}
+function anMonthRange(year, month0) {
+  return { desde: year + '-' + anPad2(month0 + 1) + '-01', hasta: year + '-' + anPad2(month0 + 1) + '-' + anPad2(anLastDayOfMonth(year, month0)) };
+}
+
 function anPeriodRange(period) {
   var hoy = new Date();
   var y = hoy.getFullYear(), m = hoy.getMonth();
   if (period === 'hoy') return { desde: anISO(hoy), hasta: anISO(hoy) };
-  if (period === 'semana') return { desde: anISO(anMonday(hoy)), hasta: anISO(hoy) };
-  if (period === 'anio') return { desde: y + '-01-01', hasta: anISO(hoy) };
+  if (period === 'semana') return anWeekRange(anMonday(hoy));
+  if (period === 'anio') return { desde: y + '-01-01', hasta: y + '-12-31' };
   if (period === 'mesPasado') {
     var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
-    return { desde: py + '-' + anPad2(pm + 1) + '-01', hasta: py + '-' + anPad2(pm + 1) + '-' + anPad2(anLastDayOfMonth(py, pm)) };
+    return anMonthRange(py, pm);
   }
-  return { desde: y + '-' + anPad2(m + 1) + '-01', hasta: anISO(hoy) }; // 'mes'
+  return anMonthRange(y, m); // 'mes'
 }
 
 function anPreviousPeriodRange(period) {
   var hoy = new Date();
-  var y = hoy.getFullYear(), m = hoy.getMonth(), d = hoy.getDate();
+  var y = hoy.getFullYear(), m = hoy.getMonth();
   if (period === 'hoy') { var ayer = anAddDays(hoy, -1); return { desde: anISO(ayer), hasta: anISO(ayer) }; }
-  if (period === 'semana') {
-    // BUG REAL encontrado al probar esto: comparar un "hoy" con hora
-    // (new Date()) contra un lunesEsta a medianoche redondeaba la
-    // diferencia hacia arriba (p.ej. martes 17:26 − lunes 00:00 = 1.72
-    // días → redondeaba a 2, no 1) — se normaliza "hoy" a medianoche
-    // ANTES de restar, para que la resta sea siempre un nº entero de días.
-    var hoyMedianoche = new Date(y, m, d);
-    var lunesEsta = anMonday(hoyMedianoche);
-    var diasTranscurridos = Math.round((hoyMedianoche - lunesEsta) / 86400000);
-    var lunesPasada = anAddDays(lunesEsta, -7);
-    return { desde: anISO(lunesPasada), hasta: anISO(anAddDays(lunesPasada, diasTranscurridos)) };
-  }
-  if (period === 'anio') {
-    var y0 = y - 1;
-    return { desde: y0 + '-01-01', hasta: anISO(new Date(y0, m, d)) };
-  }
+  if (period === 'semana') return anWeekRange(anAddDays(anMonday(hoy), -7));
+  if (period === 'anio') return { desde: (y - 1) + '-01-01', hasta: (y - 1) + '-12-31' };
   if (period === 'mesPasado') {
     var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
     var ppm = pm === 0 ? 11 : pm - 1, ppy = pm === 0 ? py - 1 : py;
-    return { desde: ppy + '-' + anPad2(ppm + 1) + '-01', hasta: ppy + '-' + anPad2(ppm + 1) + '-' + anPad2(anLastDayOfMonth(ppy, ppm)) };
+    return anMonthRange(ppy, ppm);
   }
-  // 'mes' — mismo día del mes pasado, capado a la longitud real de ese mes
+  // 'mes' — el mes anterior completo
   var pm2 = m === 0 ? 11 : m - 1, py2 = m === 0 ? y - 1 : y;
-  var diaCap = Math.min(d, anLastDayOfMonth(py2, pm2));
-  return { desde: py2 + '-' + anPad2(pm2 + 1) + '-01', hasta: py2 + '-' + anPad2(pm2 + 1) + '-' + anPad2(diaCap) };
+  return anMonthRange(py2, pm2);
 }
 
 function renderAnPeriodChips() {
@@ -8295,7 +8303,7 @@ function anDeltaBadge(cur, prev) {
 function renderAnSummaryTiles(s, sPrev) {
   var tiles = [
     { icon:'ti-users', label:t('lbl_trabajadores'), value: s.trabajadores, prev: sPrev.trabajadores, isMoney:false, tipo:'trabajadores' },
-    { icon:'ti-file-check', label:t('an_informes_count'), value: s.informes, prev: sPrev.informes, isMoney:false, tipo:null },
+    { icon:'ti-file-check', label:t('an_informes_count'), value: s.informes, prev: sPrev.informes, isMoney:false, tipo:'informes' },
     { icon:'ti-package', label:t('lbl_materiales'), value: s.materiales, prev: sPrev.materiales, isMoney:true, tipo:'materiales' },
     { icon:'ti-tools', label:t('lbl_trabajo'), value: s.trabajo, prev: sPrev.trabajo, isMoney:true, tipo:'trabajo' }
   ];
@@ -8346,8 +8354,10 @@ function renderAnTrend() {
     '</div>';
 }
 
-/* ── Detalle al tocar una plaquita (Trabajadores/Materiales/Trabajo) ── */
+/* ── Detalle al tocar una plaquita (Trabajadores/Informes/Materiales/Trabajo) ── */
 function openAnDrilldown(tipo) {
+  if (tipo === 'informes') { openAnInformesDrilldown(); return; }
+
   var titles = { trabajadores: t('lbl_trabajadores'), materiales: t('lbl_materiales'), trabajo: t('lbl_trabajo') };
   document.getElementById('anDrilldownTitle').textContent = titles[tipo] || '';
   document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
@@ -8366,6 +8376,92 @@ function openAnDrilldown(tipo) {
 
 function closeAnDrilldown() {
   document.getElementById('anDrilldownModal').classList.remove('show');
+}
+
+/* Pedido 2026-07-28 (continuación): tocar la plaquita "Informes" abre
+ * TODOS los informes del período, cada uno plegable a su ficha completa
+ * (mismo buildDetailHtml que usa el resto de la app) — con filtro de mes
+ * + buscador cuando el período activo es "Este año" (pedido explícito).
+ * Se reaprovecha anInformeCache (ya cargado por loadAnalisis() para
+ * Detalle mensual) filtrado en el cliente por el rango actual — no hay
+ * endpoint nuevo, y así cada fila trae la ficha COMPLETA del informe
+ * (fotos, materiales, comentarios...), cosa que getAnalyticsDrilldown no
+ * devuelve (solo campos agregados). El buscador/filtro de mes son
+ * elementos FIJOS fuera de la lista que se re-renderiza (igual que
+ * anObjSearch en Objetos) para que escribir no les haga perder el foco. */
+var anInformesDrilldownItems = [];
+var anInformesExpanded = {};
+
+function openAnInformesDrilldown() {
+  document.getElementById('anDrilldownTitle').textContent = t('an_informes_count');
+
+  var range = anPeriodRange(anPeriod);
+  anInformesDrilldownItems = anInformeCache.filter(function(r) {
+    var iso = String(r.FECHA || '').substring(0, 10);
+    return iso && iso >= range.desde && iso <= range.hasta;
+  }).sort(function(a, b) { return String(b.FECHA).localeCompare(String(a.FECHA)); });
+  anInformesExpanded = {};
+
+  var showMonthFilter = anPeriod === 'anio';
+  var names = getMonthNames();
+  var monthOpts = '<option value="">' + t('an_todos') + '</option>' + names.map(function(n, i){ return '<option value="' + (i + 1) + '">' + escapeHtml(n) + '</option>'; }).join('');
+  var controlsHtml =
+    (showMonthFilter ? '<select id="anInfMonthFilter" onchange="renderAnInformesDrilldownList()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;margin-bottom:8px;width:100%">' + monthOpts + '</select>' : '') +
+    '<div style="position:relative;margin-bottom:10px"><i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:#8e8e93"></i>' +
+    '<input type="text" id="anInfSearch" oninput="renderAnInformesDrilldownList()" placeholder="' + t('an_buscar_placeholder') + '" style="width:100%;padding:9px 12px 9px 34px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;color:#000"></div>' +
+    '<div id="anInformesListWrap"></div>';
+  document.getElementById('anDrilldownBody').innerHTML = controlsHtml;
+  document.getElementById('anDrilldownModal').classList.add('show');
+  renderAnInformesDrilldownList();
+}
+
+function renderAnInformesDrilldownList() {
+  var listWrap = document.getElementById('anInformesListWrap');
+  if (!listWrap) return;
+  var monthSel = document.getElementById('anInfMonthFilter');
+  var monthVal = monthSel ? monthSel.value : '';
+  var searchEl = document.getElementById('anInfSearch');
+  var searchVal = (searchEl ? searchEl.value : '').toLowerCase();
+
+  var filtered = anInformesDrilldownItems.filter(function(r) {
+    if (monthVal) {
+      var parts = isoDateParts(r.FECHA);
+      if (!parts || String(parts.month) !== monthVal) return false;
+    }
+    if (searchVal) {
+      var hay = ((r.ID||'') + ' ' + (r.CLIENTE||'') + ' ' + (r.OBRA||'') + ' ' + (r.OPERARIO||'')).toLowerCase();
+      if (hay.indexOf(searchVal) === -1) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) { listWrap.innerHTML = '<div class="mi-empty">' + t('an_sin_datos') + '</div>'; return; }
+
+  var rowsHtml = filtered.map(function(r, i) {
+    var key = String(r.ID || i);
+    var isOpen = !!anInformesExpanded[key];
+    var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
+    var total = parseFloat(r.TOTAL) || 0;
+    var head = '<div onclick="toggleAnInformeRow(\'' + key.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer">' +
+      '<div class="rbadge"><i class="ti ti-file-text"></i></div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13.5px;font-weight:700;color:#000">' + escapeHtml(r.ID || '') + ' · ' + escapeHtml(r.OBRA || '') + '</div>' +
+        '<div style="font-size:11.5px;color:#8e8e93">' + fecha + ' · ' + escapeHtml(r.OPERARIO || '') + '</div>' +
+      '</div>' +
+      '<div style="font-size:14px;font-weight:700;color:#0049c5">' + total.toFixed(2) + ' €</div>' +
+      '<i class="ti ' + (isOpen ? 'ti-chevron-up' : 'ti-chevron-down') + '" style="font-size:14px;color:#c7c7cc;margin-left:2px"></i>' +
+    '</div>';
+    var detail = isOpen ? '<div style="padding:0 0 14px">' + buildDetailHtml(r, true, true) + '</div>' : '';
+    return '<div style="border-top:' + (i > 0 ? '.5px solid #f0f0f2' : 'none') + '">' + head + detail + '</div>';
+  }).join('');
+
+  listWrap.innerHTML = '<div class="card" style="margin:0;padding:0 14px">' + rowsHtml + '</div>';
+  initPhotoThumbs(listWrap);
+}
+
+function toggleAnInformeRow(key) {
+  anInformesExpanded[key] = !anInformesExpanded[key];
+  renderAnInformesDrilldownList();
 }
 
 function renderAnDrilldown(tipo, items) {
@@ -8394,17 +8490,14 @@ function renderAnDrilldown(tipo, items) {
     // Pedido: nº de informe, fecha, objeto, quién compró y precio de
     // compra — no existe un campo de "comprador" separado en los datos,
     // así que se muestra el operario que registró el informe (o.operario).
-    wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
-      return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
-        '<div class="rbadge"><i class="ti ti-package"></i></div>' +
-        '<div style="flex:1;min-width:0">' +
-          '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.compania || o.obra) + '</div>' +
-          '<div style="font-size:11.5px;color:#8e8e93">' + escapeHtml(o.id) + ' · ' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.cliente) + ' · ' + escapeHtml(o.obra) + '</div>' +
-          '<div style="font-size:11.5px;color:#8e8e93;margin-top:1px">' + t('an_comprado_por') + ': ' + escapeHtml(o.operario) + '</div>' +
-        '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.precio.toFixed(2) + ' €</div>' +
-      '</div>';
-    }).join('') + '</div>';
+    // Pedido 2026-07-28: cada fila se puede desplegar a la ficha COMPLETA
+    // del informe del que salió esa compra — getAnalyticsDrilldown solo
+    // trae campos agregados, así que se busca el registro completo en
+    // anInformeCache (ya cargado) por o.id, igual patrón que el
+    // drilldown de "Informes".
+    anMaterialesDrilldownItems = items;
+    wrap.innerHTML = '<div id="anMaterialesListWrap"></div>';
+    renderAnMaterialesDrilldownList();
     return;
   }
 
@@ -8421,6 +8514,38 @@ function renderAnDrilldown(tipo, items) {
       '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.trabajo.toFixed(2) + ' €</div>' +
     '</div>';
   }).join('') + '</div>';
+}
+
+var anMaterialesDrilldownItems = [];
+var anMaterialesExpanded = {};
+function renderAnMaterialesDrilldownList() {
+  var listWrap = document.getElementById('anMaterialesListWrap');
+  if (!listWrap) return;
+  var rowsHtml = anMaterialesDrilldownItems.map(function(o, i) {
+    var key = String(o.id || i);
+    var isOpen = !!anMaterialesExpanded[key];
+    var full = isOpen ? anInformeCache.find(function(r){ return String(r.ID) === String(o.id); }) : null;
+    var head = '<div onclick="toggleAnMaterialRow(\'' + key.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:flex-start;padding-top:12px;padding-bottom:12px;cursor:pointer">' +
+      '<div class="rbadge"><i class="ti ti-package"></i></div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.compania || o.obra) + '</div>' +
+        '<div style="font-size:11.5px;color:#8e8e93">' + escapeHtml(o.id) + ' · ' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.cliente) + ' · ' + escapeHtml(o.obra) + '</div>' +
+        '<div style="font-size:11.5px;color:#8e8e93;margin-top:1px">' + t('an_comprado_por') + ': ' + escapeHtml(o.operario) + '</div>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">' +
+        '<span style="font-size:15px;font-weight:700;color:#0049c5">' + o.precio.toFixed(2) + ' €</span>' +
+        '<i class="ti ' + (isOpen ? 'ti-chevron-up' : 'ti-chevron-down') + '" style="font-size:14px;color:#c7c7cc"></i>' +
+      '</div>' +
+    '</div>';
+    var detail = isOpen ? '<div style="padding:0 0 14px">' + (full ? buildDetailHtml(full, true, true) : '<div class="mi-empty">' + t('an_sin_datos') + '</div>') + '</div>' : '';
+    return '<div class="card" style="margin:0 0 10px;padding:0 14px">' + head + detail + '</div>';
+  }).join('');
+  listWrap.innerHTML = rowsHtml;
+  initPhotoThumbs(listWrap);
+}
+function toggleAnMaterialRow(key) {
+  anMaterialesExpanded[key] = !anMaterialesExpanded[key];
+  renderAnMaterialesDrilldownList();
 }
 
 // Pedido: filtro de búsqueda por objeto/cliente sobre el desglose ya
@@ -8538,6 +8663,7 @@ function toggleAnTop() {
   var isOpen = wrap.style.display !== 'none';
   wrap.style.display = isOpen ? 'none' : 'block';
   document.getElementById('anTopToggleLbl').textContent = isOpen ? t('an_ver') : t('an_ocultar');
+  document.getElementById('anTopToggleIcon').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
   if (!isOpen) loadAnTop(); // se recarga cada vez que se abre — el período pudo cambiar desde la última vez
 }
 
@@ -8605,6 +8731,7 @@ function toggleAnMensual() {
   var isOpen = wrap.style.display !== 'none';
   wrap.style.display = isOpen ? 'none' : 'block';
   document.getElementById('anMensualToggleLbl').textContent = isOpen ? t('an_ver') : t('an_ocultar');
+  document.getElementById('anMensualToggleIcon').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
 }
 
 var rgReportsCache = [];
@@ -8614,6 +8741,7 @@ function toggleGeneratedReportsList() {
   var isOpen = wrap.style.display !== 'none';
   wrap.style.display = isOpen ? 'none' : 'block';
   document.getElementById('anToggleGeneradosLbl').textContent = isOpen ? t('an_ver') : t('an_ocultar');
+  document.getElementById('anToggleGeneradosIcon').style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
   if (!isOpen && !rgListLoaded) loadGeneratedReports();
 }
 
@@ -10350,6 +10478,65 @@ function openNotifModal() {
 
 function closeNotifModal() {
   document.getElementById('notifFullModal').style.display = 'none';
+}
+
+/* ════════ MINIATURAS DE FOTOS EN LA FICHA DE INFORME ════════
+ * Pedido 2026-07-28: en vez de un simple botón-enlace que abre la
+ * galería a ciegas, mostrar hasta 5 miniaturas pequeñas + un botón
+ * "Ver todas". buildDetailHtml() (síncrona, devuelve solo HTML) deja un
+ * placeholder con la URL de la carpeta en data-photos-url; cada llamador
+ * de buildDetailHtml debe llamar a initPhotoThumbs(contenedor) justo
+ * después de insertar ese HTML en el DOM para que se disparen los
+ * fetches — un solo helper compartido, en vez de repetir la lógica de
+ * carga en cada sitio. fotosObra/fotosMat son siempre un enlace a
+ * carpeta de Drive (nunca URLs directas), así que hace falta el mismo
+ * getFolderPhotos que ya usa la galería completa — las fotos ya
+ * resueltas se guardan en el propio contenedor (_pgPhotos/_pgFolderUrl)
+ * para que abrir la galería completa después NO vuelva a pedirlas. */
+function buildPhotoThumbsHtml(folderUrl, label) {
+  return '<div class="rd-photo-thumbs" data-photos-url="' + encodeURIComponent(folderUrl) + '" data-label="' + escapeHtml(label) + '">' +
+    '<div class="mi-empty" style="padding:6px 0;justify-content:flex-start"><span class="spinner-inline"></span> ' + t('loading') + '</div>' +
+  '</div>';
+}
+
+function initPhotoThumbs(rootEl) {
+  if (!rootEl || !rootEl.querySelectorAll) return;
+  rootEl.querySelectorAll('.rd-photo-thumbs[data-photos-url]').forEach(function(container) {
+    if (container._pgLoaded) return; // evita repetir el fetch si initPhotoThumbs se llama dos veces sobre el mismo nodo
+    container._pgLoaded = true;
+    var folderUrl = decodeURIComponent(container.getAttribute('data-photos-url'));
+    var label = container.getAttribute('data-label') || '';
+    fetch(WEBAPP_URL + '?action=getFolderPhotos&codigo=' + encodeURIComponent(currentPin) + '&url=' + encodeURIComponent(folderUrl))
+      .then(function(r){ return r.json(); })
+      .then(function(result) {
+        var photos = (result && result.status === 'ok' && result.photos) ? result.photos : [];
+        renderPhotoThumbsInto(container, photos, folderUrl, label);
+      })
+      .catch(function() { container.innerHTML = ''; }); // fallo silencioso — la ficha sigue siendo legible sin fotos, sin ensuciarla con un error por cada informe
+  });
+}
+
+function renderPhotoThumbsInto(container, photos, folderUrl, label) {
+  if (!photos.length) { container.innerHTML = ''; return; }
+  container._pgPhotos = photos;
+  container._pgFolderUrl = folderUrl;
+  var shown = photos.slice(0, 5);
+  var thumbsHtml = shown.map(function(url) {
+    return '<div onclick="openPhotoGalleryFromThumbs(this)" style="width:56px;height:56px;border-radius:10px;overflow:hidden;flex-shrink:0;cursor:pointer;background:#f2f2f7">' +
+      '<img src="' + url + '" loading="lazy" style="width:100%;height:100%;object-fit:cover;-webkit-user-select:none;user-select:none" draggable="false"></div>';
+  }).join('');
+  container.innerHTML =
+    '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;margin-bottom:6px">' + escapeHtml(label) + '</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' + thumbsHtml + '</div>' +
+    '<button type="button" class="rd-photo-link" onclick="openPhotoGalleryFromThumbs(this)">' + t('rd_ver_todas_fotos').replace('{n}', photos.length) + '</button>';
+}
+
+function openPhotoGalleryFromThumbs(el) {
+  var container = el.closest('.rd-photo-thumbs');
+  if (!container || !container._pgPhotos || !container._pgPhotos.length) return;
+  pgFolderUrl = container._pgFolderUrl || '';
+  pgLastTriggerEl = null;
+  renderPhotoGallery(container._pgPhotos);
 }
 
 /* ════════ GALERÍA DE FOTOS (visor tipo iOS Photos) ════════ */
