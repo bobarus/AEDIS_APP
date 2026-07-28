@@ -2837,17 +2837,20 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
       <span style="font-size:13px;font-weight:600;color:#8e8e93" id="anLoadingOverlayLbl">Cargando...</span>
     </div>
 
-    <!-- Resumen dinámico por intervalo arbitrario — pedido: trabajadores/
-         materiales/trabajo/total que cambian según el rango elegido,
-         independiente del selector año+mes de más abajo (que sigue dando
-         las tablas mes a mes por operario/cliente/obra, no se toca). -->
-    <div class="slabel" style="padding:12px 16px 8px" id="anSlabelResumen">Resumen del período</div>
-    <div style="padding:0 14px 10px;display:flex;gap:8px;align-items:center">
-      <input type="date" id="anDateFrom" onchange="loadAnalyticsDynamic()" style="flex:1;padding:9px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000">
-      <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
-      <input type="date" id="anDateTo" onchange="loadAnalyticsDynamic()" style="flex:1;padding:9px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000">
-    </div>
+    <!-- Pedido 2026-07-28: el período pasa a ser lo PRIMERO de la pantalla
+         — chips de presets (Hoy/Esta semana/Este mes/Este año/Mes pasado,
+         "Este mes" por defecto) en vez de dos campos de fecha sueltos.
+         Sigue siendo el mismo desde/hasta que ya usaban getAnalyticsSummary/
+         getObjectsBreakdown/getAnalyticsDrilldown — solo cambia cómo se
+         elige, ver anPeriodRange()/setAnPeriod(). -->
+    <div class="slabel" style="padding:12px 16px 8px" id="anSlabelPeriodo">Período</div>
+    <div id="anPeriodChips" style="display:flex;gap:7px;overflow-x:auto;padding:0 14px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
+
     <div id="anSummaryTiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 16px"></div>
+
+    <!-- Tendencia mensual — solo tiene sentido viendo el año completo, así
+         que solo se muestra con el preset "Este año" (ver renderAnTrend). -->
+    <div id="anTrendWrap" style="display:none;padding:0 0 16px"></div>
 
     <div class="slabel" style="padding:4px 16px 8px" id="anSlabelObjetos">Objetos del período</div>
     <div style="padding:0 14px 10px">
@@ -2858,32 +2861,52 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     </div>
     <div id="anObjectsList" style="padding:0 14px 16px"></div>
 
-    <!-- Detalle mensual — modo "una sola ventana" (pedido explícito):
-         un selector de qué ver (Todos/Por objeto/Por trabajador) en vez
-         de las 4 secciones apiladas (Todo/Por operario/Por cliente/Por
-         obra) que había antes. Las filas siguen siendo meses (formato
-         de la fila TOTAL sin cambios, tal y como se pidió). -->
-    <div class="slabel" style="padding:4px 16px 8px" id="anSlabelMensual">Detalle mensual</div>
-    <div style="padding:0 14px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select id="anYear" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
-      </select>
-      <select id="anMonthFrom" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
-      </select>
-      <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
-      <select id="anMonthTo" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
-      </select>
+    <!-- Alertas breves de actividad — solo aparece si hay algo que avisar
+         (objetos con más de 30 días sin informes nuevos), ver
+         renderAnAlertas(). Vacío no ocupa espacio ni título propio. -->
+    <div id="anAlertasWrap"></div>
+
+    <!-- Top del período — opcional/plegable, colapsado por defecto (pedido
+         explícito). Se calcula a partir de datos que ya se piden para
+         otras partes de la pantalla (objetos/drilldown), sin endpoint nuevo. -->
+    <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
+      <span id="anSlabelTop">Top del período</span>
+      <span class="auth-link-sm" onclick="toggleAnTop()" id="anTopToggleLbl" style="font-size:12px">Ver</span>
+    </div>
+    <div id="anTopWrap" style="display:none;padding:0 0 16px">
+      <div id="anTopContent"></div>
     </div>
 
-    <div class="mode-toggle" id="anModeToggle" style="margin:10px 14px 0;width:calc(100% - 28px)">
-      <button type="button" class="ct on" id="anModeTodos" onclick="setAnMode('todos')" style="flex:1"><span id="anModeTodosLbl">Todos</span></button>
-      <button type="button" class="ct" id="anModeObjeto" onclick="setAnMode('objeto')" style="flex:1"><span id="anModeObjetoLbl">Por objeto</span></button>
-      <button type="button" class="ct" id="anModeTrabajador" onclick="setAnMode('trabajador')" style="flex:1"><span id="anModeTrabajadorLbl">Por trabajador</span></button>
+    <!-- Detalle mensual — se mantiene tal cual (año/rango de meses,
+         Todos/Por objeto/Por trabajador), pero ahora plegado por defecto
+         detrás de un Ver/Ocultar — pedido explícito: no se toca su lógica,
+         solo se envuelve. -->
+    <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
+      <span id="anSlabelMensual">Detalle mensual</span>
+      <span class="auth-link-sm" onclick="toggleAnMensual()" id="anMensualToggleLbl" style="font-size:12px">Ver</span>
     </div>
-    <div id="anModeSelectWrap" style="display:none;padding:8px 14px 0">
-      <select id="anModeSelect" onchange="renderAnalisis()" style="width:100%;padding:9px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none"></select>
-    </div>
+    <div id="anMensualWrap" style="display:none">
+      <div style="padding:0 14px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="anYear" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+        </select>
+        <select id="anMonthFrom" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+        </select>
+        <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
+        <select id="anMonthTo" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+        </select>
+      </div>
 
-    <div id="anContent" style="padding:10px 0 20px"></div>
+      <div class="mode-toggle" id="anModeToggle" style="margin:10px 14px 0;width:calc(100% - 28px)">
+        <button type="button" class="ct on" id="anModeTodos" onclick="setAnMode('todos')" style="flex:1"><span id="anModeTodosLbl">Todos</span></button>
+        <button type="button" class="ct" id="anModeObjeto" onclick="setAnMode('objeto')" style="flex:1"><span id="anModeObjetoLbl">Por objeto</span></button>
+        <button type="button" class="ct" id="anModeTrabajador" onclick="setAnMode('trabajador')" style="flex:1"><span id="anModeTrabajadorLbl">Por trabajador</span></button>
+      </div>
+      <div id="anModeSelectWrap" style="display:none;padding:8px 14px 0">
+        <select id="anModeSelect" onchange="renderAnalisis()" style="width:100%;padding:9px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none"></select>
+      </div>
+
+      <div id="anContent" style="padding:10px 0 20px"></div>
+    </div>
 
     <div class="slabel" style="padding:4px 16px 8px;display:flex;align-items:center;justify-content:space-between">
       <span id="anSlabelGenerados">Informes generados</span>
@@ -3223,6 +3246,10 @@ var LANGS = {
     no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
     lbl_materiales:'Materiales', lbl_trabajo:'Remuneración', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
     an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_informes_count:'Informes', an_ver:'Ver', an_ocultar:'Ocultar',
+    an_periodo_hoy:'Hoy', an_periodo_semana:'Esta semana', an_periodo_mes:'Este mes', an_periodo_anio:'Este año', an_periodo_mes_pasado:'Mes pasado',
+    an_nuevo:'nuevo', an_tendencia_titulo:'Tendencia — Total', an_top_titulo:'Top del período',
+    an_top_objetos:'Objetos', an_top_trabajadores:'Trabajadores', an_top_companias:'Compañías', an_sin_compania:'Sin compañía',
+    an_sin_actividad:'Sin informes nuevos desde hace {dias} días',
     an_todos:'Todos', an_por_objeto:'Por objeto', an_por_trabajador:'Por trabajador', an_mes:'Mes', an_turnos:'Informes', an_horas:'Horas', an_sin_datos:'No hay datos aprobados en el período seleccionado', an_buscar_placeholder:'Buscar objeto o cliente...', an_comprado_por:'Comprado por',
     rb_title:'Crear informe', rb_step_formato:'Formato del archivo', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Período del informe', rb_step_objetos:'Objetos a incluir', rb_objetos_empty:'No hay objetos con datos en este período', rb_objetos_requerido:'Elige al menos un objeto para continuar',
@@ -3339,6 +3366,10 @@ var LANGS = {
     no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
     lbl_materiales:'Материалы', lbl_trabajo:'Вознаграждение', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
     an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_informes_count:'Отчётов', an_ver:'Смотреть', an_ocultar:'Скрыть',
+    an_periodo_hoy:'Сегодня', an_periodo_semana:'Эта неделя', an_periodo_mes:'Этот месяц', an_periodo_anio:'Этот год', an_periodo_mes_pasado:'Прошлый месяц',
+    an_nuevo:'новое', an_tendencia_titulo:'Тренд — Итого', an_top_titulo:'Топ за период',
+    an_top_objetos:'Объекты', an_top_trabajadores:'Рабочие', an_top_companias:'Компании', an_sin_compania:'Без компании',
+    an_sin_actividad:'Нет новых отчётов уже {dias} дн.',
     an_todos:'Все', an_por_objeto:'По объекту', an_por_trabajador:'По рабочему', an_mes:'Месяц', an_turnos:'Отчётов', an_horas:'Часов', an_sin_datos:'Нет согласованных данных за выбранный период', an_buscar_placeholder:'Поиск объекта или клиента...', an_comprado_por:'Купил',
     rb_title:'Создать отчёт', rb_step_formato:'Формат файла', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Период отчёта', rb_step_objetos:'Объекты для отчёта', rb_objetos_empty:'Нет данных по объектам за этот период', rb_objetos_requerido:'Выберите хотя бы один объект, чтобы продолжить',
@@ -3455,6 +3486,10 @@ var LANGS = {
     no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
     lbl_materiales:'Materials', lbl_trabajo:'Remuneration', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
     an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_informes_count:'Reports', an_ver:'View', an_ocultar:'Hide',
+    an_periodo_hoy:'Today', an_periodo_semana:'This week', an_periodo_mes:'This month', an_periodo_anio:'This year', an_periodo_mes_pasado:'Last month',
+    an_nuevo:'new', an_tendencia_titulo:'Trend — Total', an_top_titulo:'Top for the period',
+    an_top_objetos:'Objects', an_top_trabajadores:'Workers', an_top_companias:'Companies', an_sin_compania:'No company',
+    an_sin_actividad:'No new reports for {dias} days',
     an_todos:'All', an_por_objeto:'By object', an_por_trabajador:'By worker', an_mes:'Month', an_turnos:'Reports', an_horas:'Hours', an_sin_datos:'No approved data in the selected period', an_buscar_placeholder:'Search object or client...', an_comprado_por:'Purchased by',
     rb_title:'Create report', rb_step_formato:'File format', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Report period', rb_step_objetos:'Objects to include', rb_objetos_empty:'No data for any object in this period', rb_objetos_requerido:'Pick at least one object to continue',
@@ -3595,15 +3630,19 @@ function applyLang() {
   setEl('adUmNombreLbl', t('auth_reg_nombre')); setEl('adUmApellidoLbl', t('auth_reg_apellido'));
   setEl('adUmEmailLbl', t('auth_email_lbl')); setEl('adUmTelLbl', t('auth_reg_telefono'));
   setEl('adUmSlabelContacto', t('adu_group_contacto'));
-  setEl('anSlabelResumen', t('an_resumen_periodo'));
+  setEl('anSlabelPeriodo', t('an_resumen_periodo'));
   setEl('anSlabelObjetos', t('rb_step_objetos'));
   setEl('anSlabelMensual', t('an_detalle_mensual'));
+  setEl('anSlabelTop', t('an_top_titulo'));
   setEl('anModeTodosLbl', t('an_todos'));
   setEl('anModeObjetoLbl', t('an_por_objeto'));
   setEl('anModeTrabajadorLbl', t('an_por_trabajador'));
   setPh('anObjSearch', t('an_buscar_placeholder'));
   setEl('anSlabelGenerados', t('an_informes_generados'));
   setEl('anToggleGeneradosLbl', t('an_ver'));
+  setEl('anMensualToggleLbl', t('an_ver'));
+  setEl('anTopToggleLbl', t('an_ver'));
+  renderAnPeriodChips();
   var anCrearBtn = document.getElementById('anCrearInformeBtn');
   if (anCrearBtn) anCrearBtn.innerHTML = '<i class="ti ti-file-plus" aria-hidden="true"></i> ' + t('rb_title');
 
@@ -8099,12 +8138,7 @@ function initAnalisis() {
     fromSel.value = 1;
     toSel.value = 12;
 
-    // Resumen dinámico: por defecto el mes en curso (1 al día de hoy)
-    var y = now.getFullYear(), m = now.getMonth();
-    var firstOfMonth = new Date(y, m, 1);
-    document.getElementById('anDateFrom').value = fmtDateISO(firstOfMonth);
-    document.getElementById('anDateTo').value = fmtDateISO(now);
-
+    renderAnPeriodChips();
     anInitialized = true;
   }
   var firstTime = !anLoadedOnce;
@@ -8125,54 +8159,145 @@ function hideAnLoadingOverlay() {
   document.getElementById('anLoadingOverlay').style.display = 'none';
 }
 
-function fmtDateISO(d) {
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+function anPad2(n) { return String(n).padStart(2, '0'); }
+function anISO(d) { return d.getFullYear() + '-' + anPad2(d.getMonth() + 1) + '-' + anPad2(d.getDate()); }
+function anAddDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+function anLastDayOfMonth(year, month0) { return new Date(year, month0 + 1, 0).getDate(); }
+// Lunes de la semana de d — semana empieza en lunes (convención española/ISO).
+function anMonday(d) {
+  var day = d.getDay(); // 0=domingo..6=sábado
+  var diff = (day === 0 ? -6 : 1 - day);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + diff);
 }
 
-/* ── Resumen dinámico (trabajadores/materiales/trabajo/total) + desglose
- * por objeto — pedido explícito, independiente de las tablas mes a mes
- * de más abajo (que siguen usando getInforme + calcStats/calcByMonth sin
- * cambios). Ambas peticiones son ligeras (solo agregados, no filas
- * completas) así que se piden juntas cada vez que cambia el rango. */
+/* Pedido 2026-07-28: 5 presets fijos (Hoy/Esta semana/Este mes/Este año/
+ * Mes pasado) en vez de fechas sueltas — "Este mes" por defecto, igual
+ * que antes. anPreviousPeriodRange() calcula el período anterior
+ * EQUIVALENTE de cada preset (mismo punto del mes/semana/año, no
+ * simplemente "los mismos N días de antes") para que la comparación
+ * "esta semana vs la semana pasada"/"este mes vs el mes pasado" tenga
+ * sentido calendario, pedido explícito. */
+var anPeriod = 'mes';
+var AN_PERIODS = ['hoy', 'semana', 'mes', 'anio', 'mesPasado'];
+var AN_PERIOD_LABELS = { hoy: 'an_periodo_hoy', semana: 'an_periodo_semana', mes: 'an_periodo_mes', anio: 'an_periodo_anio', mesPasado: 'an_periodo_mes_pasado' };
+
+function anPeriodRange(period) {
+  var hoy = new Date();
+  var y = hoy.getFullYear(), m = hoy.getMonth();
+  if (period === 'hoy') return { desde: anISO(hoy), hasta: anISO(hoy) };
+  if (period === 'semana') return { desde: anISO(anMonday(hoy)), hasta: anISO(hoy) };
+  if (period === 'anio') return { desde: y + '-01-01', hasta: anISO(hoy) };
+  if (period === 'mesPasado') {
+    var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
+    return { desde: py + '-' + anPad2(pm + 1) + '-01', hasta: py + '-' + anPad2(pm + 1) + '-' + anPad2(anLastDayOfMonth(py, pm)) };
+  }
+  return { desde: y + '-' + anPad2(m + 1) + '-01', hasta: anISO(hoy) }; // 'mes'
+}
+
+function anPreviousPeriodRange(period) {
+  var hoy = new Date();
+  var y = hoy.getFullYear(), m = hoy.getMonth(), d = hoy.getDate();
+  if (period === 'hoy') { var ayer = anAddDays(hoy, -1); return { desde: anISO(ayer), hasta: anISO(ayer) }; }
+  if (period === 'semana') {
+    // BUG REAL encontrado al probar esto: comparar un "hoy" con hora
+    // (new Date()) contra un lunesEsta a medianoche redondeaba la
+    // diferencia hacia arriba (p.ej. martes 17:26 − lunes 00:00 = 1.72
+    // días → redondeaba a 2, no 1) — se normaliza "hoy" a medianoche
+    // ANTES de restar, para que la resta sea siempre un nº entero de días.
+    var hoyMedianoche = new Date(y, m, d);
+    var lunesEsta = anMonday(hoyMedianoche);
+    var diasTranscurridos = Math.round((hoyMedianoche - lunesEsta) / 86400000);
+    var lunesPasada = anAddDays(lunesEsta, -7);
+    return { desde: anISO(lunesPasada), hasta: anISO(anAddDays(lunesPasada, diasTranscurridos)) };
+  }
+  if (period === 'anio') {
+    var y0 = y - 1;
+    return { desde: y0 + '-01-01', hasta: anISO(new Date(y0, m, d)) };
+  }
+  if (period === 'mesPasado') {
+    var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
+    var ppm = pm === 0 ? 11 : pm - 1, ppy = pm === 0 ? py - 1 : py;
+    return { desde: ppy + '-' + anPad2(ppm + 1) + '-01', hasta: ppy + '-' + anPad2(ppm + 1) + '-' + anPad2(anLastDayOfMonth(ppy, ppm)) };
+  }
+  // 'mes' — mismo día del mes pasado, capado a la longitud real de ese mes
+  var pm2 = m === 0 ? 11 : m - 1, py2 = m === 0 ? y - 1 : y;
+  var diaCap = Math.min(d, anLastDayOfMonth(py2, pm2));
+  return { desde: py2 + '-' + anPad2(pm2 + 1) + '-01', hasta: py2 + '-' + anPad2(pm2 + 1) + '-' + anPad2(diaCap) };
+}
+
+function renderAnPeriodChips() {
+  var wrap = document.getElementById('anPeriodChips');
+  if (!wrap) return;
+  wrap.innerHTML = AN_PERIODS.map(function(p) {
+    var on = p === anPeriod;
+    return '<button type="button" onclick="setAnPeriod(\'' + p + '\')" style="flex-shrink:0;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:700;border:none;font-family:inherit;touch-action:manipulation;' +
+      (on ? 'background:#0049c5;color:#fff' : 'background:#f2f2f7;color:#3a3a3c') + '">' + t(AN_PERIOD_LABELS[p]) + '</button>';
+  }).join('');
+}
+
+function setAnPeriod(period) {
+  if (anPeriod === period) return;
+  anPeriod = period;
+  renderAnPeriodChips();
+  loadAnalyticsDynamic();
+}
+
+/* ── Resumen dinámico (trabajadores/informes/materiales/remuneración) +
+ * desglose por objeto — independiente de "Detalle mensual" (que sigue
+ * usando getInforme + calcStats/calcByMonth sin cambios). Pide el
+ * período actual Y el equivalente anterior (para las flechas ▲/▼ junto
+ * a cada cifra, pedido explícito) — mismo endpoint getAnalyticsSummary,
+ * solo dos llamadas con desde/hasta distintos, ningún endpoint nuevo. */
 function loadAnalyticsDynamic() {
-  var desde = document.getElementById('anDateFrom').value;
-  var hasta = document.getElementById('anDateTo').value;
-  if (!desde || !hasta) return Promise.resolve();
+  var cur = anPeriodRange(anPeriod);
+  var prev = anPreviousPeriodRange(anPeriod);
 
   document.getElementById('anSummaryTiles').innerHTML = anTileSkeletons();
   document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
 
-  var qs = '&codigo=' + encodeURIComponent(currentPin) + '&desde=' + encodeURIComponent(desde) + '&hasta=' + encodeURIComponent(hasta) + '&t=' + Date.now();
+  var qsBase = '&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now();
+  var qsCur = qsBase + '&desde=' + encodeURIComponent(cur.desde) + '&hasta=' + encodeURIComponent(cur.hasta);
+  var qsPrev = qsBase + '&desde=' + encodeURIComponent(prev.desde) + '&hasta=' + encodeURIComponent(prev.hasta);
   return Promise.all([
-    fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qs).then(function(r){ return r.json(); }),
-    fetch(WEBAPP_URL + '?action=getObjectsBreakdown' + qs).then(function(r){ return r.json(); })
+    fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qsCur).then(function(r){ return r.json(); }),
+    fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qsPrev).then(function(r){ return r.json(); }),
+    fetch(WEBAPP_URL + '?action=getObjectsBreakdown' + qsCur).then(function(r){ return r.json(); })
   ]).then(function(results) {
-    var summary = results[0], breakdown = results[1];
-    if (summary && summary.status === 'ok') renderAnSummaryTiles(summary);
+    var summary = results[0], summaryPrev = results[1], breakdown = results[2];
+    if (summary && summary.status === 'ok') renderAnSummaryTiles(summary, (summaryPrev && summaryPrev.status === 'ok') ? summaryPrev : {});
     if (breakdown && breakdown.status === 'ok') { anObjectsCache = breakdown.objetos || []; renderAnObjectsList(); }
+    renderAnTrend();
   }).catch(function() {
     document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>';
   });
 }
 
 function anTileSkeletons() {
-  return ['ti-users','ti-package','ti-tools','ti-sum'].map(function(){
+  return ['ti-users','ti-file-check','ti-package','ti-tools'].map(function(){
     return '<div class="card" style="margin:0;padding:14px"><div style="height:38px"></div></div>';
   }).join('');
 }
 
-// Pedido: la plaquita Total se quita de aquí (ya está el total en el
-// bloque de Objetos, era redundante) y se sustituye por un contador de
-// informes aprobados en el período — grid 2x2 limpio de 4 plaquitas
-// iguales. Trabajadores/Materiales/Trabajo son tocables y abren de
-// dónde sale ese número (getAnalyticsDrilldown); Informes no lo es, no
-// tiene un desglose propio distinto del de Trabajo.
-function renderAnSummaryTiles(s) {
+function anDeltaBadge(cur, prev) {
+  cur = cur || 0; prev = prev || 0;
+  if (!prev) { if (!cur) return ''; return '<span style="font-size:10.5px;font-weight:700;color:#1c8a49;margin-left:6px">' + t('an_nuevo') + '</span>'; }
+  var pct = ((cur - prev) / prev) * 100;
+  var up = pct >= 0;
+  var arrow = up ? '▲' : '▼';
+  var color = up ? '#1c8a49' : '#c0392b';
+  return '<span style="font-size:10.5px;font-weight:700;color:' + color + ';margin-left:6px">' + arrow + ' ' + Math.abs(Math.round(pct)) + '%</span>';
+}
+
+// Pedido: orden Trabajadores/Informes/Materiales/Remuneración, cada una
+// con su delta ▲/▼ junto al número (vs. el período anterior equivalente,
+// ver anPreviousPeriodRange) — Trabajadores/Materiales/Trabajo siguen
+// siendo tocables y abren de dónde sale ese número (getAnalyticsDrilldown).
+function renderAnSummaryTiles(s, sPrev) {
   var tiles = [
-    { icon:'ti-users', label:t('lbl_trabajadores'), value: s.trabajadores, isMoney:false, tipo:'trabajadores' },
-    { icon:'ti-package', label:t('lbl_materiales'), value: s.materiales, isMoney:true, tipo:'materiales' },
-    { icon:'ti-tools', label:t('lbl_trabajo'), value: s.trabajo, isMoney:true, tipo:'trabajo' },
-    { icon:'ti-file-check', label:t('an_informes_count'), value: s.informes, isMoney:false, tipo:null }
+    { icon:'ti-users', label:t('lbl_trabajadores'), value: s.trabajadores, prev: sPrev.trabajadores, isMoney:false, tipo:'trabajadores' },
+    { icon:'ti-file-check', label:t('an_informes_count'), value: s.informes, prev: sPrev.informes, isMoney:false, tipo:null },
+    { icon:'ti-package', label:t('lbl_materiales'), value: s.materiales, prev: sPrev.materiales, isMoney:true, tipo:'materiales' },
+    { icon:'ti-tools', label:t('lbl_trabajo'), value: s.trabajo, prev: sPrev.trabajo, isMoney:true, tipo:'trabajo' }
   ];
   var html = tiles.map(function(tl) {
     var valStr = tl.isMoney ? (tl.value||0).toFixed(2) + ' €' : String(tl.value||0);
@@ -8182,10 +8307,43 @@ function renderAnSummaryTiles(s) {
         '<div style="display:flex;align-items:center;gap:6px"><i class="ti ' + tl.icon + '" style="font-size:15px;color:#8e8e93"></i><span style="font-size:11px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px">' + tl.label + '</span></div>' +
         (tl.tipo ? '<i class="ti ti-chevron-right" style="font-size:13px;color:#c7c7cc"></i>' : '') +
       '</div>' +
-      '<div style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:#000">' + valStr + '</div>' +
+      '<div style="display:flex;align-items:baseline"><span style="font-size:20px;font-weight:700;letter-spacing:-.3px;color:#000">' + valStr + '</span>' + anDeltaBadge(tl.value, tl.prev) + '</div>' +
       '</div>';
   }).join('');
   document.getElementById('anSummaryTiles').innerHTML = html;
+}
+
+/* Tendencia mensual — solo con el preset "Este año" (pedido explícito:
+ * "esto debe mostrarse solo en esa vista"). Reaprovecha anInformeCache
+ * (ya cargado por loadAnalisis() para Detalle mensual, sin fetch nuevo). */
+function renderAnTrend() {
+  var wrap = document.getElementById('anTrendWrap');
+  if (!wrap) return;
+  if (anPeriod !== 'anio') { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+
+  var y = new Date().getFullYear();
+  var totals = [0,0,0,0,0,0,0,0,0,0,0,0];
+  anInformeCache.forEach(function(r) {
+    var parts = isoDateParts(r.FECHA);
+    if (!parts || parts.year !== y) return;
+    totals[parts.month - 1] += parseFloat(r.TOTAL) || 0;
+  });
+  var max = Math.max.apply(null, totals.concat([1]));
+  var curMonth = new Date().getMonth();
+  var names = getMonthNames();
+  var bars = totals.map(function(v, i) {
+    var h = Math.max(2, Math.round((v / max) * 100));
+    var isCur = i === curMonth;
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px">' +
+      '<div style="width:100%;border-radius:3px 3px 0 0;height:' + h + '%;background:' + (isCur ? '#0049c5' : '#dbe6fb') + '"></div>' +
+      '<span style="font-size:8.5px;font-weight:700;color:' + (isCur ? '#0049c5' : '#b3b3b8') + '">' + escapeHtml(names[i].charAt(0).toUpperCase()) + '</span>' +
+    '</div>';
+  }).join('');
+  wrap.style.display = 'block';
+  wrap.innerHTML = '<div class="card" style="margin:0 14px">' +
+    '<div style="font-size:13px;font-weight:700;color:#000;margin-bottom:10px">' + t('an_tendencia_titulo') + ' ' + y + '</div>' +
+    '<div style="display:flex;align-items:flex-end;gap:4px;height:70px">' + bars + '</div>' +
+    '</div>';
 }
 
 /* ── Detalle al tocar una plaquita (Trabajadores/Materiales/Trabajo) ── */
@@ -8195,10 +8353,9 @@ function openAnDrilldown(tipo) {
   document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
   document.getElementById('anDrilldownModal').classList.add('show');
 
-  var desde = document.getElementById('anDateFrom').value;
-  var hasta = document.getElementById('anDateTo').value;
+  var range = anPeriodRange(anPeriod);
   fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&codigo=' + encodeURIComponent(currentPin) +
-    '&tipo=' + encodeURIComponent(tipo) + '&desde=' + encodeURIComponent(desde) + '&hasta=' + encodeURIComponent(hasta) + '&t=' + Date.now())
+    '&tipo=' + encodeURIComponent(tipo) + '&desde=' + encodeURIComponent(range.desde) + '&hasta=' + encodeURIComponent(range.hasta) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result) {
       if (!result || result.status !== 'ok') { document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>'; return; }
@@ -8328,6 +8485,128 @@ function renderAnObjectsList() {
  * "editar" reabre el mismo asistente (openReportBuilder) precargado con
  * los valores de esa fila, ya que el archivo en sí no se puede editar
  * una vez generado — solo regenerar con nuevos parámetros. */
+/* ── Alertas breves: objetos que llevan más de 30 días sin un informe
+ * nuevo (pedido: "última actividad, kratko"). Se calcula sobre TODO
+ * anInformeCache (histórico completo, no solo el período elegido —
+ * un objeto sin actividad en el período ni siquiera aparecería en
+ * anObjectsCache, así que hay que mirar más atrás para detectarlo de
+ * verdad), buscando la fecha más reciente por cliente::obra. Tope de
+ * 180 días para no sacar objetos ya claramente cerrados/históricos, y
+ * de 2 objetos para que sea realmente "breve". Ningún endpoint nuevo. */
+function renderAnAlertas() {
+  var wrap = document.getElementById('anAlertasWrap');
+  if (!wrap) return;
+  var lastByObj = {};
+  anInformeCache.forEach(function(r) {
+    var parts = isoDateParts(r.FECHA);
+    if (!parts) return;
+    var iso = String(r.FECHA).substring(0, 10);
+    var key = (r.CLIENTE || '') + '::' + (r.OBRA || '');
+    if (!key.trim() || key === '::') return;
+    if (!lastByObj[key] || iso > lastByObj[key].iso) lastByObj[key] = { iso: iso, cliente: r.CLIENTE, obra: r.OBRA };
+  });
+  var hoyIso = anISO(new Date());
+  var stale = Object.keys(lastByObj).map(function(k){ return lastByObj[k]; })
+    .map(function(o) {
+      var dias = Math.round((new Date(hoyIso) - new Date(o.iso)) / 86400000);
+      return { obra: o.obra, cliente: o.cliente, dias: dias };
+    })
+    .filter(function(o){ return o.dias >= 30 && o.dias <= 180; })
+    .sort(function(a, b){ return b.dias - a.dias; })
+    .slice(0, 2);
+
+  if (!stale.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = stale.map(function(o) {
+    return '<div style="display:flex;gap:10px;background:#fff8ec;border:.5px solid #f5e2bb;border-radius:12px;padding:11px 12px;margin:0 14px 8px">' +
+      '<i class="ti ti-alert-triangle" style="font-size:16px;color:#b8790a;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>' +
+      '<div><b style="display:block;font-size:12.5px;color:#000;margin-bottom:2px">' + escapeHtml(o.obra || o.cliente) + '</b>' +
+      '<span style="font-size:11.5px;color:#8e8e93">' + t('an_sin_actividad').replace('{dias}', o.dias) + '</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── Top del período: objetos/trabajadores/compañías, plegable y
+ * colapsado por defecto (pedido explícito). Reaprovecha datos que ya se
+ * piden en otras partes de la pantalla — objetos de anObjectsCache
+ * (recién cargado por loadAnalyticsDynamic), trabajadores y materiales
+ * de getAnalyticsDrilldown (mismo endpoint que abren las plaquitas) — la
+ * agregación por compañía se hace en el cliente sobre esos mismos items
+ * de materiales, no hay endpoint de "top compañías" en el backend. */
+var anTopLoaded = false;
+function toggleAnTop() {
+  var wrap = document.getElementById('anTopWrap');
+  var isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  document.getElementById('anTopToggleLbl').textContent = isOpen ? t('an_ver') : t('an_ocultar');
+  if (!isOpen) loadAnTop(); // se recarga cada vez que se abre — el período pudo cambiar desde la última vez
+}
+
+function loadAnTop() {
+  document.getElementById('anTopContent').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
+  var range = anPeriodRange(anPeriod);
+  var qs = '&codigo=' + encodeURIComponent(currentPin) + '&desde=' + encodeURIComponent(range.desde) + '&hasta=' + encodeURIComponent(range.hasta) + '&t=' + Date.now();
+  Promise.all([
+    fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&tipo=trabajadores' + qs).then(function(r){ return r.json(); }),
+    fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&tipo=materiales' + qs).then(function(r){ return r.json(); })
+  ]).then(function(results) {
+    var trabResult = results[0], matResult = results[1];
+    var topObjetos = anObjectsCache.slice().sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
+    var topTrabajadores = ((trabResult && trabResult.status === 'ok') ? trabResult.items : []).slice().sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
+
+    var byCompania = {};
+    ((matResult && matResult.status === 'ok') ? matResult.items : []).forEach(function(mItem) {
+      var k = mItem.compania && mItem.compania.trim() ? mItem.compania : t('an_sin_compania');
+      byCompania[k] = (byCompania[k] || 0) + (parseFloat(mItem.precio) || 0);
+    });
+    var topCompanias = Object.keys(byCompania).map(function(k){ return { nombre: k, total: byCompania[k] }; })
+      .sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
+
+    anTopLoaded = true;
+    renderAnTop(topObjetos, topTrabajadores, topCompanias);
+  }).catch(function() {
+    document.getElementById('anTopContent').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>';
+  });
+}
+
+function anTopListHtml(titleKey, items, nameFn, valFn) {
+  if (!items.length) return '';
+  var max = valFn(items[0]) || 1;
+  var rows = items.map(function(it, i) {
+    var v = valFn(it);
+    var pct = max > 0 ? Math.round((v / max) * 100) : 0;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0' + (i > 0 ? ';border-top:.5px solid #f0f0f2' : '') + '">' +
+      '<span style="width:16px;font-size:11px;font-weight:700;color:#b3b3b8;flex-shrink:0">' + (i + 1) + '</span>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600;color:#000;margin-bottom:4px">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(nameFn(it)) + '</span>' +
+          '<span style="flex-shrink:0">' + v.toFixed(2) + ' €</span>' +
+        '</div>' +
+        '<div style="height:5px;border-radius:3px;background:#eef0f4;overflow:hidden"><div style="height:100%;border-radius:3px;background:#0049c5;width:' + pct + '%"></div></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  return '<div class="s-label" style="padding:0 14px;margin-bottom:4px">' + t(titleKey) + '</div>' +
+    '<div class="card" style="margin:0 14px 14px;padding:10px 14px">' + rows + '</div>';
+}
+
+function renderAnTop(objetos, trabajadores, companias) {
+  var html = anTopListHtml('an_top_objetos', objetos, function(o){ return o.obra; }, function(o){ return o.total; }) +
+    anTopListHtml('an_top_trabajadores', trabajadores, function(o){ return o.operario; }, function(o){ return o.total; }) +
+    anTopListHtml('an_top_companias', companias, function(o){ return o.nombre; }, function(o){ return o.total; });
+  document.getElementById('anTopContent').innerHTML = html || '<div class="mi-empty">' + t('an_sin_datos') + '</div>';
+}
+
+/* ── Detalle mensual: mismo bloque de siempre (año/rango de meses,
+ * Todos/Por objeto/Por trabajador), ahora plegado por defecto detrás de
+ * Ver/Ocultar (pedido explícito) — su lógica/datos no cambian en nada,
+ * ya se cargan siempre vía loadAnalisis(), esto solo alterna visibilidad. */
+function toggleAnMensual() {
+  var wrap = document.getElementById('anMensualWrap');
+  var isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  document.getElementById('anMensualToggleLbl').textContent = isOpen ? t('an_ver') : t('an_ocultar');
+}
+
 var rgReportsCache = [];
 var rgListLoaded = false;
 function toggleGeneratedReportsList() {
@@ -8408,8 +8687,9 @@ function openReportBuilder(prefill) {
   rbObjetosData = [];
   rbPreviewRaw = null;
 
-  var desde = (prefill && prefill.PERIODO_DESDE) || document.getElementById('anDateFrom').value;
-  var hasta = (prefill && prefill.PERIODO_HASTA) || document.getElementById('anDateTo').value;
+  var anRange = anPeriodRange(anPeriod);
+  var desde = (prefill && prefill.PERIODO_DESDE) || anRange.desde;
+  var hasta = (prefill && prefill.PERIODO_HASTA) || anRange.hasta;
   document.getElementById('rbDesde').value = desde || '';
   document.getElementById('rbHasta').value = hasta || '';
   document.getElementById('rbPctMateriales').value = (prefill && prefill.PCT_MATERIALES) || 0;
@@ -8685,6 +8965,8 @@ function loadAnalisis() {
       }
       anInformeCache = result.data || [];
       renderAnalisis();
+      renderAnTrend(); // por si "Este año" ya estaba seleccionado antes de que esto terminara de cargar
+      renderAnAlertas();
     })
     .catch(function(){
       document.getElementById('anContent').innerHTML = '<div class="mi-empty">Error de conexión</div>';
