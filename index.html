@@ -2844,6 +2844,10 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
          elige, ver anPeriodRange()/setAnPeriod(). -->
     <div class="slabel" style="padding:12px 16px 8px" id="anSlabelPeriodo">Período</div>
     <div id="anPeriodChips" style="display:flex;gap:7px;overflow-x:auto;padding:0 14px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
+    <!-- Pedido 2026-07-28: mostrar las fechas concretas que resulta cada
+         preset (antes, con los inputs de fecha manuales, siempre se veían
+         a simple vista) — los chips por sí solos no dicen "1-31 julio". -->
+    <div id="anPeriodRangeLabel" style="padding:0 14px 12px;font-size:11.5px;color:#8e8e93;text-align:right"></div>
 
     <div id="anSummaryTiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 16px"></div>
 
@@ -6422,18 +6426,21 @@ function scheduleManagerAutoSeen() {
 var mgDetailId = null;
 
 /* ── Универсальная функция построения деталей отчёта (только заполненные поля) ── */
-// Pedido 2026-07-28: indicador de archivos adjuntos en la esquina
-// inferior izquierda de la tarjeta PLEGADA (mi-card/mg-card/ad-card) —
-// cuenta cuántos de los 2 campos de fotos (obra/materiales) tienen algo
-// adjunto. Contar las fotos una a una dentro de cada carpeta de Drive
-// necesitaría una petición de red por tarjeta (caro en listas largas de
-// decenas de informes); esto es instantáneo, usa datos que la fila ya
-// trae. El contenedor de la tarjeta debe tener position:relative (todas
-// lo tienen ya, salvo .mi-card, al que se le añadió aquí).
+// Pedido 2026-07-28: indicador de archivos adjuntos al final de la
+// tarjeta PLEGADA (mi-card/mg-card/ad-card) — cuenta cuántos de los 2
+// campos de fotos (obra/materiales) tienen algo adjunto. Contar las
+// fotos una a una dentro de cada carpeta de Drive necesitaría una
+// petición de red por tarjeta (caro en listas largas de decenas de
+// informes); esto es instantáneo, usa datos que la fila ya trae.
+// BUG REAL encontrado en vivo: con position:absolute (versión anterior)
+// el badge se solapaba con el texto del cliente en tarjetas cortas, que
+// no tienen una altura fija que deje hueco libre abajo. Ahora es un
+// bloque normal, el último elemento de la tarjeta — empuja el alto de
+// la tarjeta si hace falta en vez de superponerse a nada.
 function cardAttBadgeHtml(r) {
   var n = (r['FOTOS DE OBRA'] ? 1 : 0) + (r['FOTO MATERIALES / RECIBO'] ? 1 : 0);
   if (!n) return '';
-  return '<span style="position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:3px;background:#f2f2f7;color:#636366;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:10px"><i class="ti ti-paperclip" style="font-size:11px" aria-hidden="true"></i>' + n + '</span>';
+  return '<div style="margin-top:8px;display:inline-flex;align-items:center;gap:3px;background:#f2f2f7;color:#636366;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:10px"><i class="ti ti-paperclip" style="font-size:11px" aria-hidden="true"></i>' + n + '</div>';
 }
 
 function buildDetailHtml(r, showTotal, showRate) {
@@ -6480,7 +6487,7 @@ function buildDetailHtml(r, showTotal, showRate) {
       }
       html += '</div>';
     }
-    if (trabajos) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('sub_trabajos')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+trabajos+'</span></div>';
+    if (trabajos) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('sub_trabajos')+'</b><span style="font-size:15px;color:#000;line-height:1.6">'+trabajos+'</span></div>';
     if (fotosObra) html += buildPhotoThumbsHtml(fotosObra, t('lbl_foto_obra'));
     html += '</div>';
   }
@@ -6496,7 +6503,7 @@ function buildDetailHtml(r, showTotal, showRate) {
     html += '<div class="det-group">';
     html += '<div class="det-group-title"><span class="det-group-icon ic-materiales"><i class="ti ti-package"></i></span>' + t('grp_materiales') + '</div>';
     if (compania) html += '<div class="rd-field"><b>'+t('lbl_compania')+'</b><span>'+compania+'</span></div>';
-    if (materiales) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('lbl_descripcion')+'</b><span style="font-size:13px;color:#000;line-height:1.5">'+materiales+'</span></div>';
+    if (materiales) html += '<div class="rd-field-full"><b style="font-size:9px;text-transform:uppercase;letter-spacing:.3px;color:#8e8e93;display:block;margin-bottom:4px">'+t('lbl_descripcion')+'</b><span style="font-size:15px;color:#000;line-height:1.6">'+materiales+'</span></div>';
     if (precio > 0) {
       html += '<div class="rd-field-lg">';
       html += '<b>'+t('lbl_coste_materiales')+'</b>';
@@ -8151,10 +8158,10 @@ function initAnalisis() {
   var firstTime = !anLoadedOnce;
   anLoadedOnce = true;
   if (firstTime) showAnLoadingOverlay();
+  loadAnalyticsDynamic(); // instantáneo con lo que ya hubiera en anInformeCache (vacío la primera vez, o lo ya cargado si se vuelve a esta pestaña) — loadAnalisis() lo vuelve a llamar con datos frescos al terminar
   var p1 = loadAnalisis();
-  var p2 = loadAnalyticsDynamic();
   if (firstTime) {
-    Promise.all([p1, p2]).then(hideAnLoadingOverlay).catch(hideAnLoadingOverlay);
+    p1.then(hideAnLoadingOverlay).catch(hideAnLoadingOverlay);
   }
 }
 
@@ -8241,6 +8248,27 @@ function renderAnPeriodChips() {
     return '<button type="button" onclick="setAnPeriod(\'' + p + '\')" style="flex-shrink:0;padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:700;border:none;font-family:inherit;touch-action:manipulation;' +
       (on ? 'background:#0049c5;color:#fff' : 'background:#f2f2f7;color:#3a3a3c') + '">' + t(AN_PERIOD_LABELS[p]) + '</button>';
   }).join('');
+  renderAnPeriodRangeLabel();
+}
+
+// Pedido 2026-07-28: con los inputs de fecha manuales que había antes,
+// el rango exacto siempre se veía a simple vista — los chips solo dicen
+// "Este mes", no "1-31 julio". Esta línea, de solo lectura, muestra las
+// fechas reales que resuelve el preset activo (ver anPeriodRange).
+function anFmtRangeLabel(range) {
+  var names = getMonthNames();
+  function short(iso) {
+    var parts = String(iso).split('-');
+    var y = parseInt(parts[0], 10), m = parseInt(parts[1], 10), d = parseInt(parts[2], 10);
+    return d + ' ' + (names[m - 1] || '').substring(0, 3) + '. ' + y;
+  }
+  if (range.desde === range.hasta) return short(range.desde);
+  return short(range.desde) + ' – ' + short(range.hasta);
+}
+function renderAnPeriodRangeLabel() {
+  var el = document.getElementById('anPeriodRangeLabel');
+  if (!el) return;
+  el.textContent = anFmtRangeLabel(anPeriodRange(anPeriod));
 }
 
 function setAnPeriod(period) {
@@ -8256,34 +8284,107 @@ function setAnPeriod(period) {
  * período actual Y el equivalente anterior (para las flechas ▲/▼ junto
  * a cada cifra, pedido explícito) — mismo endpoint getAnalyticsSummary,
  * solo dos llamadas con desde/hasta distintos, ningún endpoint nuevo. */
-function loadAnalyticsDynamic() {
-  var cur = anPeriodRange(anPeriod);
-  var prev = anPreviousPeriodRange(anPeriod);
+/* Pedido 2026-07-28 (continuación, "долго прогружается страница
+ * аналитики"): antes, cada carga/cambio de período disparaba 3-5
+ * peticiones SEPARADAS al Web App de Apps Script (summary actual,
+ * summary anterior, desglose de objetos, y otras 2 más al abrir "Top
+ * del período") — cada una releyendo la hoja INFORME entera desde cero,
+ * con la latencia propia de Apps Script multiplicada por cada llamada.
+ * anInformeCache (que loadAnalisis() ya trae completo para Detalle
+ * mensual) tiene TODOS los campos necesarios para calcular lo mismo en
+ * el cliente, así que ahora solo hay UNA petición de red en toda la
+ * pantalla (getInforme) — cambiar de período o abrir un drilldown es
+ * instantáneo, sin esperar a la red en absoluto. */
+function anInRange(r, desde, hasta) {
+  var iso = String(r.FECHA || '').substring(0, 10);
+  return !!iso && iso >= desde && iso <= hasta;
+}
 
-  document.getElementById('anSummaryTiles').innerHTML = anTileSkeletons();
-  document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
+function anComputeSummary(records, desde, hasta) {
+  var trabajadores = {}, materiales = 0, trabajo = 0, total = 0, informes = 0;
+  records.forEach(function(r) {
+    if (!anInRange(r, desde, hasta)) return;
+    var op = String(r.OPERARIO || '').trim();
+    if (op) trabajadores[op] = true;
+    var precioMat = anNum(r['PRECIO (EUR)']);
+    var totalRow = anNum(r.TOTAL);
+    materiales += precioMat;
+    trabajo += totalRow - precioMat; // Total − Materiales, mismo criterio que el backend (getAnalyticsSummary)
+    total += totalRow;
+    informes++;
+  });
+  return { trabajadores: Object.keys(trabajadores).length, materiales: materiales, trabajo: trabajo, total: total, informes: informes };
+}
 
-  var qsBase = '&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now();
-  var qsCur = qsBase + '&desde=' + encodeURIComponent(cur.desde) + '&hasta=' + encodeURIComponent(cur.hasta);
-  var qsPrev = qsBase + '&desde=' + encodeURIComponent(prev.desde) + '&hasta=' + encodeURIComponent(prev.hasta);
-  return Promise.all([
-    fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qsCur).then(function(r){ return r.json(); }),
-    fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qsPrev).then(function(r){ return r.json(); }),
-    fetch(WEBAPP_URL + '?action=getObjectsBreakdown' + qsCur).then(function(r){ return r.json(); })
-  ]).then(function(results) {
-    var summary = results[0], summaryPrev = results[1], breakdown = results[2];
-    if (summary && summary.status === 'ok') renderAnSummaryTiles(summary, (summaryPrev && summaryPrev.status === 'ok') ? summaryPrev : {});
-    if (breakdown && breakdown.status === 'ok') { anObjectsCache = breakdown.objetos || []; renderAnObjectsList(); }
-    renderAnTrend();
-  }).catch(function() {
-    document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>';
+function anComputeObjectsBreakdown(records, desde, hasta) {
+  var byObj = {}, order = [];
+  records.forEach(function(r) {
+    if (!anInRange(r, desde, hasta)) return;
+    var cliente = String(r.CLIENTE || '').trim();
+    var obra = String(r.OBRA || '').trim();
+    var key = cliente + '::' + obra;
+    if (!byObj[key]) { byObj[key] = { cliente: cliente, obra: obra, materiales: 0, trabajo: 0, total: 0 }; order.push(key); }
+    var precioMat = anNum(r['PRECIO (EUR)']);
+    var totalRow = anNum(r.TOTAL);
+    byObj[key].materiales += precioMat;
+    byObj[key].trabajo += totalRow - precioMat;
+    byObj[key].total += totalRow;
+  });
+  return order.map(function(k){ return byObj[k]; });
+}
+
+function anComputeDrilldown(records, desde, hasta, tipo) {
+  var filtered = records.filter(function(r){ return anInRange(r, desde, hasta); });
+  if (tipo === 'trabajadores') {
+    var byOp = {}, order = [];
+    filtered.forEach(function(r) {
+      var op = String(r.OPERARIO || '').trim();
+      if (!op) return;
+      if (!byOp[op]) { byOp[op] = { operario: op, informes: 0, horas: 0, materiales: 0, trabajo: 0, total: 0 }; order.push(op); }
+      var precioMat = anNum(r['PRECIO (EUR)']);
+      var totalRow = anNum(r.TOTAL);
+      byOp[op].informes++;
+      byOp[op].horas += anNum(r.HORAS);
+      byOp[op].materiales += precioMat;
+      byOp[op].trabajo += totalRow - precioMat;
+      byOp[op].total += totalRow;
+    });
+    return order.map(function(k){ return byOp[k]; });
+  }
+  if (tipo === 'materiales') {
+    return filtered.filter(function(r){ return anNum(r['PRECIO (EUR)']) > 0; }).map(function(r) {
+      return {
+        id: r.ID, fecha: String(r.FECHA || '').substring(0, 10), compania: String(r['COMPAÑÍA'] || ''),
+        operario: String(r.OPERARIO || ''), precio: anNum(r['PRECIO (EUR)']), cliente: String(r.CLIENTE || ''), obra: String(r.OBRA || '')
+      };
+    });
+  }
+  // 'trabajo'
+  return filtered.map(function(r) {
+    var precioMat = anNum(r['PRECIO (EUR)']);
+    var totalRow = anNum(r.TOTAL);
+    return {
+      id: r.ID, fecha: String(r.FECHA || '').substring(0, 10), cliente: String(r.CLIENTE || ''), obra: String(r.OBRA || ''),
+      operario: String(r.OPERARIO || ''), horas: anNum(r.HORAS), trabajo: totalRow - precioMat, total: totalRow
+    };
   });
 }
 
-function anTileSkeletons() {
-  return ['ti-users','ti-file-check','ti-package','ti-tools'].map(function(){
-    return '<div class="card" style="margin:0;padding:14px"><div style="height:38px"></div></div>';
-  }).join('');
+function loadAnalyticsDynamic() {
+  var cur = anPeriodRange(anPeriod);
+  var prev = anPreviousPeriodRange(anPeriod);
+  try {
+    var summary = anComputeSummary(anInformeCache, cur.desde, cur.hasta);
+    var summaryPrev = anComputeSummary(anInformeCache, prev.desde, prev.hasta);
+    renderAnSummaryTiles(summary, summaryPrev);
+    anObjectsCache = anComputeObjectsBreakdown(anInformeCache, cur.desde, cur.hasta);
+    renderAnObjectsList();
+    renderAnTrend();
+  } catch (e) {
+    console.error('loadAnalyticsDynamic error:', e);
+    document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>';
+  }
+  return Promise.resolve();
 }
 
 function anDeltaBadge(cur, prev) {
@@ -8360,18 +8461,16 @@ function openAnDrilldown(tipo) {
 
   var titles = { trabajadores: t('lbl_trabajadores'), materiales: t('lbl_materiales'), trabajo: t('lbl_trabajo') };
   document.getElementById('anDrilldownTitle').textContent = titles[tipo] || '';
-  document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
   document.getElementById('anDrilldownModal').classList.add('show');
 
   var range = anPeriodRange(anPeriod);
-  fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&codigo=' + encodeURIComponent(currentPin) +
-    '&tipo=' + encodeURIComponent(tipo) + '&desde=' + encodeURIComponent(range.desde) + '&hasta=' + encodeURIComponent(range.hasta) + '&t=' + Date.now())
-    .then(function(r){ return r.json(); })
-    .then(function(result) {
-      if (!result || result.status !== 'ok') { document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>'; return; }
-      renderAnDrilldown(tipo, result.items || []);
-    })
-    .catch(function() { document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>'; });
+  try {
+    var items = anComputeDrilldown(anInformeCache, range.desde, range.hasta, tipo);
+    renderAnDrilldown(tipo, items);
+  } catch (e) {
+    console.error('openAnDrilldown error:', e);
+    document.getElementById('anDrilldownBody').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>';
+  }
 }
 
 function closeAnDrilldown() {
@@ -8464,6 +8563,12 @@ function toggleAnInformeRow(key) {
   renderAnInformesDrilldownList();
 }
 
+// Defensivo: si el Web App desplegado va por detrás del código fuente,
+// la respuesta puede faltar algún campo que este render espera — en vez
+// de que .toFixed() lance una excepción y cuelgue todo el render (ver
+// el try/catch en openAnDrilldown), esto lo trata como 0.
+function anNum(v) { var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+
 function renderAnDrilldown(tipo, items) {
   var wrap = document.getElementById('anDrilldownBody');
   if (!items.length) { wrap.innerHTML = '<div class="mi-empty">' + t('an_sin_datos') + '</div>'; return; }
@@ -8475,12 +8580,12 @@ function renderAnDrilldown(tipo, items) {
         '<div style="flex:1;min-width:0">' +
           '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.operario) + '</div>' +
           '<div style="font-size:11.5px;color:#8e8e93;margin-bottom:6px">' + o.informes + ' ' + t('an_turnos').toLowerCase() + ' · ' + o.horas + ' ' + t('an_horas').toLowerCase() + '</div>' +
-          '<div style="display:flex;gap:14px;font-size:12px;color:#636366">' +
-            '<span>' + t('lbl_materiales') + ': <b style="color:#000">' + o.materiales.toFixed(2) + ' €</b></span>' +
-            '<span>' + t('lbl_trabajo') + ': <b style="color:#000">' + o.trabajo.toFixed(2) + ' €</b></span>' +
+          '<div style="display:flex;gap:14px;font-size:12px;color:#636366;flex-wrap:wrap">' +
+            '<span style="white-space:nowrap">' + t('lbl_materiales') + ': <b style="color:#000">' + anNum(o.materiales).toFixed(2) + ' €</b></span>' +
+            '<span style="white-space:nowrap">' + t('lbl_trabajo') + ': <b style="color:#000">' + anNum(o.trabajo).toFixed(2) + ' €</b></span>' +
           '</div>' +
         '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + anNum(o.total).toFixed(2) + ' €</div>' +
       '</div>';
     }).join('') + '</div>';
     return;
@@ -8511,7 +8616,7 @@ function renderAnDrilldown(tipo, items) {
         '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.id) + ' · ' + escapeHtml(o.obra) + '</div>' +
         '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.operario) + ' · ' + o.horas + ' h</div>' +
       '</div>' +
-      '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.trabajo.toFixed(2) + ' €</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + anNum(o.trabajo).toFixed(2) + ' €</div>' +
     '</div>';
   }).join('') + '</div>';
 }
@@ -8533,7 +8638,7 @@ function renderAnMaterialesDrilldownList() {
         '<div style="font-size:11.5px;color:#8e8e93;margin-top:1px">' + t('an_comprado_por') + ': ' + escapeHtml(o.operario) + '</div>' +
       '</div>' +
       '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">' +
-        '<span style="font-size:15px;font-weight:700;color:#0049c5">' + o.precio.toFixed(2) + ' €</span>' +
+        '<span style="font-size:15px;font-weight:700;color:#0049c5">' + anNum(o.precio).toFixed(2) + ' €</span>' +
         '<i class="ti ' + (isOpen ? 'ti-chevron-up' : 'ti-chevron-down') + '" style="font-size:14px;color:#c7c7cc"></i>' +
       '</div>' +
     '</div>';
@@ -8572,12 +8677,12 @@ function renderAnObjectsList() {
         '<div style="flex:1;min-width:0">' +
           '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.obra) + '</div>' +
           '<div style="font-size:11.5px;color:#8e8e93;margin-bottom:6px">' + escapeHtml(o.cliente) + '</div>' +
-          '<div style="display:flex;gap:14px;font-size:12px;color:#636366">' +
-            '<span>' + t('lbl_materiales') + ': <b style="color:#000">' + o.materiales.toFixed(2) + ' €</b></span>' +
-            '<span>' + t('lbl_trabajo') + ': <b style="color:#000">' + o.trabajo.toFixed(2) + ' €</b></span>' +
+          '<div style="display:flex;gap:14px;font-size:12px;color:#636366;flex-wrap:wrap">' +
+            '<span style="white-space:nowrap">' + t('lbl_materiales') + ': <b style="color:#000">' + anNum(o.materiales).toFixed(2) + ' €</b></span>' +
+            '<span style="white-space:nowrap">' + t('lbl_trabajo') + ': <b style="color:#000">' + anNum(o.trabajo).toFixed(2) + ' €</b></span>' +
           '</div>' +
         '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + anNum(o.total).toFixed(2) + ' €</div>' +
       '</div>';
     }).join('');
     html += '</div>';
@@ -8668,30 +8773,27 @@ function toggleAnTop() {
 }
 
 function loadAnTop() {
-  document.getElementById('anTopContent').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> ' + t('loading') + '</div>';
   var range = anPeriodRange(anPeriod);
-  var qs = '&codigo=' + encodeURIComponent(currentPin) + '&desde=' + encodeURIComponent(range.desde) + '&hasta=' + encodeURIComponent(range.hasta) + '&t=' + Date.now();
-  Promise.all([
-    fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&tipo=trabajadores' + qs).then(function(r){ return r.json(); }),
-    fetch(WEBAPP_URL + '?action=getAnalyticsDrilldown&tipo=materiales' + qs).then(function(r){ return r.json(); })
-  ]).then(function(results) {
-    var trabResult = results[0], matResult = results[1];
+  try {
     var topObjetos = anObjectsCache.slice().sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
-    var topTrabajadores = ((trabResult && trabResult.status === 'ok') ? trabResult.items : []).slice().sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
+    var trabajadoresItems = anComputeDrilldown(anInformeCache, range.desde, range.hasta, 'trabajadores');
+    var materialesItems = anComputeDrilldown(anInformeCache, range.desde, range.hasta, 'materiales');
+    var topTrabajadores = trabajadoresItems.slice().sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
 
     var byCompania = {};
-    ((matResult && matResult.status === 'ok') ? matResult.items : []).forEach(function(mItem) {
+    materialesItems.forEach(function(mItem) {
       var k = mItem.compania && mItem.compania.trim() ? mItem.compania : t('an_sin_compania');
-      byCompania[k] = (byCompania[k] || 0) + (parseFloat(mItem.precio) || 0);
+      byCompania[k] = (byCompania[k] || 0) + anNum(mItem.precio);
     });
     var topCompanias = Object.keys(byCompania).map(function(k){ return { nombre: k, total: byCompania[k] }; })
       .sort(function(a, b){ return b.total - a.total; }).slice(0, 5);
 
     anTopLoaded = true;
     renderAnTop(topObjetos, topTrabajadores, topCompanias);
-  }).catch(function() {
-    document.getElementById('anTopContent').innerHTML = '<div class="mi-empty">' + t('auth_err_network') + '</div>';
-  });
+  } catch (e) {
+    console.error('loadAnTop error:', e);
+    document.getElementById('anTopContent').innerHTML = '<div class="mi-empty">' + t('auth_err_generic') + '</div>';
+  }
 }
 
 function anTopListHtml(titleKey, items, nameFn, valFn) {
@@ -9093,8 +9195,8 @@ function loadAnalisis() {
       }
       anInformeCache = result.data || [];
       renderAnalisis();
-      renderAnTrend(); // por si "Este año" ya estaba seleccionado antes de que esto terminara de cargar
       renderAnAlertas();
+      loadAnalyticsDynamic(); // recalcula con los datos frescos — ver comentario junto a su definición (todo el resumen dinámico ahora es puramente local, sin red)
     })
     .catch(function(){
       document.getElementById('anContent').innerHTML = '<div class="mi-empty">Error de conexión</div>';
