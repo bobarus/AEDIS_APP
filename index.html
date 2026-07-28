@@ -10475,8 +10475,10 @@ function renderNotifList() {
     // que lo extraemos para poder abrir el informe real.
     var baseIdMatch = n.id.match(/^(PT-\d+)/);
     var baseId = baseIdMatch ? baseIdMatch[1] : '';
-    var classes = 'notif-card' + (n.read ? '' : ' notif-unread') + (baseId ? ' notif-clickable' : '');
-    var onclickAttr = baseId ? ' onclick="openReportFromNotif(\''+baseId+'\')"' : '';
+    var safeNotifId = String(n.id).replace(/'/g, "\\'");
+    var safeBaseId = baseId.replace(/'/g, "\\'");
+    var classes = 'notif-card' + (n.read ? '' : ' notif-unread') + ' notif-clickable';
+    var onclickAttr = ' onclick="notifTap(\''+safeNotifId+'\', \''+safeBaseId+'\')"';
     return '<div class="'+classes+'"'+onclickAttr+'>' +
       '<div class="ni-title">'+escNotif(n.title)+'</div>' +
       '<div class="ni-body">'+escNotif(n.body)+'</div>' +
@@ -10489,6 +10491,32 @@ function renderNotifList() {
 // campana, según el rol actual y en la caché donde realmente esté
 // (p.ej. para manager, un informe ya resuelto está en el historial, no
 // en la cola de pendientes).
+// Pedido 2026-07-28: antes CUALQUIER apertura de la campana (openNotifModal)
+// marcaba TODO el log como leído al instante, aunque el usuario solo
+// hubiera mirado la lista sin tocar ninguna notificación en concreto — al
+// volver a entrar (incluso en la misma cuenta) ya no reaparecía como
+// pendiente aunque nunca se hubiera actuado sobre el informe real. Ahora
+// "leído" solo pasa cuando se toca ESA notificación en concreto (aquí),
+// no por el mero hecho de abrir la campana — ver openNotifModal, que ya
+// no marca nada por sí sola.
+function notifTap(notifId, baseId) {
+  var log = getNotifLog();
+  var entry = log.find(function(n){ return n.id === notifId; });
+  if (entry && !entry.read) {
+    entry.read = true;
+    saveNotifLog(log);
+    updateBellUI();
+    if (currentUser && currentUser.rol === 'operario') {
+      updateAppIconBadge(getNotifLog().filter(function(n){ return !n.read; }).length);
+    }
+  }
+  if (baseId) {
+    openReportFromNotif(baseId);
+  } else {
+    renderNotifList(); // no hay a dónde navegar — solo refresca el estado "leído" en la propia lista
+  }
+}
+
 function openReportFromNotif(baseId) {
   if (!currentUser || !baseId) return;
   closeNotifModal();
@@ -10601,10 +10629,10 @@ function openNotifModal() {
   var langDrop = document.getElementById('langDrop');
   if (langDrop) langDrop.classList.remove('open');
 
-  // Las notificaciones que ya estaban marcadas como leídas de una visita
-  // ANTERIOR a la campana se eliminan del historial antes de pintar la
-  // lista — así cada notificación se ve una vez (la vez que se marca como
-  // leída, más abajo) y desaparece en la siguiente apertura, en vez de
+  // Las notificaciones que ya estaban marcadas como leídas (por haberlas
+  // tocado en una visita ANTERIOR a la campana, ver notifTap) se eliminan
+  // del historial antes de pintar la lista — así cada notificación se ve
+  // mientras siga pendiente y desaparece una vez ya se tocó, en vez de
   // quedarse acumulada para siempre como "vista pero irrelevante".
   var fullLog = getNotifLog();
   var purgedLog = fullLog.filter(function(n){ return !n.read; });
@@ -10613,47 +10641,13 @@ function openNotifModal() {
   renderNotifList();
   var modal = document.getElementById('notifFullModal');
   modal.style.display = 'flex';
-
-  // Al abrir, marcamos TODAS como leídas — el contador desaparece y no reaparece
-  var log = getNotifLog();
-  var changed = false;
-  var reportIdsToMark = [];
-  log.forEach(function(n){
-    if (!n.read) {
-      n.read = true; changed = true;
-      var baseId = n.id.split('_')[0]; // "PT-0005_approved" → "PT-0005"
-      if (/^PT-\d+$/.test(baseId)) reportIdsToMark.push(baseId);
-    }
-  });
-  if (changed) {
-    saveNotifLog(log);
-    updateBellUI();
-    // El badge del icono del operario usa este mismo contador (ver
-    // checkWorkerNotifications) — lo refrescamos ya, sin esperar al
-    // próximo sondeo de 10s, para que abrir la campana lo baje al instante.
-    if (currentUser && currentUser.rol === 'operario') {
-      updateAppIconBadge(getNotifLog().filter(function(n){ return !n.read; }).length);
-    }
-  }
-  // Quitamos también el resaltado azul de las tarjetas correspondientes.
-  // markAsSeen() espera la clave compuesta "ID@TIMESTAMP" (ver seenKey()),
-  // igual que la usan renderManagerQueue/renderAdminJournal para decidir
-  // "isNew" — pasar solo el ID (sin timestamp) nunca hacía match ahí y el
-  // badge "NUEVO" volvía a aparecer en el próximo render.
-  var allKnownRecords = [].concat(
-    typeof mgReportsCache !== 'undefined' ? mgReportsCache : [],
-    typeof mgHistorialCache !== 'undefined' ? mgHistorialCache : [],
-    typeof adAllRecords !== 'undefined' ? adAllRecords : [],
-    typeof adInformeRecords !== 'undefined' ? adInformeRecords : []
-  );
-  reportIdsToMark.forEach(function(rid){
-    var rec = allKnownRecords.find(function(r){ return r.ID === rid; });
-    markAsSeen(rec ? seenKey(rec) : rid);
-  });
-  document.querySelectorAll('.card-shadow-new').forEach(function(card){
-    var cardId = card.getAttribute('data-id');
-    if (cardId && reportIdsToMark.indexOf(cardId) !== -1) card.classList.remove('card-shadow-new');
-  });
+  // BUG CORREGIDO (pedido 2026-07-28, "vi la notificación pero no reaccioné
+  // y aun así se marcó como leída — al volver ni siquiera con la misma
+  // cuenta reaparece"): antes, el simple hecho de ABRIR esta campana
+  // marcaba TODO el log como leído de golpe, sin que el usuario hubiera
+  // tocado ninguna notificación en concreto ni actuado sobre el informe
+  // real. Ahora "leído" solo ocurre notificación por notificación, al
+  // tocarla de verdad (ver notifTap) — abrir la campana solo la muestra.
 }
 
 function closeNotifModal() {
@@ -11150,6 +11144,16 @@ function checkWorkerNotifications() {
   fetch(WEBAPP_URL + '?action=getMyReports&codigo=' + encodeURIComponent(currentPin) + '&operario=' + encodeURIComponent(currentUser.nombre) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
+      // BUG CORREGIDO (pedido 2026-07-28, "el badge del icono queda pegado
+      // aunque haya cerrado sesión"): este sondeo se lanza cada 10s con el
+      // currentPin de ESE momento — si el usuario cierra sesión (changeUser,
+      // que ya limpia currentUser/currentPin y pone el badge a 0) mientras
+      // esta petición sigue en vuelo, la respuesta llega DESPUÉS y volvía a
+      // escribir un badge > 0 con datos de la cuenta ya cerrada, sin que
+      // nada la abortara. stopNotifyPoll() solo impide que arranque un
+      // sondeo NUEVO, no cancela uno ya en curso — de ahí que hiciera falta
+      // este guard aquí, no solo en checkNotifications().
+      if (!currentUser) return;
       if (!result || result.status !== 'ok') return;
       var reports = result.data || [];
       var last = getLastStatuses();
@@ -11225,6 +11229,11 @@ function checkManagerNotifications() {
   fetch(WEBAPP_URL + '?action=getPending&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
+      // Ver el comentario en checkWorkerNotifications: este sondeo puede
+      // resolver DESPUÉS de un logout ya completado (changeUser ya puso
+      // el badge a 0) — sin este guard, la respuesta tardía lo volvería
+      // a subir con datos de la cuenta que ya no está activa.
+      if (!currentUser) return;
       if (!result || result.status !== 'ok') return;
       var reports = result.data || [];
       var seen = getSeenIds();
@@ -11260,6 +11269,8 @@ function checkAdminNotifications() {
   fetch(WEBAPP_URL + '?action=getAdminStats&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
+      // Ver el comentario en checkWorkerNotifications: mismo guard, mismo motivo.
+      if (!currentUser) return;
       if (!result || result.status !== 'ok') return;
       var reports = result.data || [];
       var seen = getSeenIds();
