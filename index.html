@@ -502,12 +502,7 @@ body{height:100dvh}
 .success-icon svg{width:36px;height:36px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .success-title{font-size:22px;font-weight:700;color:#000;text-align:center}
 .success-sub{font-size:14px;color:#8e8e93;text-align:center;line-height:1.5}
-.success-details-card{width:100%;background:#fff;border:.5px solid #e5e5ea;border-radius:12px;overflow:hidden}
-.detail-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:.5px solid #f2f2f7}
-.detail-row:last-child{border-bottom:none}
-.detail-row.long{flex-direction:column;align-items:flex-start;gap:4px}
-.detail-key{font-size:12px;color:#8e8e93}
-.detail-val{font-size:14px;color:#000;font-weight:500}
+.success-meta{font-size:12.5px;color:#8e8e93;text-align:center;margin-top:6px}
 /* BUG CORREGIDO ("Compartir no está fijo abajo"): antes vivía DENTRO de
    .ss-scroll (para pegarlo justo debajo de la tarjeta y no dejar un
    hueco enorme cuando el contenido era corto) — pero eso significaba que
@@ -516,11 +511,16 @@ body{height:100dvh}
    que el tabbar), y .ss-scroll reserva espacio abajo (padding-bottom)
    para que el contenido nunca quede tapado detrás. */
 .ss-footer{position:fixed;left:0;right:0;bottom:0;width:100%;background:#fff;border-top:.5px solid #f0f0f0;padding:12px 20px calc(env(safe-area-inset-bottom,0px) + 20px);display:flex;flex-direction:column;gap:10px;z-index:10}
-.btn-share{width:100%;background:#f4f4f7;border:none;color:#1b1b1d;border-radius:999px;padding:14px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation}
-/* Misma familia de sombra que los demás botones primarios (.btn-save.ready,
-   .mg-btn-approve) para que ninguna acción principal del sistema se vea
-   plana frente a las demás. */
-.btn-new{width:100%;background:#34c759;color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;box-shadow:0 10px 20px -8px rgba(52,199,89,.5)}
+/* Pedido 2026-07-28: Compartir/+Nuevo informe unificados a la misma
+   forma (radio 14px, mismo padding/tamaño, icono+etiqueta) — antes
+   Compartir era una píldora (radio 999px) sin sombra y Nuevo informe un
+   rectángulo redondeado con sombra, dos familias de botón distintas en
+   el mismo footer. Solo cambia el color (Compartir = superficie neutra,
+   Nuevo informe = verde, misma fórmula de sombra que .mg-btn-approve). */
+.btn-share,.btn-new{width:100%;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-share{background:#f4f4f7;color:#1b1b1d}
+.btn-share:active{opacity:.88}
+.btn-new{background:#34c759;color:#fff;box-shadow:0 10px 20px -8px rgba(52,199,89,.5)}
 .btn-new:active{opacity:.88}
 
 /* PIN */
@@ -773,10 +773,8 @@ body.pin-mode{overflow:hidden}
    explícita para no tener dos lenguajes de color distintos. */
 .card-shadow-new{box-shadow:0 4px 18px rgba(0,73,197,.30) !important}
 
-.mi-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;min-height:150px;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.mi-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 20px rgba(0,0,0,.06)}
 .mi-card:active{background:#f9f9f9}
-.mi-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
-.mi-id{font-size:11px;font-weight:600;color:#8e8e93}
 .mi-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
 .mi-badge.st-pending{background:#e5f0ff;color:#0049c5}
 .mi-badge.st-rejected{background:#fff0f0;color:#ff3b30}
@@ -785,8 +783,18 @@ body.pin-mode{overflow:hidden}
    st-pending y st-rejected. Mismo verde que .ad-status-badge.st-approved
    (Admin/Manager), para que el mismo estado se vea igual en toda la app. */
 .mi-badge.st-approved{background:#e5f9ec;color:#34c759}
-.mi-obra{font-size:18px;font-weight:700;color:#000;margin-bottom:2px;letter-spacing:-.2px}
-.mi-sub{font-size:11px;color:#8e8e93;margin-bottom:8px}
+/* ═══ FILA COMPACTA (2026-07-28) — mi-card/mg-card/ad-card comparten esta
+   estructura interna: ID (+adjunto) / badge arriba, fecha·cliente·obra,
+   quién lo subió·tipo de trabajo, comentario si existe, decisión abajo a
+   la derecha si existe. Ver buildCardRowHtml(). Reemplaza la cabecera
+   gigante con el ID a 18-22px que tenía cada tarjeta antes — misma
+   información, en una fila del tamaño de las de "Materiales" en Análisis. */
+.rc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rc-id{font-size:15px;font-weight:700;color:#000;display:flex;align-items:center;gap:6px;letter-spacing:-.1px;min-width:0}
+.rc-att{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600;color:#636366;flex-shrink:0}
+.rc-att i{font-size:12px}
+.rc-line{font-size:12px;color:#8e8e93;margin-top:6px}
+.rc-tipo{font-size:12.5px;color:#3a3a3c;font-weight:600;margin-top:3px}
 /* Pedido (2026-07-21, "hacer el comentario del manager más acentuado y
    visible"): antes 8px de radio (mucho menos que el resto de la app,
    14-20px) y sin borde/sombra/icono — se perdía entre el resto de
@@ -804,19 +812,14 @@ body.pin-mode{overflow:hidden}
    Pedido 2026-07-28: más legible aquí — texto un poco más grande y con
    más aire que el preview de la tarjeta. */
 .mi-comment.full{display:block;-webkit-line-clamp:unset;overflow:visible;font-size:14.5px;line-height:1.6;padding:14px 16px}
-.mi-edit-btn{width:100%;background:#0049c5;color:#fff;border:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-family:inherit;cursor:pointer;touch-action:manipulation;margin-top:auto !important}
+.mi-edit-btn{width:100%;background:#0049c5;color:#fff;border:none;border-radius:999px;padding:11px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-family:inherit;cursor:pointer;touch-action:manipulation}
 .mi-empty{padding:48px 24px;text-align:center;color:#8e8e93;font-size:14px}
 
 /* MANAGER CARDS */
-.mg-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:16px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.mg-card{position:relative;background:#fff;border:none;border-radius:20px;margin:0 16px 10px;padding:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 20px rgba(0,0,0,.06)}
 .mg-card:active{background:#f9f9f9}
 .mg-new-label{font-size:11px;font-weight:800;color:#0049c5;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
 .ad-new-label{font-size:11px;font-weight:800;color:#0049c5;letter-spacing:.3px}
-.mg-operario{font-size:11px;color:#8e8e93;margin-bottom:10px;margin-top:2px;font-weight:500}
-.mg-cliente{font-size:12px;color:#8e8e93;margin-bottom:0}
-.mg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
-.mg-id{font-size:11px;font-weight:600;color:#8e8e93}
-.mg-obra{font-size:20px;font-weight:700;color:#000;margin-bottom:4px;letter-spacing:-.3px}
 .mg-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
 .mg-field{background:#f9f9f9;border-radius:8px;padding:8px 10px}
 .mg-field b{display:block;color:#8e8e93;font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.3px;margin-bottom:2px}
@@ -2469,15 +2472,19 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
     <div style="text-align:center;width:100%">
       <div class="success-title">¡Informe enviado!</div>
       <div class="success-sub" id="successSub">El parte ha sido registrado correctamente</div>
+      <div class="success-meta" id="successMeta"></div>
     </div>
-    <div class="success-details-card"><div id="detailRows"></div></div>
+    <div id="detailRows" style="width:100%"></div>
   </div>
   <div class="ss-footer">
     <button class="btn-share" onclick="shareRecord()">
       <i class="ti ti-upload" style="font-size:17px"></i>
       <span id="ssShareBtnLbl">Compartir</span>
     </button>
-    <button class="btn-new" onclick="startNew()">+ Nuevo informe</button>
+    <button class="btn-new" onclick="startNew()">
+      <i class="ti ti-plus" style="font-size:17px"></i>
+      <span id="ssNewBtnLbl">Nuevo informe</span>
+    </button>
   </div>
 </div>
 
@@ -2848,6 +2855,17 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
          preset (antes, con los inputs de fecha manuales, siempre se veían
          a simple vista) — los chips por sí solos no dicen "1-31 julio". -->
     <div id="anPeriodRangeLabel" style="padding:0 14px 12px;font-size:11.5px;color:#8e8e93;text-align:right"></div>
+    <!-- Pedido 2026-07-28: sexto chip "Personalizado" — los 5 presets son
+         siempre una unidad de calendario completa, no dejan elegir un
+         rango arbitrario. Al elegirlo aparecen estos dos campos de fecha
+         (mismo estilo que rbDesde/rbHasta del asistente de informes);
+         anCustomDesde/anCustomHasta se inicializan al mes actual la
+         primera vez, luego persisten mientras la pantalla siga abierta. -->
+    <div id="anCustomRangeWrap" style="display:none;padding:0 14px 12px;gap:8px;align-items:center">
+      <input type="date" id="anCustomFrom" onchange="anApplyCustomRange()" style="flex:1;padding:10px 12px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000">
+      <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
+      <input type="date" id="anCustomTo" onchange="anApplyCustomRange()" style="flex:1;padding:10px 12px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000">
+    </div>
 
     <div id="anSummaryTiles" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 16px"></div>
 
@@ -3261,7 +3279,7 @@ var LANGS = {
     no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
     lbl_materiales:'Materiales', lbl_trabajo:'Remuneración', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
     an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_informes_count:'Informes', an_ver:'Ver', an_ocultar:'Ocultar',
-    an_periodo_hoy:'Hoy', an_periodo_semana:'Esta semana', an_periodo_mes:'Este mes', an_periodo_anio:'Este año', an_periodo_mes_pasado:'Mes pasado',
+    an_periodo_hoy:'Hoy', an_periodo_semana:'Esta semana', an_periodo_mes:'Este mes', an_periodo_anio:'Este año', an_periodo_mes_pasado:'Mes pasado', an_periodo_personalizado:'Personalizado',
     an_nuevo:'nuevo', an_tendencia_titulo:'Tendencia — Total', an_top_titulo:'Top del período',
     an_top_objetos:'Objetos', an_top_trabajadores:'Trabajadores', an_top_companias:'Compañías', an_sin_compania:'Sin compañía',
     an_sin_actividad:'Sin informes nuevos desde hace {dias} días',
@@ -3381,7 +3399,7 @@ var LANGS = {
     no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
     lbl_materiales:'Материалы', lbl_trabajo:'Вознаграждение', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
     an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_informes_count:'Отчётов', an_ver:'Смотреть', an_ocultar:'Скрыть',
-    an_periodo_hoy:'Сегодня', an_periodo_semana:'Эта неделя', an_periodo_mes:'Этот месяц', an_periodo_anio:'Этот год', an_periodo_mes_pasado:'Прошлый месяц',
+    an_periodo_hoy:'Сегодня', an_periodo_semana:'Эта неделя', an_periodo_mes:'Этот месяц', an_periodo_anio:'Этот год', an_periodo_mes_pasado:'Прошлый месяц', an_periodo_personalizado:'Свой период',
     an_nuevo:'новое', an_tendencia_titulo:'Тренд — Итого', an_top_titulo:'Топ за период',
     an_top_objetos:'Объекты', an_top_trabajadores:'Рабочие', an_top_companias:'Компании', an_sin_compania:'Без компании',
     an_sin_actividad:'Нет новых отчётов уже {dias} дн.',
@@ -3501,7 +3519,7 @@ var LANGS = {
     no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
     lbl_materiales:'Materials', lbl_trabajo:'Remuneration', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
     an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_informes_count:'Reports', an_ver:'View', an_ocultar:'Hide',
-    an_periodo_hoy:'Today', an_periodo_semana:'This week', an_periodo_mes:'This month', an_periodo_anio:'This year', an_periodo_mes_pasado:'Last month',
+    an_periodo_hoy:'Today', an_periodo_semana:'This week', an_periodo_mes:'This month', an_periodo_anio:'This year', an_periodo_mes_pasado:'Last month', an_periodo_personalizado:'Custom',
     an_nuevo:'new', an_tendencia_titulo:'Trend — Total', an_top_titulo:'Top for the period',
     an_top_objetos:'Objects', an_top_trabajadores:'Workers', an_top_companias:'Companies', an_sin_compania:'No company',
     an_sin_actividad:'No new reports for {dias} days',
@@ -5305,10 +5323,16 @@ function saveRecord() {
   .then(function(r){ return r.json(); })
   .then(function(result){
     if (!result || result.status !== 'ok') return;
-    var realId = result.id;
+    // Pedido 2026-07-28: el payload que ya está en pantalla (successScreen,
+    // _sharePayload) llevaba el ID PROVISIONAL ('PT-'+Date.now()) para
+    // atrever a pintar la pantalla de éxito antes de esperar al servidor
+    // — se muta aquí mismo el mismo objeto payload (por el que
+    // showSuccess() ya guardó una referencia en _sharePayload) con el ID
+    // real, para que Compartir nunca envíe un ID que no existe en la hoja.
+    payload.id = result.id;
     // Если есть фото — загружаем в фоне с реальным ID
     if (photosObraSelected.length || photosMatSelected.length) {
-      uploadPhotosWithRetry(realId, payload.fecha, payload.operario, photosObraSelected, photosMatSelected, 2);
+      uploadPhotosWithRetry(payload, photosObraSelected, photosMatSelected, 2);
     }
   })
   .catch(function(err){
@@ -5324,7 +5348,8 @@ function saveRecord() {
 // enteraba de que las fotos no llegaron a guardarse. Ahora se reintenta
 // automáticamente y, si aun así falla, se avisa explícitamente para que
 // el trabajador sepa que debe volver a intentarlo.
-function uploadPhotosWithRetry(id, fecha, operario, photosObra, photosMat, retriesLeft) {
+function uploadPhotosWithRetry(payload, photosObra, photosMat, retriesLeft) {
+  var id = payload.id, fecha = payload.fecha, operario = payload.operario;
   fetch(WEBAPP_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -5341,6 +5366,13 @@ function uploadPhotosWithRetry(id, fecha, operario, photosObra, photosMat, retri
   .then(function(r){ return r.json(); })
   .then(function(result){
     if (!result || result.status !== 'ok') throw new Error(result && result.message || 'upload failed');
+    // Pedido 2026-07-28: guarda los enlaces de carpeta en el MISMO objeto
+    // payload que ya referencia _sharePayload (ver showSuccess) — si el
+    // trabajador pulsa "Compartir" después de que esto termine, el texto
+    // compartido incluye las fotos, igual que compartir desde una
+    // tarjeta ya terminada (ambos pasan por el mismo buildShareText).
+    if (result.obraFolderUrl) payload.fotosObra = result.obraFolderUrl;
+    if (result.materialesFolderUrl) payload.fotosMat = result.materialesFolderUrl;
     // Éxito: si el trabajador tiene la lista "Mis informes" abierta,
     // refrescamos para que las fotos ya aparezcan sin que tenga que hacerlo él.
     myReportsLoaded = false;
@@ -5350,7 +5382,7 @@ function uploadPhotosWithRetry(id, fecha, operario, photosObra, photosMat, retri
   })
   .catch(function(err){
     if (retriesLeft > 0) {
-      setTimeout(function(){ uploadPhotosWithRetry(id, fecha, operario, photosObra, photosMat, retriesLeft - 1); }, 1500);
+      setTimeout(function(){ uploadPhotosWithRetry(payload, photosObra, photosMat, retriesLeft - 1); }, 1500);
     } else {
       console.log('[fotos] fallo definitivo al subir fotos de ' + id + ':', err && err.message);
       showToast('No se pudieron subir las fotos de ' + id + ' — vuelve a intentarlo desde el informe', true);
@@ -5359,26 +5391,54 @@ function uploadPhotosWithRetry(id, fecha, operario, photosObra, photosMat, retri
 }
 
 /* ════════ OPERARIO: SUCCESS SCREEN ════════ */
+// Pedido 2026-07-28: la tarjeta de detalle mostraba solo 8 campos fijos
+// codificados a mano aquí mismo (Fecha/Cliente/Obra/Operario/Tipo/Horas/
+// Trabajos/Precio) — Ayudante/Vehículo/Compañía/Materiales/Total quedaban
+// fuera aunque el propio payload ya los trae. Ahora se reutiliza el
+// mismo buildDetailHtml() que usan reportDetailModal/mgDetailModal/
+// adDetail — así esta pantalla es EXACTAMENTE tan informativa como el
+// informe (mismo showTotal/showRate que ve el operario en su propio
+// detalle, false/false: no ve Total ni tarifa €/h). Las fotos no
+// aparecen aquí todavía porque se suben en segundo plano DESPUÉS de
+// mostrar esta pantalla (ver uploadPhotosWithRetry) — buildDetailHtml ya
+// omite esos bloques por sí solo cuando el campo viene vacío.
+function _ssPayloadToRecord(payload) {
+  return {
+    ID: payload.id, FECHA: payload.fecha, CLIENTE: payload.cliente, OBRA: payload.obra,
+    OPERARIO: payload.operario, AYUDANTE: payload.ayudante, 'VEHÍCULO': payload.vehiculo,
+    'TIPO DE TRABAJO': payload.tipo, HORAS: payload.horas, 'TRABAJOS REALIZADOS': payload.trabajos,
+    'COMPAÑÍA': payload.compania, 'MATERIALES UTILIZADOS': payload.materiales,
+    'PRECIO (EUR)': payload.precio, TOTAL: payload.total,
+    'FOTOS DE OBRA': payload.fotosObra, 'FOTO MATERIALES / RECIBO': payload.fotosMat
+  };
+}
+
 function showSuccess(payload) {
   _sharePayload = payload;
-  var rows = [];
-  if (payload.fecha)      rows.push({k:'Fecha',   v:payload.fecha.split('-').reverse().join('.')});
-  if (payload.cliente)    rows.push({k:'Cliente', v:payload.cliente});
-  if (payload.obra)       rows.push({k:'Obra',    v:payload.obra});
-  if (payload.operario)   rows.push({k:'Operario',v:payload.operario});
-  if (payload.tipo)       rows.push({k:'Tipo',    v:payload.tipo});
-  if (payload.horas)      rows.push({k:'Horas',   v:payload.horas+' h'});
-  if (payload.trabajos)   rows.push({k:'Trabajos',v:payload.trabajos});
-  if (payload.precio>0)   rows.push({k:'Precio',  v:payload.precio+' €'});
+  var rec = _ssPayloadToRecord(payload);
 
-  document.getElementById('detailRows').innerHTML = rows.filter(function(r){return r.v;}).map(function(r){
-    var long = r.v && r.v.length > 28;
-    return '<div class="detail-row'+(long?' long':'')+'"><span class="detail-key">'+r.k+'</span><span class="detail-val">'+r.v+'</span></div>';
-  }).join('');
+  var metaParts = [];
+  if (rec.ID) metaParts.push(rec.ID);
+  if (rec.CLIENTE) metaParts.push(rec.CLIENTE);
+  if (rec.OBRA) metaParts.push(rec.OBRA);
+  if (rec.FECHA) metaParts.push(fmtDate(rec.FECHA));
+  document.getElementById('successMeta').textContent = metaParts.join(' · ');
+
+  document.getElementById('detailRows').innerHTML = buildDetailHtml(rec, false, false);
+  initPhotoThumbs(document.getElementById('detailRows'));
 
   document.getElementById('successScreen').classList.add('show');
   document.getElementById('tabbarOperario').style.display = 'none';
   document.getElementById('tabbarSafetyBg').style.display = 'none';
+  // BUG CORREGIDO ("la barra superior tapa la pantalla"): el tabbar de
+  // abajo ya se ocultaba aquí, pero #mainNav (arriba) nunca — con
+  // #successScreen encima solo en teoría (mismo z-index que otros
+  // overlays que sí necesitaron este mismo tipo de ajuste en el pasado),
+  // el resultado real en pantalla era el nav asomando por encima del
+  // check verde. Mismo patrón que el tabbar: ocultar explícitamente
+  // mientras esta pantalla esté abierta, restaurar en startNew().
+  var navEl = document.getElementById('mainNav');
+  if (navEl) navEl.style.display = 'none';
 }
 
 /* ── Универсальный текст для шаринга (все заполненные поля, без Total) ── */
@@ -5398,7 +5458,7 @@ function buildShareText(r) {
   if (r['COMPAÑÍA'] || r.compania) lines.push('🏪 ' + (r['COMPAÑÍA'] || r.compania));
   if (r['MATERIALES UTILIZADOS'] || r.materiales) lines.push('📦 ' + (r['MATERIALES UTILIZADOS'] || r.materiales));
   if (r['PRECIO (EUR)'] || r.precio) lines.push('💶 ' + (r['PRECIO (EUR)'] || r.precio) + ' €');
-  if (r.ID) lines.push('🆔 ' + r.ID);
+  if (r.ID || r.id) lines.push('🆔 ' + (r.ID || r.id));
 
   // Pedido: los enlaces a las carpetas de Drive de las fotos (no una foto
   // suelta) van al final, en su propia sección — ya están guardados como
@@ -5442,6 +5502,8 @@ function startNew() {
   document.getElementById('successScreen').classList.remove('show');
   document.getElementById('tabbarOperario').style.display = 'flex';
   document.getElementById('tabbarSafetyBg').style.display = 'block';
+  var navEl = document.getElementById('mainNav');
+  if (navEl) navEl.style.display = 'flex';
   clearForm(true);
 }
 
@@ -5560,7 +5622,6 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
     html += '<div class="ad-month-body" id="mim_'+domKey+'" style="display:'+(isCollapsed?'none':'block')+'">';
     g.records.forEach(function(r){
       var statusLabel = r.STATUS === 'pending' ? t('status_pending') : (r.STATUS === 'approved' ? t('status_approved') : t('status_rejected'));
-      var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       // BUG CORREGIDO / pedido (2026-07-21): antes solo "pending" era
       // swipeable (para el borrado) — un informe "rejected" también se
       // puede editar/reenviar (ver resubmitRecord en Code_v5.gs, acepta
@@ -5584,18 +5645,11 @@ function buildMiGroupedHtml(list, groupPrefix, showRejectComment) {
       }
       var isNew = r.STATUS !== 'approved' && seen.indexOf(seenKey(r)) === -1;
       html += '<div class="mi-card st-'+r.STATUS+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openReportDetail(\''+r.ID+'\')">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
-      html += '<span style="font-size:11px;color:#8e8e93">'+fecha+'</span>';
-      html += '<span class="mi-badge st-'+r.STATUS+'">'+statusLabel+'</span>';
-      html += '</div>';
-      html += '<div style="font-size:11px;color:#8e8e93;margin-bottom:8px">'+r.OPERARIO+'</div>';
-      html += '<div style="font-size:20px;font-weight:700;color:#000;letter-spacing:-.3px;margin-bottom:3px">'+r.ID+'</div>';
-      html += '<div style="font-size:12px;color:#8e8e93">'+r.CLIENTE+' · '+r.OBRA+'</div>';
-      if (showRejectComment && r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
-        html += '<div class="mi-comment" style="margin-top:8px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
+      var showComment = !!showRejectComment;
+      html += buildCardRowHtml(r, '<span class="mi-badge st-'+r.STATUS+'">'+statusLabel+'</span>', { showComment: showComment });
+      if (showComment && r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
         html += '<button class="mi-edit-btn" style="margin-top:8px" onclick="event.stopPropagation();openEditReport(\''+r.ID+'\')">'+t('btn_editar_reenviar')+'</button>';
       }
-      html += cardAttBadgeHtml(r);
       html += '</div>';
       if (swipeable) html += '</div>';
     });
@@ -6378,25 +6432,13 @@ function renderMgPendingList(reports) {
   });
 
   listEl.innerHTML = reports.map(function(r){
-    var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
     var isNew = seen.indexOf(seenKey(r)) === -1;
     // La cola de Pendientes solo contiene informes pending por definición
     // — todas sus tarjetas son swipeables, sin necesidad de comprobar STATUS.
     var html = '<div class="swipe-wrap" data-id="'+r.ID+'">';
     html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteMg(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
     html += '<div class="mg-card'+(isNew?' card-shadow-new':'')+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openManagerDetail(\''+r.ID+'\')">';
-    // Строка 1: дата слева, NUEVO справа
-    html += '<div class="mg-head">';
-    html += '<span class="mg-id">'+fecha+'</span>';
-    if (isNew) html += '<span class="mg-new-label">NUEVO</span>';
-    html += '</div>';
-    // Строка 2: имя рабочего мелко (с отступом снизу до номера)
-    html += '<div class="mg-operario">'+r.OPERARIO+'</div>';
-    // Строка 3: PT-номер КРУПНО
-    html += '<div class="mg-obra">'+r.ID+'</div>';
-    // Строка 4: CLIENTE · OBRA
-    html += '<div class="mg-cliente">'+r.CLIENTE+' · '+r.OBRA+'</div>';
-    html += cardAttBadgeHtml(r);
+    html += buildCardRowHtml(r, isNew ? '<span class="mg-new-label">NUEVO</span>' : '', { showDecision: false });
     html += '</div>';
     html += '</div>';
     return html;
@@ -6437,10 +6479,45 @@ var mgDetailId = null;
 // no tienen una altura fija que deje hueco libre abajo. Ahora es un
 // bloque normal, el último elemento de la tarjeta — empuja el alto de
 // la tarjeta si hace falta en vez de superponerse a nada.
-function cardAttBadgeHtml(r) {
+function rcAttHtml(r) {
   var n = (r['FOTOS DE OBRA'] ? 1 : 0) + (r['FOTO MATERIALES / RECIBO'] ? 1 : 0);
   if (!n) return '';
-  return '<div style="margin-top:8px;display:inline-flex;align-items:center;gap:3px;background:#f2f2f7;color:#636366;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:10px"><i class="ti ti-paperclip" style="font-size:11px" aria-hidden="true"></i>' + n + '</div>';
+  return ' <span class="rc-att"><i class="ti ti-paperclip" aria-hidden="true"></i>' + n + '</span>';
+}
+
+// Pedido 2026-07-28: unifica la fila de contenido de mi-card/mg-card/
+// ad-card en las 3 pantallas (Mis informes, Manager, Admin) en el mismo
+// formato compacto que ya se usaba en el drilldown "Materiales" de
+// Análisis — ID(+adjunto)/badge arriba, fecha·cliente·obra, quién lo
+// subió·tipo de trabajo, comentario si existe, decisión abajo a la
+// derecha si existe. topRightHtml lo decide cada pantalla (no esta
+// función) porque ahí es donde vive la lógica de "NUEVO" vs badge real
+// que markVisibleQueueAsSeen/openAdminDetail/openManagerDetail necesitan
+// poder sustituir en el DOM sin volver a pintar toda la lista.
+function buildCardRowHtml(r, topRightHtml, opts) {
+  opts = opts || {};
+  var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
+  var lineParts = [];
+  if (fecha) lineParts.push(fecha);
+  if (r.CLIENTE) lineParts.push(escapeHtml(r.CLIENTE));
+  if (r.OBRA) lineParts.push(escapeHtml(r.OBRA));
+
+  var whoTipoParts = [];
+  if (opts.showOperario !== false && r.OPERARIO) whoTipoParts.push(escapeHtml(r.OPERARIO));
+  if (r['TIPO DE TRABAJO']) whoTipoParts.push(escapeHtml(r['TIPO DE TRABAJO']));
+
+  var html = '<div class="rc-top"><div class="rc-id">' + escapeHtml(r.ID || '') + rcAttHtml(r) + '</div>' + (topRightHtml || '') + '</div>';
+  if (lineParts.length) html += '<div class="rc-line">' + lineParts.join(' · ') + '</div>';
+  if (whoTipoParts.length) html += '<div class="rc-tipo">' + whoTipoParts.join(' · ') + '</div>';
+  if (opts.showComment !== false && r.COMENTARIO_MANAGER && String(r.COMENTARIO_MANAGER).trim()) {
+    html += '<div class="mi-comment full" style="margin-top:9px;margin-bottom:0"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> ' + t('lbl_comentario') + '</b>' + escapeHtml(r.COMENTARIO_MANAGER) + '</div>';
+  }
+  var stForDecision = opts.status || r.STATUS;
+  if (opts.showDecision !== false && (stForDecision === 'approved' || stForDecision === 'rejected') && r.MANAGER_NOMBRE) {
+    var mgLabel = stForDecision === 'approved' ? t('lbl_aprobo') : t('lbl_rechazo');
+    html += '<div class="ad-manager-line ' + stForDecision + '">' + mgLabel + ' · ' + escapeHtml(r.MANAGER_NOMBRE) + '</div>';
+  }
+  return html;
 }
 
 function buildDetailHtml(r, showTotal, showRate) {
@@ -7046,27 +7123,9 @@ function renderMgHistorialGrouped(reports) {
     html += '</div></div>';
 
     html += '<div class="ad-month-body" id="mgm_'+key+'" style="display:'+(isCollapsed?'none':'block')+'">';
-    // BUG CORREGIDO: esta tarjeta tenía DOS problemas de consistencia:
-    // 1) usaba un borde de color a la izquierda para señalar el estado,
-    //    contradiciendo la norma ya documentada más arriba en el CSS de que
-    //    el estado se señaliza solo con badge/sombra, nunca con bordes de
-    //    color — ninguna otra tarjeta de la app hacía esto.
-    //    Ahora reutiliza el mismo badge .ad-status-badge que ya usa Admin,
-    //    en vez de glifos ✓/✗ sueltos sin traducir.
-    // 2) .mg-obra (pensada para el NÚMERO grande) llevaba el nombre de la
-    //    obra, y .mg-id (pensada para texto pequeño) llevaba el ID — al
-    //    revés que en la cola de Pendientes del propio Manager, donde
-    //    .mg-obra sí es el ID grande. Dos pestañas del mismo rol
-    //    mostrando la misma información con jerarquía visual invertida.
-    //    Ahora sigue exactamente la misma estructura que renderManagerQueue.
     g.records.forEach(function(r){
-      var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       html += '<div class="mg-card" data-hid="'+r.ID+'" onclick="openHistorialDetail(\''+r.ID+'\')">'
-        + '<div class="mg-head"><span class="mg-id">'+fecha+'</span><span class="ad-status-badge st-'+r.STATUS+'" style="margin-bottom:0">'+statusLabelsHist[r.STATUS]+'</span></div>'
-        + '<div class="mg-operario">'+r.OPERARIO+'</div>'
-        + '<div class="mg-obra">'+r.ID+'</div>'
-        + '<div class="mg-cliente">'+r.CLIENTE+' · '+r.OBRA+'</div>'
-        + cardAttBadgeHtml(r)
+        + buildCardRowHtml(r, '<span class="ad-status-badge st-'+r.STATUS+'" style="margin-bottom:0">'+statusLabelsHist[r.STATUS]+'</span>')
         + '</div>';
     });
     html += '</div>';
@@ -7489,7 +7548,6 @@ function renderAdminJournal() {
     // Карточки группы
     html += '<div class="ad-month-body" id="adm_'+key+'" style="display:'+(isCollapsed?'none':'block')+'">';
     g.records.forEach(function(r){
-      var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
       // Defensivo: cualquier valor de STATUS que no sea uno de los 3
       // reconocidos (fila vieja/corrupta con un STATUS inesperado) se trata
       // como pending, en vez de dejar que statusLabels[st] devuelva
@@ -7509,33 +7567,10 @@ function renderAdminJournal() {
         html += '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>';
       }
       html += '<div class="ad-card st-'+st+shadowCls+'" data-id="'+r.ID+'" data-ts="'+(r.TIMESTAMP||'')+'" onclick="openAdminDetail(\''+r.ID+'\')">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">';
-      html += '<span style="font-size:12px;color:#8e8e93;font-weight:600">'+fecha+'</span>';
       var rightEl = isNew
         ? '<span class="ad-new-label">NUEVO</span>'
         : '<span class="ad-status-badge st-'+st+'" style="margin-bottom:0">'+statusLabels[st]+'</span>';
-      html += rightEl + '</div>';
-      html += '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:10px">'+r.OPERARIO+'</div>';
-      html += '<div style="font-size:22px;font-weight:700;color:#000;letter-spacing:-0.3px;margin-bottom:5px">'+r.ID+'</div>';
-      html += '<div style="font-size:13px;font-weight:600;color:#8e8e93;margin-bottom:'+(((st==='approved'||st==='rejected')&&r.MANAGER_NOMBRE)||r.COMENTARIO_MANAGER?'6px':'0')+'">'+r.CLIENTE+' · '+r.OBRA+'</div>';
-      // BUG CORREGIDO (pedido): el badge de estado ya se muestra arriba a
-      // la derecha en cuanto la tarjeta deja de ser "nueva" (ver rightEl
-      // más arriba) — el badge "ОЖИДАЕТ" que se repetía aquí abajo para
-      // pending era 100% redundante (estado duplicado en la misma
-      // tarjeta). Para aprobado/rechazado ya no es una caja con fondo y
-      // borde, solo texto de quién decidió, alineado a la derecha —
-      // verde si aprobó, rojo si rechazó.
-      if ((st === 'approved' || st === 'rejected') && r.MANAGER_NOMBRE) {
-        var mgLabel = st === 'approved' ? t('lbl_aprobo') : t('lbl_rechazo');
-        var txClr = st === 'approved' ? '#34c759' : '#ff3b30';
-        html += '<div style="text-align:right;font-size:12px;font-weight:600;color:'+txClr+'">'+mgLabel+' · '+r.MANAGER_NOMBRE+'</div>';
-      }
-      if (r.COMENTARIO_MANAGER && String(r.COMENTARIO_MANAGER).trim()) {
-        html += '<div class="mi-comment full" style="margin-top:8px;margin-bottom:0">'
-          + '<b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario')+'</b>'
-          + r.COMENTARIO_MANAGER + '</div>';
-      }
-      html += cardAttBadgeHtml(r);
+      html += buildCardRowHtml(r, rightEl, { status: st });
       html += '</div>';
       if (swipeable) html += '</div>';
     });
@@ -7587,17 +7622,10 @@ function renderAdminInforme() {
   // patrón swipe-wrap/swipe-delete-action que ya usa renderAdminJournal,
   // reutilizando requestSwipeDeleteAdmin (ya limpia adInformeRecords).
   listEl.innerHTML = adInformeRecords.map(function(r){
-    var fecha = r.FECHA ? fmtDate(r.FECHA) : '';
     return '<div class="swipe-wrap r12" data-id="'+r.ID+'">'
       + '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdmin(\''+r.ID+'\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">'+t('swipe_eliminar')+'</span></button>'
       + '<div class="ad-card st-approved" onclick="openAdminInformeDetail(\''+r.ID+'\')">'
-      + '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:2px">'+fecha+'</div>'
-      + '<div style="font-size:12px;color:#8e8e93;font-weight:600;margin-bottom:10px">'+(r.OPERARIO||'')+'</div>'
-      + '<div style="font-size:22px;font-weight:700;color:#000;letter-spacing:-0.3px;margin-bottom:5px">'+(r.ID||'—')+'</div>'
-      + '<div style="font-size:13px;font-weight:600;color:#8e8e93;margin-bottom:8px">'+(r.CLIENTE||'')+'·'+(r.OBRA||'')+'</div>'
-      + '<span class="ad-status-badge st-approved">' + t('status_approved') + '</span>'
-      + (r.MANAGER_NOMBRE ? '<div class="ad-manager-line approved">Aprobó: '+r.MANAGER_NOMBRE+'</div>' : '')
-      + cardAttBadgeHtml(r)
+      + buildCardRowHtml(r, '<span class="ad-status-badge st-approved" style="margin-bottom:0">' + t('status_approved') + '</span>', { status: 'approved' })
       + '</div>'
       + '</div>';
   }).join('');
@@ -8176,6 +8204,14 @@ function hideAnLoadingOverlay() {
 function anPad2(n) { return String(n).padStart(2, '0'); }
 function anISO(d) { return d.getFullYear() + '-' + anPad2(d.getMonth() + 1) + '-' + anPad2(d.getDate()); }
 function anAddDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
+// Parseo manual (no `new Date(iso)`, que interpreta 'YYYY-MM-DD' como
+// medianoche UTC — un desfase de un día es posible según la zona horaria
+// del navegador) para que las cuentas de personalizado usen SIEMPRE la
+// misma fecha local que el resto de este bloque (anISO/anAddDays).
+function anParseISO(iso) {
+  var parts = String(iso).split('-');
+  return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+}
 function anLastDayOfMonth(year, month0) { return new Date(year, month0 + 1, 0).getDate(); }
 // Lunes de la semana de d — semana empieza en lunes (convención española/ISO).
 function anMonday(d) {
@@ -8192,8 +8228,13 @@ function anMonday(d) {
  * "esta semana vs la semana pasada"/"este mes vs el mes pasado" tenga
  * sentido calendario, pedido explícito. */
 var anPeriod = 'mes';
-var AN_PERIODS = ['hoy', 'semana', 'mes', 'anio', 'mesPasado'];
-var AN_PERIOD_LABELS = { hoy: 'an_periodo_hoy', semana: 'an_periodo_semana', mes: 'an_periodo_mes', anio: 'an_periodo_anio', mesPasado: 'an_periodo_mes_pasado' };
+var AN_PERIODS = ['hoy', 'semana', 'mes', 'anio', 'mesPasado', 'personalizado'];
+var AN_PERIOD_LABELS = { hoy: 'an_periodo_hoy', semana: 'an_periodo_semana', mes: 'an_periodo_mes', anio: 'an_periodo_anio', mesPasado: 'an_periodo_mes_pasado', personalizado: 'an_periodo_personalizado' };
+// Pedido 2026-07-28: los 5 presets de arriba son siempre una unidad de
+// calendario completa — para un rango arbitrario (p.ej. "del 5 al
+// 19 de este mes") hace falta un desde/hasta manual aparte, ver el
+// chip 'personalizado' + #anCustomRangeWrap/anApplyCustomRange().
+var anCustomDesde = null, anCustomHasta = null;
 
 // Pedido 2026-07-28 (continuación): los presets ya NO se cortan en "hoy"
 // — son la UNIDAD DE CALENDARIO COMPLETA que contiene al día de hoy
@@ -8221,6 +8262,10 @@ function anPeriodRange(period) {
     var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
     return anMonthRange(py, pm);
   }
+  if (period === 'personalizado') {
+    var thisMonth = anMonthRange(y, m);
+    return { desde: anCustomDesde || thisMonth.desde, hasta: anCustomHasta || thisMonth.hasta };
+  }
   return anMonthRange(y, m); // 'mes'
 }
 
@@ -8234,6 +8279,15 @@ function anPreviousPeriodRange(period) {
     var pm = m === 0 ? 11 : m - 1, py = m === 0 ? y - 1 : y;
     var ppm = pm === 0 ? 11 : pm - 1, ppy = pm === 0 ? py - 1 : py;
     return anMonthRange(ppy, ppm);
+  }
+  if (period === 'personalizado') {
+    // Rango de la misma duración, inmediatamente anterior al elegido —
+    // no hay una "unidad de calendario" natural que comparar aquí.
+    var cur = anPeriodRange('personalizado');
+    var days = Math.round((anParseISO(cur.hasta) - anParseISO(cur.desde)) / 86400000);
+    var prevHasta = anAddDays(anParseISO(cur.desde), -1);
+    var prevDesde = anAddDays(prevHasta, -days);
+    return { desde: anISO(prevDesde), hasta: anISO(prevHasta) };
   }
   // 'mes' — el mes anterior completo
   var pm2 = m === 0 ? 11 : m - 1, py2 = m === 0 ? y - 1 : y;
@@ -8275,6 +8329,32 @@ function setAnPeriod(period) {
   if (anPeriod === period) return;
   anPeriod = period;
   renderAnPeriodChips();
+  var customWrap = document.getElementById('anCustomRangeWrap');
+  if (period === 'personalizado') {
+    var range = anPeriodRange('personalizado');
+    if (!anCustomDesde) anCustomDesde = range.desde;
+    if (!anCustomHasta) anCustomHasta = range.hasta;
+    document.getElementById('anCustomFrom').value = anCustomDesde;
+    document.getElementById('anCustomTo').value = anCustomHasta;
+    if (customWrap) customWrap.style.display = 'flex';
+  } else if (customWrap) {
+    customWrap.style.display = 'none';
+  }
+  loadAnalyticsDynamic();
+}
+
+// Pedido 2026-07-28: aplicar el rango elegido a mano en los dos <input
+// type="date"> del chip "Personalizado" — si Desde queda después de
+// Hasta (fácil de dejar así a media edición) no se recalcula nada hasta
+// que ambos campos vuelvan a tener un orden válido, para no mostrarle al
+// usuario un resumen con un rango invertido sin sentido.
+function anApplyCustomRange() {
+  var from = document.getElementById('anCustomFrom').value;
+  var to = document.getElementById('anCustomTo').value;
+  if (!from || !to || from > to) return;
+  anCustomDesde = from;
+  anCustomHasta = to;
+  renderAnPeriodRangeLabel();
   loadAnalyticsDynamic();
 }
 
@@ -9457,10 +9537,8 @@ function renderAdminUsers() {
       '<button type="button" class="swipe-edit-action" onclick="event.stopPropagation();closeSwipeDelete();openAdUserModalByCodigo(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-pencil"></i></span><span class="swipe-lbl">' + t('swipe_editar') + '</span></button>' +
       '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdUser(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">' + t('swipe_eliminar') + '</span></button>' +
       '<div class="adu-card" data-id="' + safeCodigo + '" onclick="openAdUserModalByCodigo(\'' + safeCodigo + '\')">' +
-      '<div class="adu-card-top"><span style="font-size:12px;color:#8e8e93;font-weight:600">' + escapeHtml(roleLbl) + '</span>' +
-      '<span class="ad-status-badge ' + statusCls + '">' + escapeHtml(statusLbl) + '</span></div>' +
-      '<div class="adu-name">' + escapeHtml(displayName) + '</div>' +
-      '<div class="adu-meta"><i class="ti ti-mail"></i>' + escapeHtml(u.email || '—') + '</div>' +
+      '<div class="rc-top"><div class="rc-id">' + escapeHtml(displayName) + '</div><span class="ad-status-badge ' + statusCls + '" style="margin-bottom:0">' + escapeHtml(statusLbl) + '</span></div>' +
+      '<div class="rc-line">' + escapeHtml(roleLbl) + (u.email ? ' · ' + escapeHtml(u.email) : '') + (u.telefono ? ' · ' + escapeHtml(u.telefono) : '') + '</div>' +
       '</div></div>';
   }).join('');
 }
