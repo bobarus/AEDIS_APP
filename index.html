@@ -2197,6 +2197,14 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
 
 <div id="mainFlexWrap" style="display:flex;flex-direction:column;height:100%">
 
+<!-- Indicador de "pull to refresh" — position:fixed para no empujar el
+     contenido de #appScroll, se posiciona justo debajo del nav real
+     (misma var --nav-h que ya usa el padding-top de #appScroll) y su
+     opacidad/rotación las controla el gesto en el JS de más abajo. -->
+<div id="ptrIndicator" style="position:fixed;left:50%;top:calc(max(var(--nav-h, 0px), calc(env(safe-area-inset-top,0px) + 68px)) + 6px);transform:translate(-50%,-14px) scale(.6);opacity:0;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;z-index:90;pointer-events:none">
+  <div id="ptrSpinner" style="width:16px;height:16px;border:2.5px solid rgba(0,73,197,.18);border-top-color:#0049c5;border-radius:50%"></div>
+</div>
+
 <!-- Único contenedor que scrollea de verdad (ver comentario en el CSS de
      #appScroll) — envuelve las 3 pantallas de rol para que nav/tabbar,
      fuera de aquí, nunca tiemblen. -->
@@ -2818,7 +2826,16 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
   </div>
 
   <!-- ── PANEL: ANÁLISIS ── -->
-  <div id="adPanelAnalisis" style="display:none">
+  <div id="adPanelAnalisis" style="display:none;position:relative">
+    <!-- Ventana de carga única al entrar por primera vez en Análisis —
+         antes se veían 2-3 spinners sueltos apareciendo en momentos
+         distintos (tiles/objetos/tabla mensual, cada fetch por su lado);
+         ahora se tapa todo con un solo overlay hasta que ambas cargas
+         (resumen dinámico + tabla mensual) terminan, ver initAnalisis(). -->
+    <div id="anLoadingOverlay" style="display:none;position:absolute;inset:0;z-index:5;background:#fff;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding-top:60px">
+      <span class="spinner-inline" style="width:26px;height:26px;border-width:3px;margin:0"></span>
+      <span style="font-size:13px;font-weight:600;color:#8e8e93" id="anLoadingOverlayLbl">Cargando...</span>
+    </div>
 
     <!-- Resumen dinámico por intervalo arbitrario — pedido: trabajadores/
          materiales/trabajo/total que cambian según el rango elegido,
@@ -2848,12 +2865,12 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
          de la fila TOTAL sin cambios, tal y como se pidió). -->
     <div class="slabel" style="padding:4px 16px 8px" id="anSlabelMensual">Detalle mensual</div>
     <div style="padding:0 14px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select id="anYear" onchange="loadAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+      <select id="anYear" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
       </select>
-      <select id="anMonthFrom" onchange="loadAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+      <select id="anMonthFrom" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
       </select>
       <span style="font-size:12px;color:#8e8e93;flex-shrink:0">—</span>
-      <select id="anMonthTo" onchange="loadAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
+      <select id="anMonthTo" onchange="renderAnalisis()" style="padding:8px 10px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:13px;font-weight:600;color:#000;-webkit-appearance:none;appearance:none;flex:1;min-width:80px">
       </select>
     </div>
 
@@ -3108,24 +3125,28 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
   </div>
 </div>
 
-<!-- BOTTOM TAB BAR: ADMIN -->
-<div class="bottom-tabbar" id="tabbarAdmin" style="display:none">
+<!-- BOTTOM TAB BAR: ADMIN — pedido 2026-07-28: orden Análisis/Diario(Отчеты)/
+     Crear/Usuarios(Управление персоналом). El indicador deslizante depende
+     de ESTE orden posicional (tab-1/2/3-active = 2ª/3ª/4ª posición, ver
+     switchAdTab) — si se vuelve a reordenar, hay que actualizar ambos a
+     la vez. -->
+<div class="bottom-tabbar tab-1-active" id="tabbarAdmin" style="display:none">
   <div class="tab-indicator"></div>
-  <div class="bottom-tab active" id="tabAdJournal" onclick="switchAdTab('journal')">
-    <div class="tab-icon"><i class="ti ti-list"></i></div>
-    <span>Diario</span>
-  </div>
   <div class="bottom-tab" id="tabAdAnalisis" onclick="switchAdTab('analisis')">
     <div class="tab-icon"><i class="ti ti-chart-bar"></i></div>
     <span>Análisis</span>
   </div>
-  <div class="bottom-tab" id="tabAdUsuarios" onclick="switchAdTab('usuarios')">
-    <div class="tab-icon"><i class="ti ti-users"></i></div>
-    <span id="adUsuariosTabLbl">Usuarios</span>
+  <div class="bottom-tab active" id="tabAdJournal" onclick="switchAdTab('journal')">
+    <div class="tab-icon"><i class="ti ti-list"></i></div>
+    <span>Diario</span>
   </div>
   <div class="bottom-tab" id="tabAdCrear" onclick="switchAdTab('crear')">
     <div class="tab-icon"><i class="ti ti-file-plus"></i></div>
     <span id="adCrearTabLbl">Crear</span>
+  </div>
+  <div class="bottom-tab" id="tabAdUsuarios" onclick="switchAdTab('usuarios')">
+    <div class="tab-icon"><i class="ti ti-users"></i></div>
+    <span id="adUsuariosTabLbl">Usuarios</span>
   </div>
 </div>
 </div><!-- /#mainFlexWrap -->
@@ -3200,9 +3221,9 @@ var LANGS = {
     flt_tipos:'Todos los tipos', flt_companias:'Todas las compañías',
     flt_label_estado:'Estado', flt_todos:'Todos', flt_resetear:'Resetear filtros', flt_sin_resultados:'Sin resultados para estos filtros',
     no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
-    lbl_materiales:'Materiales', lbl_trabajo:'Trabajo', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
+    lbl_materiales:'Materiales', lbl_trabajo:'Remuneración', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
     an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_informes_count:'Informes', an_ver:'Ver', an_ocultar:'Ocultar',
-    an_todos:'Todos', an_por_objeto:'Por objeto', an_por_trabajador:'Por trabajador', an_mes:'Mes', an_turnos:'Informes', an_horas:'Horas', an_sin_datos:'No hay datos aprobados en el período seleccionado', an_buscar_placeholder:'Buscar objeto o cliente...',
+    an_todos:'Todos', an_por_objeto:'Por objeto', an_por_trabajador:'Por trabajador', an_mes:'Mes', an_turnos:'Informes', an_horas:'Horas', an_sin_datos:'No hay datos aprobados en el período seleccionado', an_buscar_placeholder:'Buscar objeto o cliente...', an_comprado_por:'Comprado por',
     rb_title:'Crear informe', rb_step_formato:'Formato del archivo', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Período del informe', rb_step_objetos:'Objetos a incluir', rb_objetos_empty:'No hay objetos con datos en este período', rb_objetos_requerido:'Elige al menos un objeto para continuar',
     rb_step_preview:'Resumen del informe', rb_pct_materiales:'Recargo materiales', rb_pct_trabajo:'Recargo trabajo',
@@ -3316,9 +3337,9 @@ var LANGS = {
     flt_tipos:'Все типы', flt_companias:'Все компании',
     flt_label_estado:'Статус', flt_todos:'Все', flt_resetear:'Сбросить фильтры', flt_sin_resultados:'Ничего не найдено по этим фильтрам',
     no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
-    lbl_materiales:'Материалы', lbl_trabajo:'Работа', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
+    lbl_materiales:'Материалы', lbl_trabajo:'Вознаграждение', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
     an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_informes_count:'Отчётов', an_ver:'Смотреть', an_ocultar:'Скрыть',
-    an_todos:'Все', an_por_objeto:'По объекту', an_por_trabajador:'По рабочему', an_mes:'Месяц', an_turnos:'Отчётов', an_horas:'Часов', an_sin_datos:'Нет согласованных данных за выбранный период', an_buscar_placeholder:'Поиск объекта или клиента...',
+    an_todos:'Все', an_por_objeto:'По объекту', an_por_trabajador:'По рабочему', an_mes:'Месяц', an_turnos:'Отчётов', an_horas:'Часов', an_sin_datos:'Нет согласованных данных за выбранный период', an_buscar_placeholder:'Поиск объекта или клиента...', an_comprado_por:'Купил',
     rb_title:'Создать отчёт', rb_step_formato:'Формат файла', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Период отчёта', rb_step_objetos:'Объекты для отчёта', rb_objetos_empty:'Нет данных по объектам за этот период', rb_objetos_requerido:'Выберите хотя бы один объект, чтобы продолжить',
     rb_step_preview:'Сводка отчёта', rb_pct_materiales:'Наценка на материалы', rb_pct_trabajo:'Наценка на работу',
@@ -3432,9 +3453,9 @@ var LANGS = {
     flt_tipos:'All types', flt_companias:'All companies',
     flt_label_estado:'Status', flt_todos:'All', flt_resetear:'Reset filters', flt_sin_resultados:'No results for these filters',
     no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
-    lbl_materiales:'Materials', lbl_trabajo:'Labor', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
+    lbl_materiales:'Materials', lbl_trabajo:'Remuneration', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
     an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_informes_count:'Reports', an_ver:'View', an_ocultar:'Hide',
-    an_todos:'All', an_por_objeto:'By object', an_por_trabajador:'By worker', an_mes:'Month', an_turnos:'Reports', an_horas:'Hours', an_sin_datos:'No approved data in the selected period', an_buscar_placeholder:'Search object or client...',
+    an_todos:'All', an_por_objeto:'By object', an_por_trabajador:'By worker', an_mes:'Month', an_turnos:'Reports', an_horas:'Hours', an_sin_datos:'No approved data in the selected period', an_buscar_placeholder:'Search object or client...', an_comprado_por:'Purchased by',
     rb_title:'Create report', rb_step_formato:'File format', rb_formato_pdf:'PDF', rb_formato_excel:'Excel',
     rb_step_periodo:'Report period', rb_step_objetos:'Objects to include', rb_objetos_empty:'No data for any object in this period', rb_objetos_requerido:'Pick at least one object to continue',
     rb_step_preview:'Report summary', rb_pct_materiales:'Materials markup', rb_pct_trabajo:'Labor markup',
@@ -5690,7 +5711,7 @@ function openReportDetail(id) {
   document.getElementById('rdTitle').textContent = (r.OBRA || r.ID);
   document.getElementById('rdSub').textContent = (r.ID ? r.ID + ' · ' : '') + (r.CLIENTE ? r.CLIENTE + ' · ' : '') + statusLabel + ' · ' + fecha;
 
-  var html = buildDetailHtml(r, false); // рабочий не видит Total
+  var html = buildDetailHtml(r, false, false); // рабочий не видит ни Total ни tarifa €/h
   if (r.STATUS === 'rejected' && r.COMENTARIO_MANAGER) {
     html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario_manager')+'</b>'+r.COMENTARIO_MANAGER+'</div>';
   }
@@ -6349,7 +6370,7 @@ function scheduleManagerAutoSeen() {
 var mgDetailId = null;
 
 /* ── Универсальная функция построения деталей отчёта (только заполненные поля) ── */
-function buildDetailHtml(r, showTotal) {
+function buildDetailHtml(r, showTotal, showRate) {
   var html = '';
   var svgCam = '<i class="ti ti-camera" style="font-size:15px;color:#0049c5;margin-right:5px"></i>';
 
@@ -6384,7 +6405,11 @@ function buildDetailHtml(r, showTotal) {
       // del registro (TOTAL−PRECIO)/HORAS — funciona igual venga el
       // registro de PARTE o de INFORME, sin depender de que exista la
       // columna PRECIO_HORA (que solo existe en INFORME).
-      if (showTotal && r.TOTAL) {
+      // Pedido 2026-07-28: la tarifa €/h es un dato económico que el
+      // manager no debe ver (a diferencia del TOTAL combinado, que sigue
+      // gobernado por showTotal aparte, sin cambios) — nuevo parámetro
+      // showRate, false para operario Y manager, true solo para admin.
+      if (showRate && r.TOTAL) {
         var effRate = (((parseFloat(r.TOTAL)||0) - (parseFloat(r['PRECIO (EUR)'])||0)) / horas);
         if (effRate > 0) html += '<small>'+effRate.toFixed(2)+' €/h</small>';
       }
@@ -6445,7 +6470,7 @@ function openManagerDetail(id) {
   var fecha = (r.FECHA ? fmtDate(r.FECHA) : '') + (r.TIMESTAMP ? ' ' + fmtTime(r.TIMESTAMP) : '');
   document.getElementById('mgdTitle').textContent = r.OBRA || '—';
   document.getElementById('mgdSub').textContent = (r.CLIENTE||'') + ' · ' + r.ID + ' · ' + fecha;
-  document.getElementById('mgdBody').innerHTML = buildDetailHtml(r, true);
+  document.getElementById('mgdBody').innerHTML = buildDetailHtml(r, true, false); // manager: Total sí, tarifa €/h no
   // BUG CORREGIDO (latente): antes esta función NUNCA reactivaba
   // .mg-actions por sí misma — dependía por completo de que
   // closeManagerDetail() se hubiera llamado antes para restaurarlo. Si
@@ -7137,7 +7162,7 @@ function openHistorialDetail(id) {
   document.getElementById('mgdTitle').textContent = r.OBRA || '—';
   document.getElementById('mgdSub').textContent = (r.CLIENTE||'') + ' · ' + r.ID + ' · ' + fecha;
 
-  var html = buildDetailHtml(r, true);
+  var html = buildDetailHtml(r, true, false); // manager: Total sí, tarifa €/h no
   if (!isApproved && r['COMENTARIO_MANAGER']) {
     html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+t('lbl_comentario_manager')+'</b>'+r['COMENTARIO_MANAGER']+'</div>';
   }
@@ -7543,7 +7568,7 @@ function openAdminDetail(id) {
   var statusLabels = { pending:t('status_pending'), approved:t('status_approved'), rejected:t('status_rejected') };
   document.getElementById('mgdTitle').textContent = r.OBRA || '—';
   document.getElementById('mgdSub').textContent = r.CLIENTE + ' · ' + r.ID + ' · ' + fecha + ' · ' + statusLabels[st];
-  var html = buildDetailHtml(r, true);
+  var html = buildDetailHtml(r, true, true); // admin: Total y tarifa €/h
   if (r.COMENTARIO_MANAGER && String(r.COMENTARIO_MANAGER).trim()) {
     html += '<div class="mi-comment full" style="margin-top:10px"><b><i class="ti ti-alert-triangle" aria-hidden="true"></i> '+(st==='rejected'?t('lbl_motivo_rechazo'):t('lbl_comentario_manager'))+'</b>'+r.COMENTARIO_MANAGER+'</div>';
   }
@@ -7584,7 +7609,7 @@ function openAdminInformeDetail(id) {
   var fecha = (r.FECHA ? fmtDate(r.FECHA) : '') + (r.TIMESTAMP ? ' ' + fmtTime(r.TIMESTAMP) : '');
   document.getElementById('mgdTitle').textContent = r.OBRA || '—';
   document.getElementById('mgdSub').textContent = (r.CLIENTE||'') + ' · ' + (r.ID||'') + ' · ' + fecha;
-  var html = buildDetailHtml(r, true);
+  var html = buildDetailHtml(r, true, true); // admin: Total y tarifa €/h
   if (r.MANAGER_NOMBRE) {
     var fDecision = r.FECHA_DECISION ? fmtDate(r.FECHA_DECISION) : '';
     html += '<div style="margin-top:12px;background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.3);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">';
@@ -7605,9 +7630,9 @@ function switchAdTab(tab) {
   document.getElementById('tabAdAnalisis').classList.toggle('active', tab === 'analisis');
   document.getElementById('tabAdUsuarios').classList.toggle('active', tab === 'usuarios');
   document.getElementById('tabAdCrear').classList.toggle('active', tab === 'crear');
-  document.getElementById('tabbarAdmin').classList.toggle('tab-1-active', tab === 'analisis');
-  document.getElementById('tabbarAdmin').classList.toggle('tab-2-active', tab === 'usuarios');
-  document.getElementById('tabbarAdmin').classList.toggle('tab-3-active', tab === 'crear');
+  document.getElementById('tabbarAdmin').classList.toggle('tab-1-active', tab === 'journal');
+  document.getElementById('tabbarAdmin').classList.toggle('tab-2-active', tab === 'crear');
+  document.getElementById('tabbarAdmin').classList.toggle('tab-3-active', tab === 'usuarios');
   document.getElementById('adPanelJournal').style.display = tab === 'journal' ? 'block' : 'none';
   document.getElementById('adPanelAnalisis').style.display = tab === 'analisis' ? 'block' : 'none';
   document.getElementById('adPanelUsuarios').style.display = tab === 'usuarios' ? 'block' : 'none';
@@ -7617,6 +7642,110 @@ function switchAdTab(tab) {
   if (tab === 'usuarios') loadAdminUsers();
   if (tab === 'crear') adcrInit();
 }
+
+/* ── Pull-to-refresh: qué recargar según la pestaña visible ──
+ * #appScroll es el ÚNICO contenedor que scrollea de verdad en toda la
+ * app (las 3 pantallas de rol viven dentro), así que un solo gesto
+ * enganchado ahí cubre Diario/Análisis/Usuarios (admin), Pendientes/
+ * Historial (manager) y Mis informes (operario) sin tener que repetir
+ * la lógica por pestaña. Los formularios (Nuevo informe/Crear informe
+ * del admin) no tienen nada que recargar — el gesto simplemente no hace
+ * nada ahí (no es un error, no hace falta feedback visual distinto). */
+function refreshCurrentView() {
+  if (document.getElementById('screenOperario').style.display !== 'none') {
+    if (document.getElementById('opPanelMine').style.display !== 'none') {
+      return myReportsLoaded ? refreshMyReportsBackground() : loadMyReports();
+    }
+    return null;
+  }
+  if (document.getElementById('screenManager').style.display !== 'none') {
+    if (document.getElementById('mgPanelHistory').style.display !== 'none') {
+      return mgHistorialLoaded ? refreshHistorialBackground() : loadHistorial();
+    }
+    return refreshPendingBackground();
+  }
+  if (document.getElementById('screenAdmin').style.display !== 'none') {
+    if (document.getElementById('adPanelAnalisis').style.display !== 'none') {
+      loadAnalisis();
+      loadAnalyticsDynamic();
+      return null;
+    }
+    if (document.getElementById('adPanelUsuarios').style.display !== 'none') {
+      return loadAdminUsers();
+    }
+    if (document.getElementById('adPanelJournal').style.display !== 'none') {
+      return loadAdminData();
+    }
+    return null;
+  }
+  return null;
+}
+
+/* ── Gesto de arrastrar hacia abajo para refrescar ──
+ * Solo se activa cuando #appScroll ya está en scrollTop 0 (si no, es un
+ * scroll normal de la lista, se deja pasar sin tocar nada) y el dedo se
+ * mueve hacia abajo — coexiste con el swipe-to-delete de las tarjetas
+ * (ese vive en document, eje X, y no llama preventDefault cuando el
+ * gesto resulta vertical, ver el IIFE de arriba) y con el carrusel del
+ * tabbar (eje X también, contenedor distinto). */
+(function () {
+  var scroller = document.getElementById('appScroll');
+  var indicator = document.getElementById('ptrIndicator');
+  var spinnerEl = document.getElementById('ptrSpinner');
+  if (!scroller || !indicator || !spinnerEl) return;
+
+  var THRESHOLD = 68, MAX_PULL = 100;
+  var startY = 0, dragY = 0, pulling = false, refreshing = false;
+
+  function setIndicator(progress, spinning) {
+    indicator.style.opacity = spinning ? '1' : String(Math.min(1, progress * 1.3));
+    var translate = spinning ? 0 : (-14 + progress * 14);
+    indicator.style.transform = 'translate(-50%,' + translate + 'px) scale(' + (0.6 + progress * 0.4) + ')';
+    spinnerEl.style.animation = spinning ? 'spin .6s linear infinite' : 'none';
+    if (!spinning) spinnerEl.style.transform = 'rotate(' + Math.round(progress * 360) + 'deg)';
+  }
+
+  function triggerRefresh() {
+    refreshing = true;
+    setIndicator(1, true);
+    var finish = function () {
+      setTimeout(function () { refreshing = false; setIndicator(0, false); }, 350);
+    };
+    var result;
+    try { result = refreshCurrentView(); } catch (e) { finish(); return; }
+    if (result && typeof result.then === 'function') result.then(finish).catch(finish);
+    else setTimeout(finish, 500);
+  }
+
+  scroller.addEventListener('touchstart', function (e) {
+    if (refreshing) { pulling = false; return; }
+    pulling = scroller.scrollTop <= 0;
+    startY = e.touches[0].clientY;
+    dragY = 0;
+  }, { passive: true });
+
+  scroller.addEventListener('touchmove', function (e) {
+    if (!pulling || refreshing) return;
+    var dy = e.touches[0].clientY - startY;
+    if (dy <= 0 || scroller.scrollTop > 0) { pulling = false; setIndicator(0, false); return; }
+    dragY = Math.min(MAX_PULL, dy * 0.5);
+    e.preventDefault();
+    setIndicator(Math.min(1, dragY / THRESHOLD), false);
+  }, { passive: false });
+
+  scroller.addEventListener('touchend', function () {
+    if (!pulling) return;
+    pulling = false;
+    if (dragY >= THRESHOLD) triggerRefresh();
+    else setIndicator(0, false);
+    dragY = 0;
+  }, { passive: true });
+
+  scroller.addEventListener('touchcancel', function () {
+    pulling = false; dragY = 0;
+    if (!refreshing) setIndicator(0, false);
+  }, { passive: true });
+})();
 
 /* ════════ ADMIN: CREAR INFORME (2026-07-28) ════════
  * Mismo formulario que el del operario (#opPanelNew/saveRecord), con
@@ -7978,8 +8107,22 @@ function initAnalisis() {
 
     anInitialized = true;
   }
-  loadAnalisis();
-  loadAnalyticsDynamic();
+  var firstTime = !anLoadedOnce;
+  anLoadedOnce = true;
+  if (firstTime) showAnLoadingOverlay();
+  var p1 = loadAnalisis();
+  var p2 = loadAnalyticsDynamic();
+  if (firstTime) {
+    Promise.all([p1, p2]).then(hideAnLoadingOverlay).catch(hideAnLoadingOverlay);
+  }
+}
+
+var anLoadedOnce = false;
+function showAnLoadingOverlay() {
+  document.getElementById('anLoadingOverlay').style.display = 'flex';
+}
+function hideAnLoadingOverlay() {
+  document.getElementById('anLoadingOverlay').style.display = 'none';
 }
 
 function fmtDateISO(d) {
@@ -7994,13 +8137,13 @@ function fmtDateISO(d) {
 function loadAnalyticsDynamic() {
   var desde = document.getElementById('anDateFrom').value;
   var hasta = document.getElementById('anDateTo').value;
-  if (!desde || !hasta) return;
+  if (!desde || !hasta) return Promise.resolve();
 
   document.getElementById('anSummaryTiles').innerHTML = anTileSkeletons();
   document.getElementById('anObjectsList').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
 
   var qs = '&codigo=' + encodeURIComponent(currentPin) + '&desde=' + encodeURIComponent(desde) + '&hasta=' + encodeURIComponent(hasta) + '&t=' + Date.now();
-  Promise.all([
+  return Promise.all([
     fetch(WEBAPP_URL + '?action=getAnalyticsSummary' + qs).then(function(r){ return r.json(); }),
     fetch(WEBAPP_URL + '?action=getObjectsBreakdown' + qs).then(function(r){ return r.json(); })
   ]).then(function(results) {
@@ -8091,12 +8234,16 @@ function renderAnDrilldown(tipo, items) {
   }
 
   if (tipo === 'materiales') {
+    // Pedido: nº de informe, fecha, objeto, quién compró y precio de
+    // compra — no existe un campo de "comprador" separado en los datos,
+    // así que se muestra el operario que registró el informe (o.operario).
     wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
       return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
         '<div class="rbadge"><i class="ti ti-package"></i></div>' +
         '<div style="flex:1;min-width:0">' +
           '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.compania || o.obra) + '</div>' +
-          '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.cliente) + ' · ' + escapeHtml(o.obra) + '</div>' +
+          '<div style="font-size:11.5px;color:#8e8e93">' + escapeHtml(o.id) + ' · ' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.cliente) + ' · ' + escapeHtml(o.obra) + '</div>' +
+          '<div style="font-size:11.5px;color:#8e8e93;margin-top:1px">' + t('an_comprado_por') + ': ' + escapeHtml(o.operario) + '</div>' +
         '</div>' +
         '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.precio.toFixed(2) + ' €</div>' +
       '</div>';
@@ -8104,7 +8251,9 @@ function renderAnDrilldown(tipo, items) {
     return;
   }
 
-  // 'trabajo' — lista de informes contados en el período
+  // 'trabajo' — lista de informes contados en el período. El importe
+  // mostrado es o.trabajo (Total − Materiales de esa fila, dinero de mano
+  // de obra), NO o.total (que incluiría también el coste de materiales).
   wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
     return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
       '<div class="rbadge"><i class="ti ti-file-text"></i></div>' +
@@ -8112,7 +8261,7 @@ function renderAnDrilldown(tipo, items) {
         '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.id) + ' · ' + escapeHtml(o.obra) + '</div>' +
         '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.operario) + ' · ' + o.horas + ' h</div>' +
       '</div>' +
-      '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.total.toFixed(2) + ' €</div>' +
+      '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + o.trabajo.toFixed(2) + ' €</div>' +
     '</div>';
   }).join('') + '</div>';
 }
@@ -8527,7 +8676,7 @@ function rbAplicarTarifaPeriodo() {
 
 function loadAnalisis() {
   document.getElementById('anContent').innerHTML = '<div class="mi-empty"><span class="spinner-inline"></span> Cargando...</div>';
-  fetch(WEBAPP_URL + '?action=getInforme&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
+  return fetch(WEBAPP_URL + '?action=getInforme&codigo=' + encodeURIComponent(currentPin) + '&t=' + Date.now())
     .then(function(r){ return r.json(); })
     .then(function(result){
       if (!result || result.status !== 'ok') {
@@ -8611,7 +8760,15 @@ function getUnique(records, field) {
 // (antes faltaba Trabajo €). Formato de la fila TOTAL sin cambios,
 // tal y como se pidió explícitamente.
 function anTable(rows) {
-  var html = '<div style="overflow-x:auto;margin:0 14px 6px;border-radius:14px;overflow:hidden;border:.5px solid #e5e5ea;box-shadow:0 2px 10px rgba(0,0,0,.07)">';
+  // "overflow-x:auto" seguido de "overflow:hidden" es un bug real: el
+  // shorthand "overflow" resetea ambos ejes y gana por ir después, así que
+  // el scroll horizontal nunca funcionaba y la columna TOTAL quedaba
+  // cortada en pantallas estrechas (pedido: "no todo cabe en la
+  // ventana"). Fix: "overflow:hidden" primero (mantiene las esquinas
+  // redondeadas) y "overflow-x:auto" al final para que gane en ese eje —
+  // ahora la tabla se puede desplazar horizontalmente con swipe dentro de
+  // la misma tarjeta redondeada, sin tocar el formato visual.
+  var html = '<div style="overflow:hidden;margin:0 14px 6px;border-radius:14px;border:.5px solid #e5e5ea;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow-x:auto;-webkit-overflow-scrolling:touch">';
   html += '<table style="width:100%;border-collapse:collapse;background:#fff;font-family:inherit">';
   html += '<thead><tr style="background:#f2f2f7">';
   [t('an_mes'), t('an_turnos'), t('an_horas'), t('lbl_trabajo'), t('lbl_materiales'), t('rb_col_total')].forEach(function(h, i) {
