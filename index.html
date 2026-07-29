@@ -12062,6 +12062,56 @@ if ('serviceWorker' in navigator) {
     }
   })();
 
+  // ═══ Pedido 2026-07-29: "al escribir en un campo de texto se ve el
+  // tabbar detrás del teclado, solo debería verse el teclado" ═══
+  // El bottom-tabbar (tabbarOperario/Manager/Admin + tabbarSafetyBg) es
+  // position:fixed;bottom:0 — al abrirse el teclado, WebKit reduce la
+  // altura visual pero el tabbar sigue anclado al fondo REAL de la
+  // ventana, quedando pegado justo encima del teclado en vez de
+  // desaparecer. Se oculta mientras cualquier <input>/<textarea> de texto
+  // tenga el foco (así el teclado es lo único que se ve abajo) y se
+  // restaura al perderlo. Con un pequeño retraso en la restauración para
+  // no parpadear al saltar de un campo a otro con Tab/Siguiente.
+  (function() {
+    var TEXT_INPUT_TYPES = ['text', 'number', 'email', 'tel', 'password', 'search'];
+    function isTextEntryEl(el) {
+      if (!el) return false;
+      if (el.tagName === 'TEXTAREA') return true;
+      if (el.tagName === 'INPUT') return TEXT_INPUT_TYPES.indexOf((el.type || 'text').toLowerCase()) !== -1;
+      return false;
+    }
+    var TABBAR_IDS = ['tabbarOperario', 'tabbarManager', 'tabbarAdmin', 'tabbarSafetyBg'];
+    var hiddenState = null;
+    var restoreTimer = null;
+    function hideForKeyboard() {
+      if (restoreTimer) { clearTimeout(restoreTimer); restoreTimer = null; }
+      if (hiddenState) return;
+      var saved = {};
+      TABBAR_IDS.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && el.style.display !== 'none') {
+          saved[id] = el.style.display;
+          el.style.display = 'none';
+        }
+      });
+      hiddenState = saved;
+    }
+    function scheduleRestore() {
+      if (restoreTimer) clearTimeout(restoreTimer);
+      restoreTimer = setTimeout(function() {
+        restoreTimer = null;
+        if (!hiddenState) return;
+        Object.keys(hiddenState).forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) el.style.display = hiddenState[id];
+        });
+        hiddenState = null;
+      }, 120);
+    }
+    document.addEventListener('focusin', function(e) { if (isTextEntryEl(e.target)) hideForKeyboard(); });
+    document.addEventListener('focusout', function(e) { if (isTextEntryEl(e.target)) scheduleRestore(); });
+  })();
+
   // ═══ ELIMINADO (2026-07-17): hack que encogía el modal abierto a mano
   // vía visualViewport.height cada vez que aparecía el teclado — era
   // precisamente la causa de "la pantalla se parte a la mitad al tocar
