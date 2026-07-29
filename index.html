@@ -795,6 +795,30 @@ body.pin-mode{overflow:hidden}
 .rc-att i{font-size:12px}
 .rc-line{font-size:12px;color:#8e8e93;margin-top:6px}
 .rc-tipo{font-size:12.5px;color:#3a3a3c;font-weight:600;margin-top:3px}
+/* ═══ USUARIOS (2026-07-29) — avatar por rol + acciones rápidas en la
+   propia tarjeta de "Pendientes" (aprobado por el usuario sobre un
+   mockup previo, ver renderAdminUsers). Colores de rol elegidos para no
+   pisar los ya usados por estado (pending=azul/approved=verde/
+   rejected=rojo): admin reutiliza el azul de acento (es "el" color de la
+   app), manager un morado sin uso previo, operario un ocre cálido. */
+.u-avatar{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin-top:1px}
+.u-avatar.admin{background:#e5f0ff;color:#0049c5}
+.u-avatar.manager{background:#f1eafd;color:#7c4fd6}
+.u-avatar.operario{background:#fbf1e1;color:#b9770e}
+/* Pedido 2026-07-29: el mismo color del avatar también en el texto del
+   rol debajo del nombre (antes gris neutro como cualquier .rc-line). */
+.u-role-line{font-size:12px;font-weight:700;margin-top:6px}
+.u-role-line.admin{color:#0049c5}
+.u-role-line.manager{color:#7c4fd6}
+.u-role-line.operario{color:#b9770e}
+.u-contact{font-size:12px;color:#8e8e93;margin-top:2px}
+.u-quick-actions{display:flex;gap:8px;margin-top:10px}
+.u-quick-btn{flex:1;border:none;border-radius:999px;padding:9px;font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:5px}
+.u-quick-btn i{font-size:14px}
+.u-quick-btn.approve{background:#e5f9ec;color:#34c759}
+.u-quick-btn.approve:active{background:#d7f3e0}
+.u-quick-btn.reject{background:#fff0f0;color:#ff3b30}
+.u-quick-btn.reject:active{background:#ffe3e3}
 /* Pedido (2026-07-21, "hacer el comentario del manager más acentuado y
    visible"): antes 8px de radio (mucho menos que el resto de la app,
    14-20px) y sin borde/sombra/icono — se perdía entre el resto de
@@ -1009,6 +1033,12 @@ body.pin-mode{overflow:hidden}
 .ad-month-header:active{opacity:.7}
 .ad-month-body{margin-bottom:2px}
 .ad-flt-btn{padding:5px 12px;border-radius:20px;border:none;background:#f2f2f7;font-family:inherit;font-size:12px;font-weight:500;color:#636366;cursor:pointer;touch-action:manipulation}
+/* Pedido 2026-07-29: contador de resultados en cada chip de filtro
+   (Usuarios) — opacity en vez de un color propio para que siga
+   heredando el color de cada estado (.st-pending/.st-approved/...) tal
+   cual, sin tener que repetir la paleta aquí. */
+.adu-flt-count{opacity:.65}
+.ad-flt-btn.active .adu-flt-count{opacity:.85}
 .ad-flt-btn.active{background:#0049c5;color:#fff}
 /* Pedido: los botones de estado del filtro de admin (Pendiente/Aprobado/
    Rechazado) se veían todos iguales (mismo gris, sin relación visual con
@@ -2959,11 +2989,11 @@ document.addEventListener('gestureend', function (e) { e.preventDefault(); });
           style="width:100%;padding:9px 12px 9px 33px;border-radius:12px;border:none;background:#f2f2f7;font-family:inherit;font-size:14px;color:#000;outline:none">
       </div>
       <div style="display:flex;gap:6px;margin-top:10px" id="adUsStatusFilters">
-        <button class="ad-flt-btn active" data-status="" onclick="setAdUsStatusFilter(this,'')" id="adUsF-all">Todos</button>
-        <button class="ad-flt-btn st-pending" data-status="pending_approval" onclick="setAdUsStatusFilter(this,'pending_approval')" id="adUsF-pending">Pendientes</button>
-        <button class="ad-flt-btn st-approved" data-status="active" onclick="setAdUsStatusFilter(this,'active')" id="adUsF-active">Activos</button>
-        <button class="ad-flt-btn st-rejected" data-status="rejected" onclick="setAdUsStatusFilter(this,'rejected')" id="adUsF-rejected">Rechazados</button>
-        <button class="ad-flt-btn st-suspended" data-status="suspended" onclick="setAdUsStatusFilter(this,'suspended')" id="adUsF-suspended">Suspendidos</button>
+        <button class="ad-flt-btn active" data-status="" onclick="setAdUsStatusFilter(this,'')" id="adUsF-all"><span id="adUsF-all-lbl">Todos</span> <span class="adu-flt-count" id="adUsF-all-n"></span></button>
+        <button class="ad-flt-btn st-pending" data-status="pending_approval" onclick="setAdUsStatusFilter(this,'pending_approval')" id="adUsF-pending"><span id="adUsF-pending-lbl">Pendientes</span> <span class="adu-flt-count" id="adUsF-pending-n"></span></button>
+        <button class="ad-flt-btn st-approved" data-status="active" onclick="setAdUsStatusFilter(this,'active')" id="adUsF-active"><span id="adUsF-active-lbl">Activos</span> <span class="adu-flt-count" id="adUsF-active-n"></span></button>
+        <button class="ad-flt-btn st-rejected" data-status="rejected" onclick="setAdUsStatusFilter(this,'rejected')" id="adUsF-rejected"><span id="adUsF-rejected-lbl">Rechazados</span> <span class="adu-flt-count" id="adUsF-rejected-n"></span></button>
+        <button class="ad-flt-btn st-suspended" data-status="suspended" onclick="setAdUsStatusFilter(this,'suspended')" id="adUsF-suspended"><span id="adUsF-suspended-lbl">Suspendidos</span> <span class="adu-flt-count" id="adUsF-suspended-n"></span></button>
       </div>
     </div>
     <div id="adUsersList" style="padding:10px 14px 20px"></div>
@@ -3656,9 +3686,9 @@ function applyLang() {
   // AUTH v2: panel admin — Usuarios
   setEl('adUsuariosTabLbl', t('tab_ad_usuarios'));
   setPh('adUsSearch', t('search_ph'));
-  setEl('adUsF-all', t('flt_todos')); setEl('adUsF-pending', t('adu_filter_pending'));
-  setEl('adUsF-active', t('adu_filter_active')); setEl('adUsF-rejected', t('adu_filter_rejected'));
-  setEl('adUsF-suspended', t('adu_filter_suspended'));
+  setEl('adUsF-all-lbl', t('flt_todos')); setEl('adUsF-pending-lbl', t('adu_filter_pending'));
+  setEl('adUsF-active-lbl', t('adu_filter_active')); setEl('adUsF-rejected-lbl', t('adu_filter_rejected'));
+  setEl('adUsF-suspended-lbl', t('adu_filter_suspended'));
   setEl('adUmSlabelNombre', t('auth_reg_nombre'));
   setEl('adUmNombreLbl', t('auth_reg_nombre')); setEl('adUmApellidoLbl', t('auth_reg_apellido'));
   setEl('adUmEmailLbl', t('auth_email_lbl')); setEl('adUmTelLbl', t('auth_reg_telefono'));
@@ -9500,9 +9530,15 @@ var adUmSelectedRole = 'operario';
 var adUmSelectedObjs = {};
 var adUmMode = 'view';
 
+// Pedido 2026-07-29: "los estados en las tarjetas deben coincidir con los
+// del filtro" — antes reutilizaban las etiquetas de estado de un INFORME
+// (Pendiente/Aprobado/Rechazado), palabras distintas a las de los propios
+// chips de filtro de esta pantalla (Pendientes/Activos/Rechazados/
+// Suspendidos) para el mismo estado. Ahora usan las mismas claves que los
+// chips, así la tarjeta y el filtro dicen literalmente lo mismo.
 var AD_STATUS_LABEL_KEYS = {
-  pending_verification: 'adu_status_unverified', pending_approval: 'status_pending',
-  active: 'status_approved', rejected: 'status_rejected', suspended: 'adu_status_suspended'
+  pending_verification: 'adu_status_unverified', pending_approval: 'adu_filter_pending',
+  active: 'adu_filter_active', rejected: 'adu_filter_rejected', suspended: 'adu_filter_suspended'
 };
 var AD_STATUS_CLASS = {
   pending_verification: 'st-unverified', pending_approval: 'st-pending',
@@ -9547,7 +9583,32 @@ function setAdUsStatusFilter(btn, status) {
   renderAdminUsers();
 }
 
+// Pedido 2026-07-29: iniciales para el avatar-círculo (2 letras — nombre+
+// apellido si hay ambos, si no las 2 primeras de lo que haya).
+function adUsInitials(u) {
+  var n = (u.nombre || '').trim(), a = (u.apellido || '').trim();
+  if (n && a) return (n.charAt(0) + a.charAt(0)).toUpperCase();
+  if (n) {
+    var parts = n.split(/\s+/);
+    return (parts.length > 1 ? (parts[0].charAt(0) + parts[1].charAt(0)) : n.substring(0, 2)).toUpperCase();
+  }
+  return ((u.email || u.codigo || '?')).substring(0, 2).toUpperCase();
+}
+var ADU_ROLE_AVATAR_CLASS = { admin: 'admin', manager: 'manager', operario: 'operario' };
+
 function renderAdminUsers() {
+  // Pedido: contadores en los chips de filtro — se calculan sobre TODOS
+  // los usuarios (nunca sobre `list`, ya filtrada por buscador/chip
+  // activo), para que "Todos 7"/"Pendientes 1" reflejen siempre el total
+  // real, no cuánto queda visible tras buscar.
+  var counts = { all: adUsersAll.length, pending_approval: 0, active: 0, rejected: 0, suspended: 0 };
+  adUsersAll.forEach(function(u) { if (counts[u.status] !== undefined) counts[u.status]++; });
+  setEl('adUsF-all-n', counts.all);
+  setEl('adUsF-pending-n', counts.pending_approval);
+  setEl('adUsF-active-n', counts.active);
+  setEl('adUsF-rejected-n', counts.rejected);
+  setEl('adUsF-suspended-n', counts.suspended);
+
   var q = (document.getElementById('adUsSearch').value || '').trim().toLowerCase();
   var list = adUsersAll.filter(function(u) {
     if (adUsStatusFilter && u.status !== adUsStatusFilter) return false;
@@ -9567,8 +9628,10 @@ function renderAdminUsers() {
     var statusCls = AD_STATUS_CLASS[u.status] || 'st-suspended';
     var statusLbl = t(AD_STATUS_LABEL_KEYS[u.status] || 'adu_status_suspended');
     var roleLbl = t(AD_ROLE_LABEL_KEYS[u.rol] || 'greet_worker');
+    var avatarCls = ADU_ROLE_AVATAR_CLASS[u.rol] || 'operario';
     var displayName = ((u.nombre || '') + ' ' + (u.apellido || '')).trim() || u.email || u.codigo;
     var safeCodigo = escapeHtml(u.codigo).replace(/'/g, "\\'");
+    var isPending = u.status === 'pending_approval';
     // Mismo patrón Telegram-style que las tarjetas de informes (ver
     // .swipe-wrap/.swipe-edit-action/.swipe-delete-action): deslizar a la
     // derecha revela "Editar" (abre el mismo modal que un tap normal),
@@ -9576,17 +9639,48 @@ function renderAdminUsers() {
     return '<div class="swipe-wrap" data-id="' + safeCodigo + '">' +
       '<button type="button" class="swipe-edit-action" onclick="event.stopPropagation();closeSwipeDelete();openAdUserModalByCodigo(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-pencil"></i></span><span class="swipe-lbl">' + t('swipe_editar') + '</span></button>' +
       '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdUser(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">' + t('swipe_eliminar') + '</span></button>' +
-      '<div class="adu-card" data-id="' + safeCodigo + '" onclick="openAdUserModalByCodigo(\'' + safeCodigo + '\')">' +
+      '<div class="adu-card" data-id="' + safeCodigo + '" onclick="openAdUserModalByCodigo(\'' + safeCodigo + '\')" style="display:flex;gap:12px;align-items:flex-start">' +
+      '<div class="u-avatar ' + avatarCls + '">' + escapeHtml(adUsInitials(u)) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
       '<div class="rc-top"><div class="rc-id">' + escapeHtml(displayName) + '</div><span class="ad-status-badge ' + statusCls + '" style="margin-bottom:0">' + escapeHtml(statusLbl) + '</span></div>' +
-      '<div class="rc-line">' + escapeHtml(roleLbl) + '</div>' +
-      // Pedido 2026-07-29: "misma altura de tarjeta que en el Diario" — las
-      // tarjetas de informes normalmente traen 3 líneas de contenido
-      // (rc-top/rc-line/rc-tipo); esta solo traía 2 (todo el contacto
-      // apretado en una línea), lo que la hacía verse más pequeña/vacía.
-      // Se reparte en su propia línea rc-tipo, igual que operario·tipo allí.
-      ((u.email || u.telefono) ? '<div class="rc-tipo">' + (u.email ? escapeHtml(u.email) : '') + (u.email && u.telefono ? ' · ' : '') + (u.telefono ? escapeHtml(u.telefono) : '') + '</div>' : '') +
-      '</div></div>';
+      '<div class="u-role-line ' + avatarCls + '">' + escapeHtml(roleLbl) + '</div>' +
+      ((u.email || u.telefono) ? '<div class="u-contact">' + (u.email ? escapeHtml(u.email) : '') + (u.email && u.telefono ? ' · ' : '') + (u.telefono ? escapeHtml(u.telefono) : '') + '</div>' : '') +
+      // Pedido 2026-07-29: aprobar/rechazar un alta pendiente sin tener que
+      // abrir la ficha completa — usa exactamente los mismos valores por
+      // defecto (rol/permisos ya guardados, código de 4 dígitos existente
+      // o uno nuevo) que la ficha aplicaría si se abriera y se pulsara
+      // Aprobar sin tocar nada; para revisar o cambiar rol/permisos antes
+      // de aprobar, la ficha completa sigue disponible con un tap normal.
+      (isPending ?
+        '<div class="u-quick-actions">' +
+        '<button type="button" class="u-quick-btn approve" onclick="event.stopPropagation();quickApproveUser(\'' + safeCodigo + '\')"><i class="ti ti-check"></i>' + t('adu_approve') + '</button>' +
+        '<button type="button" class="u-quick-btn reject" onclick="event.stopPropagation();quickRejectUser(\'' + safeCodigo + '\')"><i class="ti ti-x"></i>' + t('adu_reject') + '</button>' +
+        '</div>' : '') +
+      '</div></div></div>';
   }).join('');
+}
+
+function quickApproveUser(codigo) {
+  var user = adUsersAll.find(function(u){ return u.codigo === codigo; });
+  if (!user) return;
+  var newCodigo = /^\d{4}$/.test(user.codigo || '') ? user.codigo : generateAdUmCodeValue();
+  fetch(WEBAPP_URL, {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'adminApproveUser', codigo: currentPin, targetCodigo: codigo, rol: user.rol || 'operario', obras: user.obras || '', newCodigo: newCodigo })
+  }).then(function(r){ return r.json(); }).then(function(result) {
+    if (result && result.status === 'ok') { showToast(t('adu_toast_approved')); loadAdminUsers(); }
+    else { showToast((result && result.message) || t('auth_err_generic'), true); }
+  }).catch(function(){ showToast(t('auth_err_network'), true); });
+}
+
+function quickRejectUser(codigo) {
+  fetch(WEBAPP_URL, {
+    method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'adminRejectUser', codigo: currentPin, targetCodigo: codigo })
+  }).then(function(r){ return r.json(); }).then(function(result) {
+    if (result && result.status === 'ok') { showToast(t('adu_toast_rejected')); loadAdminUsers(); }
+    else { showToast((result && result.message) || t('auth_err_generic'), true); }
+  }).catch(function(){ showToast(t('auth_err_network'), true); });
 }
 
 function requestSwipeDeleteAdUser(codigo) {
