@@ -3277,10 +3277,10 @@ var LANGS = {
     flt_tipos:'Todos los tipos', flt_companias:'Todas las compañías',
     flt_label_estado:'Estado', flt_todos:'Todos', flt_resetear:'Resetear filtros', flt_sin_resultados:'Sin resultados para estos filtros',
     no_pending:'No hay informes pendientes', no_mine:'No tienes informes pendientes', loading:'Cargando...',
-    lbl_materiales:'Materiales', lbl_trabajo:'Remuneración', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
+    lbl_materiales:'Materiales', lbl_trabajo:'Salario', lbl_trabajadores:'Trabajadores', lbl_total_objetos:'Total de todos los objetos',
     an_resumen_periodo:'Resumen del período', an_detalle_mensual:'Detalle mensual', an_informes_generados:'Informes generados', an_informes_count:'Informes', an_ver:'Ver', an_ocultar:'Ocultar',
     an_periodo_hoy:'Hoy', an_periodo_semana:'Esta semana', an_periodo_mes:'Este mes', an_periodo_anio:'Este año', an_periodo_mes_pasado:'Mes pasado', an_periodo_personalizado:'Personalizado',
-    an_nuevo:'nuevo', an_tendencia_titulo:'Tendencia — Total', an_top_titulo:'Top del período',
+    an_tendencia_titulo:'Tendencia — Total', an_top_titulo:'Top del período',
     an_top_objetos:'Objetos', an_top_trabajadores:'Trabajadores', an_top_companias:'Compañías', an_sin_compania:'Sin compañía',
     an_sin_actividad:'Sin informes nuevos desde hace {dias} días',
     an_todos:'Todos', an_por_objeto:'Por objeto', an_por_trabajador:'Por trabajador', an_mes:'Mes', an_turnos:'Informes', an_horas:'Horas', an_sin_datos:'No hay datos aprobados en el período seleccionado', an_buscar_placeholder:'Buscar objeto o cliente...', an_comprado_por:'Comprado por',
@@ -3397,10 +3397,10 @@ var LANGS = {
     flt_tipos:'Все типы', flt_companias:'Все компании',
     flt_label_estado:'Статус', flt_todos:'Все', flt_resetear:'Сбросить фильтры', flt_sin_resultados:'Ничего не найдено по этим фильтрам',
     no_pending:'Нет ожидающих отчётов', no_mine:'У вас нет ожидающих отчётов', loading:'Загрузка...',
-    lbl_materiales:'Материалы', lbl_trabajo:'Вознаграждение', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
+    lbl_materiales:'Материалы', lbl_trabajo:'Зарплата', lbl_trabajadores:'Рабочие', lbl_total_objetos:'Итого по всем объектам',
     an_resumen_periodo:'Сводка за период', an_detalle_mensual:'Детализация по месяцам', an_informes_generados:'Созданные отчёты', an_informes_count:'Отчётов', an_ver:'Смотреть', an_ocultar:'Скрыть',
     an_periodo_hoy:'Сегодня', an_periodo_semana:'Эта неделя', an_periodo_mes:'Этот месяц', an_periodo_anio:'Этот год', an_periodo_mes_pasado:'Прошлый месяц', an_periodo_personalizado:'Свой период',
-    an_nuevo:'новое', an_tendencia_titulo:'Тренд — Итого', an_top_titulo:'Топ за период',
+    an_tendencia_titulo:'Тренд — Итого', an_top_titulo:'Топ за период',
     an_top_objetos:'Объекты', an_top_trabajadores:'Рабочие', an_top_companias:'Компании', an_sin_compania:'Без компании',
     an_sin_actividad:'Нет новых отчётов уже {dias} дн.',
     an_todos:'Все', an_por_objeto:'По объекту', an_por_trabajador:'По рабочему', an_mes:'Месяц', an_turnos:'Отчётов', an_horas:'Часов', an_sin_datos:'Нет согласованных данных за выбранный период', an_buscar_placeholder:'Поиск объекта или клиента...', an_comprado_por:'Купил',
@@ -3517,10 +3517,10 @@ var LANGS = {
     flt_tipos:'All types', flt_companias:'All companies',
     flt_label_estado:'Status', flt_todos:'All', flt_resetear:'Reset filters', flt_sin_resultados:'No results for these filters',
     no_pending:'No pending reports', no_mine:'You have no pending reports', loading:'Loading...',
-    lbl_materiales:'Materials', lbl_trabajo:'Remuneration', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
+    lbl_materiales:'Materials', lbl_trabajo:'Salary', lbl_trabajadores:'Workers', lbl_total_objetos:'Total for all objects',
     an_resumen_periodo:'Period summary', an_detalle_mensual:'Monthly detail', an_informes_generados:'Generated reports', an_informes_count:'Reports', an_ver:'View', an_ocultar:'Hide',
     an_periodo_hoy:'Today', an_periodo_semana:'This week', an_periodo_mes:'This month', an_periodo_anio:'This year', an_periodo_mes_pasado:'Last month', an_periodo_personalizado:'Custom',
-    an_nuevo:'new', an_tendencia_titulo:'Trend — Total', an_top_titulo:'Top for the period',
+    an_tendencia_titulo:'Trend — Total', an_top_titulo:'Top for the period',
     an_top_objetos:'Objects', an_top_trabajadores:'Workers', an_top_companias:'Companies', an_sin_compania:'No company',
     an_sin_actividad:'No new reports for {dias} days',
     an_todos:'All', an_por_objeto:'By object', an_por_trabajador:'By worker', an_mes:'Month', an_turnos:'Reports', an_horas:'Hours', an_sin_datos:'No approved data in the selected period', an_buscar_placeholder:'Search object or client...', an_comprado_por:'Purchased by',
@@ -3677,7 +3677,7 @@ function applyLang() {
   setEl('anTopToggleLbl', t('an_ver'));
   renderAnPeriodChips();
   var anCrearBtn = document.getElementById('anCrearInformeBtn');
-  if (anCrearBtn) anCrearBtn.innerHTML = '<i class="ti ti-file-plus" aria-hidden="true"></i> ' + t('rb_title');
+  if (anCrearBtn) anCrearBtn.innerHTML = '<i class="ti ti-file-plus" style="font-size:16px" aria-hidden="true"></i> ' + t('rb_title');
 
   setEl('rbTitle', t('rb_title'));
   setEl('rbLblFormato', t('rb_step_formato'));
@@ -8469,7 +8469,10 @@ function loadAnalyticsDynamic() {
 
 function anDeltaBadge(cur, prev) {
   cur = cur || 0; prev = prev || 0;
-  if (!prev) { if (!cur) return ''; return '<span style="font-size:10.5px;font-weight:700;color:#1c8a49;margin-left:6px">' + t('an_nuevo') + '</span>'; }
+  // Pedido 2026-07-29: quitar la etiqueta "nuevo" — sin un período
+  // anterior con el que comparar (prev===0) no hay % que mostrar de forma
+  // significativa, así que simplemente no se pinta ningún badge.
+  if (!prev) return '';
   var pct = ((cur - prev) / prev) * 100;
   var up = pct >= 0;
   var arrow = up ? '▲' : '▼';
@@ -8529,7 +8532,11 @@ function renderAnTrend() {
     '</div>';
   }).join('');
   wrap.style.display = 'block';
-  wrap.innerHTML = '<div class="card" style="margin:0 14px">' +
+  // BUG CORREGIDO (pedido 2026-07-29, "la etiqueta se lee mal"): .card no
+  // trae padding propio (otros usos de .card ponen su propio padding en
+  // un .row/rbadge interno) — sin él, el título quedaba pegado literalmente
+  // al borde redondeado de la tarjeta. Se añade aquí mismo.
+  wrap.innerHTML = '<div class="card" style="margin:0 14px;padding:14px">' +
     '<div style="font-size:13px;font-weight:700;color:#000;margin-bottom:10px">' + t('an_tendencia_titulo') + ' ' + y + '</div>' +
     '<div style="display:flex;align-items:flex-end;gap:4px;height:70px">' + bars + '</div>' +
     '</div>';
@@ -8686,19 +8693,46 @@ function renderAnDrilldown(tipo, items) {
     return;
   }
 
-  // 'trabajo' — lista de informes contados en el período. El importe
-  // mostrado es o.trabajo (Total − Materiales de esa fila, dinero de mano
-  // de obra), NO o.total (que incluiría también el coste de materiales).
-  wrap.innerHTML = '<div class="card" style="margin:0">' + items.map(function(o) {
-    return '<div class="row" style="align-items:flex-start;padding-top:12px;padding-bottom:12px">' +
+  // 'trabajo' (SALARIO) — lista de informes contados en el período. El
+  // importe mostrado es o.trabajo (Total − Materiales de esa fila, dinero
+  // de mano de obra), NO o.total (que incluiría también el coste de
+  // materiales). Pedido 2026-07-28: cada fila se despliega a la ficha
+  // COMPLETA del informe, mismo patrón que materiales/informes justo
+  // arriba (anMaterialesDrilldownItems/renderAnMaterialesDrilldownList).
+  anTrabajoDrilldownItems = items;
+  wrap.innerHTML = '<div id="anTrabajoListWrap"></div>';
+  renderAnTrabajoDrilldownList();
+}
+
+var anTrabajoDrilldownItems = [];
+var anTrabajoExpanded = {};
+function renderAnTrabajoDrilldownList() {
+  var listWrap = document.getElementById('anTrabajoListWrap');
+  if (!listWrap) return;
+  var rowsHtml = anTrabajoDrilldownItems.map(function(o, i) {
+    var key = String(o.id || i);
+    var isOpen = !!anTrabajoExpanded[key];
+    var full = isOpen ? anInformeCache.find(function(r){ return String(r.ID) === String(o.id); }) : null;
+    var head = '<div onclick="toggleAnTrabajoRow(\'' + key.replace(/'/g, "\\'") + '\')" style="display:flex;align-items:flex-start;padding-top:12px;padding-bottom:12px;cursor:pointer">' +
       '<div class="rbadge"><i class="ti ti-file-text"></i></div>' +
       '<div style="flex:1;min-width:0">' +
         '<div style="font-size:14px;font-weight:700;color:#000;margin-bottom:2px">' + escapeHtml(o.id) + ' · ' + escapeHtml(o.obra) + '</div>' +
         '<div style="font-size:11.5px;color:#8e8e93">' + fmtDate(o.fecha) + ' · ' + escapeHtml(o.operario) + ' · ' + o.horas + ' h</div>' +
       '</div>' +
-      '<div style="font-size:15px;font-weight:700;color:#0049c5;flex-shrink:0">' + anNum(o.trabajo).toFixed(2) + ' €</div>' +
+      '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0">' +
+        '<span style="font-size:15px;font-weight:700;color:#0049c5">' + anNum(o.trabajo).toFixed(2) + ' €</span>' +
+        '<i class="ti ' + (isOpen ? 'ti-chevron-up' : 'ti-chevron-down') + '" style="font-size:14px;color:#c7c7cc"></i>' +
+      '</div>' +
     '</div>';
-  }).join('') + '</div>';
+    var detail = isOpen ? '<div style="padding:0 0 14px">' + (full ? buildDetailHtml(full, true, true) : '<div class="mi-empty">' + t('an_sin_datos') + '</div>') + '</div>' : '';
+    return '<div class="card" style="margin:0 0 10px;padding:0 14px">' + head + detail + '</div>';
+  }).join('');
+  listWrap.innerHTML = rowsHtml;
+  initPhotoThumbs(listWrap);
+}
+function toggleAnTrabajoRow(key) {
+  anTrabajoExpanded[key] = !anTrabajoExpanded[key];
+  renderAnTrabajoDrilldownList();
 }
 
 var anMaterialesDrilldownItems = [];
@@ -8775,16 +8809,22 @@ function renderAnObjectsList() {
   // el filtro lo elijo... así con el resto"). Pedido también: el total
   // y el botón "Crear informe" deben ser UN solo bloque visual, no dos
   // tarjetas separadas — se funden aquí en una sola .card con dos
-  // franjas apiladas (azul = total, verde = acción).
+  // franjas apiladas.
+  // Pedido 2026-07-29: el TOTAL debe verse como el bloque Total de la
+  // ficha de un informe (mismo verde/tamaño de número que buildDetailHtml,
+  // ver "BLOQUE TOTAL" ahí) en vez de una franja azul — "Crear informe"
+  // pasa a ser una cápsula azul debajo, no un botón a todo lo ancho.
   var grandTotal = objetos.reduce(function(acc, o){ return acc + o.total; }, 0);
   html += '<div class="card" style="margin:10px 0 0;padding:0;overflow:hidden">' +
-    '<div style="padding:14px;background:#0049c5;display:flex;justify-content:space-between;align-items:center">' +
-    '<span style="font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.3px">' + t('lbl_total_objetos') + '</span>' +
-    '<span style="font-size:18px;font-weight:800;color:#fff">' + grandTotal.toFixed(2) + ' €</span>' +
+    '<div style="text-align:center;padding:20px 12px;background:linear-gradient(160deg,#1c8a49,#22b862)">' +
+    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:rgba(255,255,255,.75);margin-bottom:6px">' + t('lbl_total_objetos') + '</div>' +
+    '<div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:-.5px">' + grandTotal.toFixed(2) + ' €</div>' +
     '</div>' +
-    '<button type="button" onclick="openReportBuilder()" id="anCrearInformeBtn" style="width:100%;padding:14px;border:none;background:linear-gradient(160deg,#1c8a49,#22b862);color:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:6px">' +
-    '<i class="ti ti-file-plus" aria-hidden="true"></i> ' + t('rb_title') +
+    '<div style="padding:14px;display:flex;justify-content:center">' +
+    '<button type="button" onclick="openReportBuilder()" id="anCrearInformeBtn" style="padding:12px 22px;border:none;border-radius:999px;background:#0049c5;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 10px 20px -8px rgba(0,73,197,.5)">' +
+    '<i class="ti ti-file-plus" style="font-size:16px" aria-hidden="true"></i> ' + t('rb_title') +
     '</button>' +
+    '</div>' +
     '</div>';
   wrap.innerHTML = html;
 }
@@ -9538,7 +9578,13 @@ function renderAdminUsers() {
       '<button type="button" class="swipe-delete-action" onclick="event.stopPropagation();requestSwipeDeleteAdUser(\'' + safeCodigo + '\')"><span class="swipe-ic"><i class="ti ti-trash"></i></span><span class="swipe-lbl">' + t('swipe_eliminar') + '</span></button>' +
       '<div class="adu-card" data-id="' + safeCodigo + '" onclick="openAdUserModalByCodigo(\'' + safeCodigo + '\')">' +
       '<div class="rc-top"><div class="rc-id">' + escapeHtml(displayName) + '</div><span class="ad-status-badge ' + statusCls + '" style="margin-bottom:0">' + escapeHtml(statusLbl) + '</span></div>' +
-      '<div class="rc-line">' + escapeHtml(roleLbl) + (u.email ? ' · ' + escapeHtml(u.email) : '') + (u.telefono ? ' · ' + escapeHtml(u.telefono) : '') + '</div>' +
+      '<div class="rc-line">' + escapeHtml(roleLbl) + '</div>' +
+      // Pedido 2026-07-29: "misma altura de tarjeta que en el Diario" — las
+      // tarjetas de informes normalmente traen 3 líneas de contenido
+      // (rc-top/rc-line/rc-tipo); esta solo traía 2 (todo el contacto
+      // apretado en una línea), lo que la hacía verse más pequeña/vacía.
+      // Se reparte en su propia línea rc-tipo, igual que operario·tipo allí.
+      ((u.email || u.telefono) ? '<div class="rc-tipo">' + (u.email ? escapeHtml(u.email) : '') + (u.email && u.telefono ? ' · ' : '') + (u.telefono ? escapeHtml(u.telefono) : '') + '</div>' : '') +
       '</div></div>';
   }).join('');
 }
